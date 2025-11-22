@@ -1,0 +1,78 @@
+.PaymentPopupBackground {
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  width: 100vw;
+  height: 100vh;
+
+  background-color: black;
+  opacity: 0.4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.PaymentPopup {
+  z-index: 3;
+  position: absolute;
+  border-width: 10;
+  border-radius: 15;
+  border: gray solid;
+  padding: 30;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20;
+
+  input {
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    height: 20;
+  }
+  input:focus {
+    outline: none;
+  }
+}
+
+.PaymentPopupPrice {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.PaymentPopupInlineInput {
+  display: flex;
+  flex-direction: row;
+  gap: 10;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.PaymentPopupType {
+  border-radius: 8;
+  background-color: white;
+  border: lightgray solid;
+  border-width: 1;
+  width: 100%;
+  padding: 10;
+
+  &:disabled {
+    border: darkslategray solid;
+    background-color: lightgray;
+  }
+}
+
+.PaymentPopupSubmit {
+  border: 0;
+  border-radius: 8;
+  height: 40;
+
+  &:hover {
+    color: honeydew;
+    background-color: blue;
+  }
+}

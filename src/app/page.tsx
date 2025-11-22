@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import DraggableWindow from "@/components/DraggableWindow";
 import ReactPlayer from "react-player";
+import PaymentPopup from "@/components/PaymentPopup";
 
 export default function Home() {
   const [open, setOpen] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
+  const [payment, setPayment] = useState(false);
 
   const width = 9 * 30;
   const height = 16 * 30 - 1;
@@ -30,12 +32,23 @@ export default function Home() {
     <div className={styles.page}>
       <h1>Is this a website?</h1>
 
+      {payment && (
+        <PaymentPopup onSubmit={() => {
+          setPayment(false);
+          setOpen(false);
+        }}></PaymentPopup>
+      )}
+
       {initialPos && (
         <DraggableWindow
           title="For the zoomers"
           opened={open}
           onClose={() => {
-            setOpen(false);
+            setPayment(true);
+            setTimeout(() => {
+              setPayment(false);
+              setOpen(false);
+            }, 5000);
           }}
           initialX={initialPos.x}
           initialY={initialPos.y}
