@@ -10,6 +10,9 @@ export default function Home() {
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
 
+  const width = 9 * 30;
+  const height = 16 * 30 - 1;
+
   return (
     <div className={styles.page}>
       <h1>Is this an website?</h1>
@@ -20,57 +23,39 @@ export default function Home() {
         onClose={() => {
           setOpen(false);
         }}
-        initialX={150}
-        initialY={50}
+        initialX={Math.random() * (window.innerWidth - width)}
+        initialY={Math.random() * (window.innerHeight - height)}
       >
         <div
           onClick={() => {
             setPlaying(!playing);
           }}
         >
-          <div
-            style={{
-              width: "10%",
-              position: "absolute",
-              zIndex: 10,
-            }}
-          >
-            {muted ? (
-              <img
-                src="icons/audio-off.svg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMuted(!muted);
-                }}
-              ></img>
-            ) : (
-              <img
-                src="icons/audio.svg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMuted(!muted);
-                }}
-              ></img>
-            )}
-          </div>
-
-          {!playing && (
+          {muted ? (
             <img
-              src="icons/play.svg"
-              style={{
-                position: "absolute",
-                width: "50%",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                opacity: 0.8,
+              className={styles.audio}
+              src="icons/audio-off.svg"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMuted(!muted);
               }}
-            ></img>
+            />
+          ) : (
+            <img
+              className={styles.audio}
+              src="icons/audio.svg"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMuted(!muted);
+              }}
+            />
           )}
+
+          {!playing && <img className={styles.start} src="icons/play.svg" />}
           <ReactPlayer
             src="subway-surfers.mp4"
-            width={9 * 30}
-            height={16 * 30}
+            width={width}
+            height={height}
             playing={playing}
             muted={muted}
           />

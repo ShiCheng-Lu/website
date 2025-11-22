@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 export type DraggableWindowProps = {
   opened?: boolean;
-  title?: string;
+  title?: ReactNode;
   onClose?: () => void;
   children?: any;
   initialX?: number;
@@ -17,7 +17,7 @@ export default function DraggableWindow({
   title,
   children,
   initialX = 0,
-  initialY= 0
+  initialY = 0,
 }: DraggableWindowProps) {
   const [location, setLocation] = useState({ x: initialX, y: initialY });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -34,7 +34,7 @@ export default function DraggableWindow({
 
           borderWidth: 10,
           borderRadius: 5,
-          border: "gray solid"
+          border: "gray solid",
         }}
       >
         <div
@@ -43,7 +43,7 @@ export default function DraggableWindow({
             background: "grey",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
           }}
           onDrag={(e) => {
             setLocation({
