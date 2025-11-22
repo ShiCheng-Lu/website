@@ -13,12 +13,16 @@ export default function Home() {
   const width = 9 * 30;
   const height = 16 * 30 - 1;
 
-  var initialX = 0;
-  var initialY = 0;
-  if (typeof window != "undefined") {
-    initialX = Math.random() * window.innerWidth - width;
-    initialY = Math.random() * window.innerHeight - height;
-  }
+  const [initialPos] = useState({
+    x:
+      typeof window != "undefined"
+        ? Math.random() * (window.innerWidth - width)
+        : 0,
+    y:
+      typeof window != "undefined"
+        ? Math.random() * (window.innerHeight - height)
+        : 0,
+  });
 
   return (
     <div className={styles.page}>
@@ -30,8 +34,8 @@ export default function Home() {
         onClose={() => {
           setOpen(false);
         }}
-        initialX={initialX}
-        initialY={initialY}
+        initialX={initialPos.x}
+        initialY={initialPos.y}
       >
         <div
           onClick={() => {
