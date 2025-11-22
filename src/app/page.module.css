@@ -19,6 +19,25 @@
   flex-direction: column;
 }
 
+.intro {
+  width: 400px;
+  margin-bottom: 50;
+  position: relative;
+  text-align: justify;
+
+  .quote {
+    position: absolute;
+    font-size: 50;
+  }
+}
+
+.quoteAttribution {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
 .start {
   position: absolute;
   width: 50%;

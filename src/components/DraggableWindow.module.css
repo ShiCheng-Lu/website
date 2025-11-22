@@ -7,8 +7,10 @@
   }
 
 .DraggableWindowHeader {
+    border-top-left-radius: 3;
+    border-top-right-radius: 3;
     cursor: grab;
-    background: gray;
+    background: lightgray;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
