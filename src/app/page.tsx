@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 import DraggableWindow from "@/components/DraggableWindow";
 import ReactPlayer from "react-player";
 import PaymentPopup from "@/components/PaymentPopup";
+import Link from 'next/link'
 
 export default function Home() {
   const [open, setOpen] = useState(true);
@@ -32,6 +33,13 @@ export default function Home() {
     <div className={styles.page}>
       <h1>Is this a website?</h1>
 
+      <Link className={styles.navButton} href="/archery"> Try archery? 🏹</Link>
+
+      <Link className={styles.navButton} href="https://github.com/ShiCheng-Lu"> More of PROgrammer 💻</Link>
+
+{/* 
+Overlays
+*/}
       {payment && (
         <PaymentPopup onSubmit={() => {
           setPayment(false);

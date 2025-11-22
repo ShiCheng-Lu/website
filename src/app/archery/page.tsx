@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { Point, add, sub, mul, abs } from "@/components/point";
 
 export default function Archery() {
-  const [location, setLocation] = useState({ x: 0, y: 0 });
+  const [location, setLocation] = useState<Point>();
   const [updateFunction, setUpdateFunction] = useState<any>();
 
   const [drift, setDrift] = useState({ x: 0, y: 0 });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLocation({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      });
+    }
+  }, []);
+
   return (
     <div
       onMouseDown={(e) => {
-        if (typeof window === "undefined") return;
+        if (typeof window === "undefined" || !location) return;
 
         if (updateFunction) {
           window.removeEventListener("pointermove", updateFunction.update);
@@ -77,15 +86,17 @@ export default function Archery() {
         src="archery/target.jpg"
         draggable={false}
       ></img>
-      <img
-        className={styles.arrow}
-        style={{
-          left: location.x + drift.x,
-          top: location.y + drift.y,
-        }}
-        src="archery/arrow.png"
-        draggable={false}
-      ></img>
+      {location && (
+        <img
+          className={styles.arrow}
+          style={{
+            left: location.x + drift.x,
+            top: location.y + drift.y,
+          }}
+          src="archery/arrow.png"
+          draggable={false}
+        ></img>
+      )}
     </div>
   );
 }
