@@ -1,0 +1,19 @@
+.DraggableWindow {
+    z-index: 1;
+    position: absolute;
+    border-width: 10;
+    border-radius: 5;
+    border: gray solid;
+  }
+
+.DraggableWindowHeader {
+    cursor: grab;
+    background: gray;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.DraggableWindowHeader:active {
+    cursor: grabbing;
+}

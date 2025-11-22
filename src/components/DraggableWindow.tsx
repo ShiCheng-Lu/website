@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useRef } from "react";
+import styles from "./DraggableWindow.module.css";
 
 export type DraggableWindowProps = {
   opened?: boolean;
@@ -20,50 +21,46 @@ export default function DraggableWindow({
   initialY = 0,
 }: DraggableWindowProps) {
   const [location, setLocation] = useState({ x: initialX, y: initialY });
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [updateFunction, setUpdateFunction] = useState<any>();
 
   return (
     opened && (
       <div
-        className="DraggableWindow"
+        className={styles.DraggableWindow}
         style={{
-          zIndex: 1,
-          position: "absolute",
           top: location.y,
           left: location.x,
-
-          borderWidth: 10,
-          borderRadius: 5,
-          border: "gray solid",
         }}
       >
         <div
-          className="Header"
-          style={{
-            background: "grey",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
+          className={styles.DraggableWindowHeader}
+          onMouseDown={(e) => {
+            if (typeof window === "undefined") return;
+
+            if (updateFunction) {
+              window.removeEventListener("pointermove", updateFunction.update);
+            }
+            const startX = e.clientX - location.x;
+            const startY = e.clientY - location.y;
+            // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
+            const updateLocation = {
+              update: (e: PointerEvent) => {
+                if (!e) return;
+                setLocation({
+                  x: e.clientX - startX,
+                  y: e.clientY - startY,
+                });
+              },
+            };
+            setUpdateFunction(updateLocation);
+            window.addEventListener("pointermove", updateLocation.update);
           }}
-          onDrag={(e) => {
-            setLocation({
-              x: e.clientX - dragStart.x,
-              y: e.clientY - dragStart.y,
-            });
+          onMouseUp={() => {
+            if (typeof window === "undefined") return;
+
+            window.removeEventListener("pointermove", updateFunction.update);
+            setUpdateFunction(undefined);
           }}
-          onDragStart={(e) => {
-            setDragStart({
-              x: e.clientX - location.x,
-              y: e.clientY - location.y,
-            });
-          }}
-          onDragEnd={(e) => {
-            setLocation({
-              x: e.clientX - dragStart.x,
-              y: e.clientY - dragStart.y,
-            });
-          }}
-          draggable
         >
           <div className="Title">{title}</div>
           <div>
