@@ -13,6 +13,13 @@ export default function Home() {
   const width = 9 * 30;
   const height = 16 * 30 - 1;
 
+  var initialX = 0;
+  var initialY = 0;
+  if (typeof window != "undefined") {
+    initialX = Math.random() * window.innerWidth - width;
+    initialY = Math.random() * window.innerHeight - height;
+  }
+
   return (
     <div className={styles.page}>
       <h1>Is this an website?</h1>
@@ -23,8 +30,8 @@ export default function Home() {
         onClose={() => {
           setOpen(false);
         }}
-        initialX={Math.random() * (window.innerWidth - width)}
-        initialY={Math.random() * (window.innerHeight - height)}
+        initialX={initialX}
+        initialY={initialY}
       >
         <div
           onClick={() => {
