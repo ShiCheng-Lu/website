@@ -13,17 +13,6 @@ export default function Home() {
   const width = 9 * 30;
   const height = 16 * 30 - 1;
 
-  const [initialPos] = useState({
-    x:
-      typeof window != "undefined"
-        ? Math.random() * (window.innerWidth - width)
-        : 0,
-    y:
-      typeof window != "undefined"
-        ? Math.random() * (window.innerHeight - height)
-        : 0,
-  });
-
   return (
     <div className={styles.page}>
       <h1>Is this an website?</h1>
@@ -34,8 +23,8 @@ export default function Home() {
         onClose={() => {
           setOpen(false);
         }}
-        initialX={initialPos.x}
-        initialY={initialPos.y}
+        initialX={150}
+        initialY={50}
       >
         <div
           onClick={() => {
