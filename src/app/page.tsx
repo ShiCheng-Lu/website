@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <h1>Is this an website?</h1>
+      <h1>Is this a website?</h1>
 
       {initialPos && (
         <DraggableWindow
