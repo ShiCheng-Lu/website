@@ -62,7 +62,7 @@ export default function DraggableWindow({
             setUpdateFunction(undefined);
           }}
         >
-          <div className="Title">{title}</div>
+          <div className={styles.DraggableWindowTitle}>{title}</div>
           <div>
             <button onClick={onClose}>X</button>
           </div>

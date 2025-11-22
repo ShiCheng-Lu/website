@@ -17,3 +17,7 @@
 .DraggableWindowHeader:active {
     cursor: grabbing;
 }
+
+.DraggableWindowTitle {
+    user-select: none;
+}
