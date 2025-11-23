@@ -33,6 +33,8 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <h1>Is this a website?</h1>
+      <br/>
       <div>
         <div className={styles.intro}>
           <p
@@ -91,6 +93,10 @@ export default function Home() {
 
       <Link className={styles.navButton} href="/minecraft-computer">
         Minecraft Computer?
+      </Link>
+      
+      <Link className={styles.navButton} href="/jsfuck">
+        I heard ya like JavaScript
       </Link>
 
       {/* 
