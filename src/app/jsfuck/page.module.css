@@ -1,5 +1,4 @@
-
-
-.textarea {
-    border: 0;
+.CodeMirror {
+  border: 0;
+  width: 500;
 }

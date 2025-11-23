@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./PaymentPopup.module.css";
+import { CgCloseO } from "react-icons/cg";
 
 type PaymentType = "credit" | "paypal";
 
@@ -13,6 +14,17 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
     <>
       <div className={styles.PaymentPopupBackground}></div>
       <div className={styles.PaymentPopup}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
+          }}
+          onClick={onSubmit}
+        >
+          <h3>Checkout</h3>
+          <CgCloseO />
+        </div>
         <div className={styles.PaymentPopupPrice}>
           <p>Total:</p>
           <p>2.99 USD</p>

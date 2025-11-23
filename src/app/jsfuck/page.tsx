@@ -12,13 +12,17 @@ export default function JSFuck() {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
 
+  const [showTranslation, setShowTranslation] = useState(false);
+
+  const [encodedResult, setEncodedResult] = useState("");
+
   const updateCode = (code: string) => {
     setCode(code);
-    const encoded = encode(code);
-    if (encoded) {
-      setEncoded(encoded);
-    }
+    const encoded = encode(code) || "";
+    setEncoded(encoded);
     try {
+      const encodedRes = `${eval(encoded)}`;
+      setEncodedResult(encodedRes);
       // stringify result for safety
       const res = `${eval(code)}`;
       setResult(res);
@@ -29,6 +33,10 @@ export default function JSFuck() {
     }
   };
 
+  const theme = EditorView.theme({
+    "&": { maxHeight: "200px" },
+  });
+
   return (
     <div>
       <h1>I heard ya like JavaScript</h1>
@@ -38,34 +46,21 @@ export default function JSFuck() {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-evenly",
-          width: "100vw"
+          alignItems: "center",
+          width: "80vw",
         }}
       >
         <div>
           Javascript
           <ReactCodeMirror
-            className={styles.textarea}
-            style={{
-              width: "500px",
-              maxWidth: "100%"
-            }}
+            className={styles.CodeMirror}
             value={code}
             onChange={(e) => updateCode(e)}
-          ></ReactCodeMirror>
+          />
         </div>
         <div>
-          Javascript but better?
-          
-          <ReactCodeMirror
-            extensions={[EditorView.lineWrapping]}
-            className={styles.textarea}
-            style={{
-              width: "500px",
-              maxWidth: "100%"
-            }}
-            value={encoded}
-            onChange={(e) => updateCode(e)}
-          ></ReactCodeMirror>
+          Javascript output
+          <ReactCodeMirror className={styles.CodeMirror} value={result} />
         </div>
       </div>
       <div
@@ -76,25 +71,37 @@ export default function JSFuck() {
         }}
       >
         <div>
-          Javascript output
-          <div>{result}</div>
-          <div>{error}</div>
+          Javascript but better?
+          <ReactCodeMirror
+            extensions={[theme, EditorView.lineWrapping]}
+            className={styles.CodeMirror}
+            value={encoded}
+          ></ReactCodeMirror>
         </div>
-        <div>Javascript but better? output</div>
+        <div>
+          Javascript but better? output
+          <ReactCodeMirror
+            className={styles.CodeMirror}
+            value={encodedResult}
+          />
+        </div>
       </div>
 
-      <ul>
-        {translationList.map((translation) => {
-          return (
-            <>
-              <li>
-                {translation.type}, {translation.key}, {translation.value}
-              </li>
-              <hr />
-            </>
-          );
-        })}
-      </ul>
+      <button onClick={() => setShowTranslation(!showTranslation)}>
+        Show translation
+      </button>
+      {showTranslation && (
+        <table>
+          {translationList.map((translation) => {
+            return (
+              <tr key={translation.key}>
+                <td>{translation.key}</td>
+                <td>{translation.value}</td>
+              </tr>
+            );
+          })}
+        </table>
+      )}
     </div>
   );
 }

@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <h1>Is this a website?</h1>
-      <br/>
+      <br />
       <div>
         <div className={styles.intro}>
           <p
@@ -51,9 +51,9 @@ export default function Home() {
           <hr />
           <br />
           <p>
-            Greetings. I am a human programmer engaged in the
-            creation of various digital projects. My work spans multiple domains
-            and technologies, driven by exploration and an ongoing pursuit of
+            Greetings. I am a human programmer engaged in the creation of
+            various digital projects. My work spans multiple domains and
+            technologies, driven by exploration and an ongoing pursuit of
             knowledge. I produce a range of applications, tools, and systems —
             each one an experiment, an iteration, or a solution, depending on
             the parameters at hand.
@@ -94,7 +94,7 @@ export default function Home() {
       <Link className={styles.navButton} href="/minecraft-computer">
         Minecraft Computer?
       </Link>
-      
+
       <Link className={styles.navButton} href="/jsfuck">
         I heard ya like JavaScript
       </Link>
@@ -116,20 +116,13 @@ export default function Home() {
           title="For the zoomers"
           opened={open}
           onClose={() => {
+            setPlaying(false);
             setPayment(true);
-            setTimeout(() => {
-              setPayment(false);
-              setOpen(false);
-            }, 5000);
           }}
           initialX={initialPos.x}
           initialY={initialPos.y}
         >
-          <div
-            onClick={() => {
-              setPlaying(!playing);
-            }}
-          >
+          <div onClick={() => setPlaying(!playing)}>
             {muted ? (
               <img
                 className={styles.audio}
