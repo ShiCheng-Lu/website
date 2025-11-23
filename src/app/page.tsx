@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Tooltip } from "react-tooltip";
 import { CgInfo } from "react-icons/cg";
 import VideoPlayerWindow from "./VideoPlayerWindow";
+import Magic8Ball from "@/components/Magic8Ball";
 
 export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
@@ -83,9 +84,10 @@ export default function Home() {
         </div>
       </div>
 
+      {/* TODO: make this a ThreeJS rendered scene
       <Link className={styles.navButton} href="/archery">
         Try archery? 🏹
-      </Link>
+      </Link> */}
 
       <Link className={styles.navButton} href="https://github.com/ShiCheng-Lu">
         More of PROgrammer 💻
@@ -98,6 +100,8 @@ export default function Home() {
       <Link className={styles.navButton} href="/jsfuck">
         I heard ya like JavaScript
       </Link>
+
+      <Magic8Ball></Magic8Ball>
 
       {/* 
       Overlays
