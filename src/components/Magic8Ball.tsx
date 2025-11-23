@@ -60,8 +60,8 @@ export default function Magic8Ball() {
     <div
       style={{
         position: "absolute",
-        width: "30%",
-        height: "30%",
+        width: 300,
+        height: 300,
         top: 300,
         left: 30,
       }}
