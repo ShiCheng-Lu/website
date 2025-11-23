@@ -8,12 +8,12 @@ import PaymentPopup from "@/components/PaymentPopup";
 import Link from "next/link";
 import { Tooltip } from "react-tooltip";
 import { CgInfo } from "react-icons/cg";
+import VideoPlayerWindow from "./VideoPlayerWindow";
 
 export default function Home() {
-  const [open, setOpen] = useState(true);
-  const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(true);
-  const [payment, setPayment] = useState(false);
+  const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
+  const [minecraftParkourOpen, setMinecraftParkourOpen] = useState(true);
+  const [payment, setPayment] = useState("");
 
   const width = 9 * 30;
   const height = 16 * 30 - 1;
@@ -105,56 +105,33 @@ export default function Home() {
       {payment && (
         <PaymentPopup
           onSubmit={() => {
-            setPayment(false);
-            setOpen(false);
+            if (payment === "subway-surfer") {
+              setSubwaySurferOpen(false);
+            }
+            if (payment === "minecraft-parkour") {
+              setMinecraftParkourOpen(false);
+            }
+            setPayment("");
           }}
         ></PaymentPopup>
       )}
 
-      {initialPos && (
-        <DraggableWindow
-          title="For the zoomers"
-          opened={open}
-          onClose={() => {
-            setPlaying(false);
-            setPayment(true);
-          }}
-          initialX={initialPos.x}
-          initialY={initialPos.y}
-        >
-          <div onClick={() => setPlaying(!playing)}>
-            {muted ? (
-              <img
-                className={styles.audio}
-                src="icons/audio-off.svg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMuted(!muted);
-                }}
-              />
-            ) : (
-              <img
-                className={styles.audio}
-                src="icons/audio.svg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMuted(!muted);
-                }}
-              />
-            )}
-
-            {!playing && <img className={styles.start} src="icons/play.svg" />}
-            <ReactPlayer
-              src="subway-surfers.mp4"
-              width={width}
-              height={height}
-              playing={playing}
-              muted={muted}
-              loop={true}
-            />
-          </div>
-        </DraggableWindow>
-      )}
+      <VideoPlayerWindow
+        title={<p className={styles.videoTitle}>For the zoomers</p>}
+        src="subway-surfers.mp4"
+        onClose={() => {
+          setPayment("subway-surfer");
+        }}
+        open={subwaySurferOpen}
+      />
+      <VideoPlayerWindow
+        title={<p className={styles.videoTitle}>For the boomers</p>}
+        src="minecraft-parkour.mp4"
+        onClose={() => {
+          setPayment("minecraft-parkour");
+        }}
+        open={minecraftParkourOpen}
+      />
     </div>
   );
 }

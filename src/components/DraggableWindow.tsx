@@ -2,6 +2,7 @@
 
 import { ReactNode, useState, useRef } from "react";
 import styles from "./DraggableWindow.module.css";
+import { CgCloseO } from "react-icons/cg";
 
 export type DraggableWindowProps = {
   opened?: boolean;
@@ -63,9 +64,10 @@ export default function DraggableWindow({
           }}
         >
           <div className={styles.DraggableWindowTitle}>{title}</div>
-          <div>
-            <button onClick={onClose}>X</button>
-          </div>
+          <CgCloseO
+            className={styles.DraggableWindowCloseIcon}
+            onClick={onClose}
+          />
         </div>
         {children}
       </div>

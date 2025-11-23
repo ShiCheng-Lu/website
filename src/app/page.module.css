@@ -65,6 +65,10 @@
   z-index: 10;
 }
 
+.videoTitle {
+  padding-left: 5px;
+}
+
 @media (max-width: 600px) {
   .main {
     padding: 48px 24px;

@@ -23,7 +23,7 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
           onClick={onSubmit}
         >
           <h3>Checkout</h3>
-          <CgCloseO style={{ width: "1.4rem", height: "1.4rem" }} />
+          <CgCloseO className={styles.PaymentPopupCloseIcon} />
         </div>
         <div className={styles.PaymentPopupPrice}>
           <p>Total:</p>

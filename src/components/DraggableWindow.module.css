@@ -24,6 +24,16 @@
   user-select: none;
 }
 
+.DraggableWindowCloseIcon {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: auto;
+
+  &:hover {
+    color: darkgray;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .DraggableWindowHeader {
     background: #222;

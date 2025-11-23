@@ -84,6 +84,15 @@
   }
 }
 
+.PaymentPopupCloseIcon {
+  width: 1.4rem;
+  height: 1.4rem;
+
+  &:hover {
+    color: darkgray;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .PaymentPopup {
     background: #222;
