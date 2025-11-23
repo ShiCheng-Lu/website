@@ -30,11 +30,12 @@ const faces = [
 ];
 
 export default function Magic8Ball() {
+  const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
 
   const randomize = () => {
     setFace(Math.floor(Math.random() * 20));
-  }
+  };
   useEffect(randomize, []);
 
   const shape = new THREE.Shape();
@@ -56,14 +57,44 @@ export default function Magic8Ball() {
     additionalRotation.multiply(baseRotation)
   );
 
+  const [location, setLocation] = useState(initialPosition);
+  const [updateFunction, setUpdateFunction] = useState<any>();
+  const startDrag = (e: PointerEvent) => {
+    if (typeof window === "undefined") return;
+
+    if (updateFunction) {
+      window.removeEventListener("pointermove", updateFunction.update);
+    }
+    const startX = e.clientX - location.x;
+    const startY = e.clientY - location.y;
+    // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
+    const updateLocation = {
+      update: (e: PointerEvent) => {
+        if (!e) return;
+        setLocation({
+          x: e.clientX - startX,
+          y: e.clientY - startY,
+        });
+      },
+    };
+    setUpdateFunction(updateLocation);
+    window.addEventListener("pointermove", updateLocation.update);
+  };
+
+  const endDrag = () => {
+    if (typeof window === "undefined") return;
+    window.removeEventListener("pointermove", updateFunction.update);
+    setUpdateFunction(undefined);
+  };
+
   return (
     <div
       style={{
         position: "absolute",
         width: 300,
         height: 300,
-        top: 300,
-        left: 30,
+        top: location.y,
+        left: location.x,
       }}
     >
       <Canvas>
@@ -72,7 +103,11 @@ export default function Magic8Ball() {
 
         <rectAreaLight />
         {/* top right and from behind view */}
-        <mesh onClick={randomize}>
+        <mesh
+          onClick={randomize}
+          onPointerDown={startDrag}
+          onPointerUp={endDrag}
+        >
           <torusGeometry args={[1, 2, 64, 32]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>
@@ -114,7 +149,9 @@ export default function Magic8Ball() {
         onClick={randomize}
       >
         {faces[face].message.map((str, index) => (
-          <p key={index} style={{ fontSize: 8 }}>{str}</p>
+          <p key={index} style={{ fontSize: 8 }}>
+            {str}
+          </p>
         ))}
       </div>
     </div>
