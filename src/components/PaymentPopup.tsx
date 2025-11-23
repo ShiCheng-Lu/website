@@ -18,12 +18,12 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
           }}
           onClick={onSubmit}
         >
           <h3>Checkout</h3>
-          <CgCloseO />
+          <CgCloseO style={{ width: "1.4rem", height: "1.4rem" }} />
         </div>
         <div className={styles.PaymentPopupPrice}>
           <p>Total:</p>

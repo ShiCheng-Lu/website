@@ -1,25 +1,31 @@
 .DraggableWindow {
-    z-index: 1;
-    position: absolute;
-    border-width: 10;
-    border-radius: 5;
-    border: gray solid;
-  }
+  z-index: 1;
+  position: absolute;
+  border-width: 10;
+  border-radius: 5;
+  border: gray solid;
+}
 
 .DraggableWindowHeader {
-    border-top-left-radius: 3;
-    border-top-right-radius: 3;
-    cursor: grab;
-    background: lightgray;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+  border-top-left-radius: 3;
+  border-top-right-radius: 3;
+  cursor: grab;
+  background: lightgray;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .DraggableWindowHeader:active {
-    cursor: grabbing;
+  cursor: grabbing;
 }
 
 .DraggableWindowTitle {
-    user-select: none;
+  user-select: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .DraggableWindowHeader {
+    background: #222;
+  }
 }

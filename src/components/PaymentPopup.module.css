@@ -31,7 +31,10 @@
     border-top: 0;
     border-left: 0;
     border-right: 0;
-    height: 20;
+    border-radius: 3px;
+    height: 30px;
+    padding: 8px;
+    min-width: none;
   }
   input:focus {
     outline: none;
@@ -50,6 +53,10 @@
   gap: 10;
   justify-content: space-evenly;
   align-items: center;
+
+  input {
+    width: 140px;
+  }
 }
 
 .PaymentPopupType {
@@ -74,5 +81,31 @@
   &:hover {
     color: honeydew;
     background-color: blue;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .PaymentPopup {
+    background: #222;
+    --foreground: #000;
+
+    --text-primary: #ededed;
+    --text-secondary: #999;
+
+    --button-primary-hover: #ccc;
+    --button-secondary-hover: #1a1a1a;
+    --button-secondary-border: #1a1a1a;
+  }
+
+  .PaymentPopupType {
+    background: #888;
+
+    &:disabled {
+      background-color: #555;
+    }
+  }
+
+  .PaymentPopupSubmit:hover {
+    background: darkblue;
   }
 }
