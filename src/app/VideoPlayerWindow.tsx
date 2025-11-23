@@ -78,6 +78,7 @@ export default function VideoPlayerWindow({
             playing={playing}
             muted={muted}
             loop={true}
+            playsInline={true}
           />
         </div>
       </DraggableWindow>

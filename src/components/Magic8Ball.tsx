@@ -113,8 +113,8 @@ export default function Magic8Ball() {
         }}
         onClick={randomize}
       >
-        {faces[face].message.map((str) => (
-          <p style={{ fontSize: 8 }}>{str}</p>
+        {faces[face].message.map((str, index) => (
+          <p key={index} style={{ fontSize: 8 }}>{str}</p>
         ))}
       </div>
     </div>
