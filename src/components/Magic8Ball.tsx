@@ -32,9 +32,10 @@ const faces = [
 export default function Magic8Ball() {
   const [face, setFace] = useState(0);
 
-  useEffect(() => {
+  const randomize = () => {
     setFace(Math.floor(Math.random() * 20));
-  }, []);
+  }
+  useEffect(randomize, []);
 
   const shape = new THREE.Shape();
   const scale = 0.6;
@@ -71,7 +72,7 @@ export default function Magic8Ball() {
 
         <rectAreaLight />
         {/* top right and from behind view */}
-        <mesh>
+        <mesh onClick={randomize}>
           <torusGeometry args={[1, 2, 64, 32]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>
@@ -110,6 +111,7 @@ export default function Magic8Ball() {
           alignItems: "center",
           gap: 2,
         }}
+        onClick={randomize}
       >
         {faces[face].message.map((str) => (
           <p style={{ fontSize: 8 }}>{str}</p>
