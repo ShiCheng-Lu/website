@@ -29,6 +29,64 @@ const faces = [
   { rotation: 1, message: ["CANNOT", "PREDICT", "NOW"] },
 ];
 
+class DragHandler {
+  startX: number;
+  startY: number;
+  setLocation: (location: any) => void = () => {};
+  onShake: () => void;
+  movements: number[] = Array(5).fill(0);
+  shaken = false;
+  funcRef: any;
+  movement: number = 0;
+  timeout: NodeJS.Timeout;
+
+  constructor(
+    startX: number,
+    startY: number,
+    setLocation: (location: any) => void,
+    onShake: () => void
+  ) {
+    this.startX = startX;
+    this.startY = startY;
+    this.setLocation = setLocation;
+    this.onShake = onShake;
+
+    this.timeout = setInterval(() => this.updateShakeStatus(), 100);
+  }
+
+  update(e: PointerEvent) {
+    if (!e) return;
+
+    this.setLocation({
+      x: e.clientX - this.startX,
+      y: e.clientY - this.startY,
+    });
+    this.movement += Math.abs(e.movementX) + Math.abs(e.movementY);
+  }
+
+  updateShakeStatus() {
+    this.movements.push(this.movement);
+    this.movements.shift();
+
+    this.movement = 0;
+    // check if we shaked the ball, and wait for shakes to finish
+    const movementSum = this.movements.reduce((a, b) => a + b, 0);
+    if (movementSum > 1000) {
+      this.shaken = true;
+    } else if (this.movement < 5 && this.shaken) {
+      this.onShake();
+      this.shaken = false;
+    }
+  }
+
+  release() {
+    if (this.shaken) {
+      this.onShake();
+    }
+    clearInterval(this.timeout);
+  }
+}
+
 export default function Magic8Ball() {
   const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
@@ -65,25 +123,23 @@ export default function Magic8Ball() {
     if (updateFunction) {
       window.removeEventListener("pointermove", updateFunction.update);
     }
-    const startX = e.clientX - location.x;
-    const startY = e.clientY - location.y;
     // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
-    const updateLocation = {
-      update: (e: PointerEvent) => {
-        if (!e) return;
-        setLocation({
-          x: e.clientX - startX,
-          y: e.clientY - startY,
-        });
-      },
-    };
-    setUpdateFunction(updateLocation);
-    window.addEventListener("pointermove", updateLocation.update);
+    const dragHandler = new DragHandler(
+      e.clientX - location.x,
+      e.clientY - location.y,
+      (l) => setLocation(l),
+      () => setFace(Math.floor(Math.random() * 20))
+    );
+    const func = (e: any) => dragHandler.update(e);
+    window.addEventListener("pointermove", func);
+    dragHandler.funcRef = func;
+    setUpdateFunction(dragHandler);
   };
 
   const endDrag = () => {
     if (typeof window === "undefined") return;
-    window.removeEventListener("pointermove", updateFunction.update);
+    window.removeEventListener("pointermove", updateFunction.funcRef);
+    updateFunction.release();
     setUpdateFunction(undefined);
   };
 
@@ -103,11 +159,7 @@ export default function Magic8Ball() {
 
         <rectAreaLight />
         {/* top right and from behind view */}
-        <mesh
-          onClick={randomize}
-          onPointerDown={startDrag}
-          onPointerUp={endDrag}
-        >
+        <mesh onPointerDown={startDrag} onPointerUp={endDrag}>
           <torusGeometry args={[1, 2, 64, 32]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>
@@ -146,7 +198,6 @@ export default function Magic8Ball() {
           alignItems: "center",
           gap: 2,
         }}
-        onClick={randomize}
       >
         {faces[face].message.map((str, index) => (
           <p key={index} style={{ fontSize: 8 }}>
