@@ -189,6 +189,10 @@ export default function Magic8Ball() {
           alignItems: "center",
           gap: 2,
         }}
+        onTouchEnd={() => {
+          // touch will generate a new face since it's hard to shake on mobile
+          randomize();
+        }}
       >
         {faces[face].message.map((str, index) => (
           <p key={index} style={{ fontSize: 8 }}>

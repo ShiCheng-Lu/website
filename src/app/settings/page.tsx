@@ -56,7 +56,7 @@ export default function Settings() {
             checked={cookie.disable8Ball || false}
             readOnly
           />
-          <label htmlFor="brainrot">DO NOT SHOW AD</label>
+          <label htmlFor="brainrot">DO NOT MAGIC 8 BALL</label>
         </div>
       </div>
     )
