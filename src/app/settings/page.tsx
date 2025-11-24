@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 
 export default function Settings() {
-  const [cookie, setCookie] = useCookies(["brainRotOff", "adOff"]);
+  const [cookie, setCookie] = useCookies([
+    "disableBrainRot",
+    "disableAd",
+    "disable8Ball",
+  ]);
   const [initialized, setInitialized] = useState(false);
   useEffect(() => setInitialized(true), []);
 
@@ -23,22 +27,35 @@ export default function Settings() {
       >
         <div
           onClick={() =>
-            setCookie("brainRotOff", !cookie.brainRotOff, { expires })
+            setCookie("disableBrainRot", !cookie.disableBrainRot, { expires })
           }
           style={{ marginRight: "auto" }}
         >
           <input
             type="checkbox"
-            checked={cookie.brainRotOff || false}
+            checked={cookie.disableBrainRot || false}
             readOnly
           />
           <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
         </div>
         <div
-          onClick={() => setCookie("adOff", !cookie.adOff, { expires })}
+          onClick={() => setCookie("disableAd", !cookie.disableAd, { expires })}
           style={{ marginRight: "auto" }}
         >
-          <input type="checkbox" checked={cookie.adOff || false} readOnly />
+          <input type="checkbox" checked={cookie.disableAd || false} readOnly />
+          <label htmlFor="brainrot">DO NOT SHOW AD</label>
+        </div>
+        <div
+          onClick={() =>
+            setCookie("disable8Ball", !cookie.disable8Ball, { expires })
+          }
+          style={{ marginRight: "auto" }}
+        >
+          <input
+            type="checkbox"
+            checked={cookie.disable8Ball || false}
+            readOnly
+          />
           <label htmlFor="brainrot">DO NOT SHOW AD</label>
         </div>
       </div>

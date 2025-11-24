@@ -22,7 +22,11 @@ export default function Home() {
   const [initialized, setInitialized] = useState(false);
   useEffect(() => setInitialized(true), []);
 
-  const [cookies] = useCookies(["brainRotOff", "adOff"]);
+  const [cookies] = useCookies([
+    "disableBrainRot",
+    "disableAd",
+    "disable8Ball",
+  ]);
 
   return (
     <div className={styles.page}>
@@ -99,9 +103,9 @@ export default function Home() {
         <BsGearFill />
       </Link>
 
-      <Magic8Ball></Magic8Ball>
+      {!cookies.disable8Ball && initialized && <Magic8Ball></Magic8Ball>}
 
-      {!cookies.adOff && initialized && (
+      {!cookies.disableAd && initialized && (
         <div style={{ position: "absolute", right: 50 }}>
           <Advertisement>
             <div
@@ -166,7 +170,7 @@ export default function Home() {
         ></PaymentPopup>
       )}
 
-      {!cookies.brainRotOff && (
+      {!cookies.disableBrainRot && (
         <>
           <VideoPlayerWindow
             title={<p className={styles.videoTitle}>For the zoomers</p>}
