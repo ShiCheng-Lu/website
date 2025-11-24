@@ -141,6 +141,7 @@ export default function Magic8Ball() {
         height: 300,
         top: location.y,
         left: location.x,
+        overflow: "hidden",
       }}
     >
       <Canvas>
