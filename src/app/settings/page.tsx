@@ -5,25 +5,30 @@ import { useCookies } from "react-cookie";
 export default function Settings() {
   const [cookie, setCookie] = useCookies(["brainRotOff", "adOff"]);
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "2rem", gap: "1rem" }}>
-      <div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        padding: "2rem",
+        gap: "1rem",
+      }}
+    >
+      <div
+        onClick={() => setCookie("brainRotOff", !cookie.brainRotOff)}
+        style={{ marginRight: "auto" }}
+      >
         <input
           type="checkbox"
-          onChange={(e) => {
-            setCookie("brainRotOff", e.target.checked);
-          }}
           checked={cookie["brainRotOff"] || false}
+          readOnly
         />
         <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
       </div>
-      <div>
-        <input
-          type="checkbox"
-          onChange={(e) => {
-            setCookie("adOff", e.target.checked);
-          }}
-          checked={cookie["adOff"] || false}
-        />
+      <div
+        onClick={() => setCookie("adOff", !cookie.adOff)}
+        style={{ marginRight: "auto" }}
+      >
+        <input type="checkbox" checked={cookie["adOff"] || false} readOnly />
         <label htmlFor="brainrot">DO NOT SHOW AD</label>
       </div>
     </div>

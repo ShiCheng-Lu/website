@@ -1,7 +1,7 @@
 export default function Viola() {
   return (
     <div>
-      {/* <p>This is a viola, there are many like it, but this one is mine</p>
+      <p>This is a viola, there are many like it, but this one is mine</p>
       <p>
         My viola is my best firend, It is my life. I must master it as I must
         master my life
@@ -30,7 +30,7 @@ export default function Viola() {
       </p>
       <p>
         So be it, until victory is America's and there is no enemy, but peace!!
-      </p> */}
+      </p>
     </div>
   );
 }
