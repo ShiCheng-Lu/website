@@ -1,6 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import * as THREE from "three";
+import { DragHandler } from "./DraggableWindow";
 
 // rotation of the message
 //   0 = top heavy triangle
@@ -29,16 +30,12 @@ const faces = [
   { rotation: 1, message: ["CANNOT", "PREDICT", "NOW"] },
 ];
 
-class DragHandler {
-  startX: number;
-  startY: number;
-  setLocation: (location: any) => void = () => {};
+class ShakeDragHandler extends DragHandler {
   onShake: () => void;
   movements: number[] = Array(5).fill(0);
   shaken = false;
-  funcRef: any;
   movement: number = 0;
-  timeout: NodeJS.Timeout;
+  timeout: any;
 
   constructor(
     startX: number,
@@ -46,21 +43,14 @@ class DragHandler {
     setLocation: (location: any) => void,
     onShake: () => void
   ) {
-    this.startX = startX;
-    this.startY = startY;
-    this.setLocation = setLocation;
+    super(startX, startY, setLocation);
     this.onShake = onShake;
-
-    this.timeout = setInterval(() => this.updateShakeStatus(), 100);
   }
 
   update(e: PointerEvent) {
     if (!e) return;
 
-    this.setLocation({
-      x: e.clientX - this.startX,
-      y: e.clientY - this.startY,
-    });
+    super.update(e);
     this.movement += Math.abs(e.movementX) + Math.abs(e.movementY);
   }
 
@@ -79,11 +69,20 @@ class DragHandler {
     }
   }
 
-  release() {
+  start() {
+    super.start();
+    this.timeout = setInterval(this.updateShakeStatus.bind(this), 100);
+  }
+
+  stop() {
+    super.stop();
     if (this.shaken) {
       this.onShake();
     }
-    clearInterval(this.timeout);
+    if (this.timeout) {
+      clearInterval(this.timeout);
+    }
+    this.timeout = undefined;
   }
 }
 
@@ -116,31 +115,22 @@ export default function Magic8Ball() {
   );
 
   const [location, setLocation] = useState(initialPosition);
-  const [updateFunction, setUpdateFunction] = useState<any>();
+  const [updateFunction, setUpdateFunction] = useState<ShakeDragHandler>();
   const startDrag = (e: PointerEvent) => {
     if (typeof window === "undefined") return;
 
     if (updateFunction) {
-      window.removeEventListener("pointermove", updateFunction.update);
+      updateFunction.stop();
     }
     // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
-    const dragHandler = new DragHandler(
+    const dragHandler = new ShakeDragHandler(
       e.clientX - location.x,
       e.clientY - location.y,
       (l) => setLocation(l),
       () => setFace(Math.floor(Math.random() * 20))
     );
-    const func = (e: any) => dragHandler.update(e);
-    window.addEventListener("pointermove", func);
-    dragHandler.funcRef = func;
+    dragHandler.start();
     setUpdateFunction(dragHandler);
-  };
-
-  const endDrag = () => {
-    if (typeof window === "undefined") return;
-    window.removeEventListener("pointermove", updateFunction.funcRef);
-    updateFunction.release();
-    setUpdateFunction(undefined);
   };
 
   return (
@@ -159,7 +149,7 @@ export default function Magic8Ball() {
 
         <rectAreaLight />
         {/* top right and from behind view */}
-        <mesh onPointerDown={startDrag} onPointerUp={endDrag}>
+        <mesh onPointerDown={startDrag}>
           <torusGeometry args={[1, 2, 64, 32]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>

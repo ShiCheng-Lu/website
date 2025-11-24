@@ -1,8 +1,54 @@
 "use client";
 
-import { ReactNode, useState, useRef } from "react";
+import { ReactNode, useState } from "react";
 import styles from "./DraggableWindow.module.css";
 import { CgCloseO } from "react-icons/cg";
+
+export class DragHandler {
+  startX: number;
+  startY: number;
+  setLocation: (location: any) => void = () => {};
+
+  funcRef: any;
+  stopFuncRef: any;
+
+  constructor(
+    startX: number,
+    startY: number,
+    setLocation: (location: any) => void
+  ) {
+    this.startX = startX;
+    this.startY = startY;
+    this.setLocation = setLocation;
+  }
+
+  update(e: PointerEvent) {
+    if (!e) return;
+
+    this.setLocation({
+      x: e.clientX - this.startX,
+      y: e.clientY - this.startY,
+    });
+  }
+
+  start() {
+    this.funcRef = this.update.bind(this);
+    window.addEventListener("pointermove", this.funcRef);
+    this.stopFuncRef = this.stop.bind(this);
+    window.addEventListener("pointerup", this.stopFuncRef);
+  }
+
+  stop() {
+    if (this.funcRef) {
+      window.removeEventListener("pointermove", this.funcRef);
+    }
+    if (this.stopFuncRef) {
+      window.removeEventListener("pointerup", this.stopFuncRef);
+    }
+    this.funcRef = undefined;
+    this.stopFuncRef = undefined;
+  }
+}
 
 export type DraggableWindowProps = {
   opened?: boolean;
@@ -22,7 +68,7 @@ export default function DraggableWindow({
   initialY = 0,
 }: DraggableWindowProps) {
   const [location, setLocation] = useState({ x: initialX, y: initialY });
-  const [updateFunction, setUpdateFunction] = useState<any>();
+  const [updateFunction, setUpdateFunction] = useState<DragHandler>();
 
   return (
     opened && (
@@ -35,32 +81,20 @@ export default function DraggableWindow({
       >
         <div
           className={styles.DraggableWindowHeader}
-          onMouseDown={(e) => {
+          onPointerDown={(e) => {
             if (typeof window === "undefined") return;
 
             if (updateFunction) {
-              window.removeEventListener("pointermove", updateFunction.update);
+              updateFunction.stop();
             }
-            const startX = e.clientX - location.x;
-            const startY = e.clientY - location.y;
             // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
-            const updateLocation = {
-              update: (e: PointerEvent) => {
-                if (!e) return;
-                setLocation({
-                  x: e.clientX - startX,
-                  y: e.clientY - startY,
-                });
-              },
-            };
+            const updateLocation = new DragHandler(
+              e.clientX - location.x,
+              e.clientY - location.y,
+              setLocation
+            );
+            updateLocation.start();
             setUpdateFunction(updateLocation);
-            window.addEventListener("pointermove", updateLocation.update);
-          }}
-          onMouseUp={() => {
-            if (typeof window === "undefined") return;
-
-            window.removeEventListener("pointermove", updateFunction.update);
-            setUpdateFunction(undefined);
           }}
         >
           <div className={styles.DraggableWindowTitle}>{title}</div>
