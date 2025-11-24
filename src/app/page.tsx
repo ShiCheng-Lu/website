@@ -18,6 +18,8 @@ export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
   const [minecraftParkourOpen, setMinecraftParkourOpen] = useState(true);
   const [payment, setPayment] = useState("");
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => setInitialized(true), []);
 
   const [cookies] = useCookies(["brainRotOff", "adOff"]);
 
@@ -96,7 +98,7 @@ export default function Home() {
 
       <Magic8Ball></Magic8Ball>
 
-      {!cookies.adOff && typeof window !== "undefined" && (
+      {!cookies.adOff && initialized && (
         <div style={{ position: "absolute", right: 50 }}>
           <Advertisement>
             <div
