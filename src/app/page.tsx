@@ -13,6 +13,7 @@ import Magic8Ball from "@/components/Magic8Ball";
 import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
 import { BsGearFill } from "react-icons/bs";
+import QRCode from "react-qr-code";
 
 export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
@@ -91,6 +92,8 @@ export default function Home() {
       <Link className={styles.navButton} href="/jsfuck">
         I heard ya like JavaScript
       </Link>
+
+      <QRCode value={"https://shicheng.lu"} style={{ margin: "3rem" }}></QRCode>
 
       <Link className={styles.settings} href="/settings">
         <BsGearFill />
