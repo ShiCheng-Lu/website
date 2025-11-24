@@ -187,7 +187,10 @@ export default function Magic8Ball() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
           gap: 2,
+          width: 100,
+          height: 100,
         }}
         onTouchEnd={() => {
           // touch will generate a new face since it's hard to shake on mobile
