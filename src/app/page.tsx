@@ -96,7 +96,7 @@ export default function Home() {
 
       <Magic8Ball></Magic8Ball>
 
-      {!cookies.adOff && (
+      {!cookies.adOff && typeof window !== "undefined" && (
         <div style={{ position: "absolute", right: 50 }}>
           <Advertisement>
             <div
