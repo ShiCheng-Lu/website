@@ -116,7 +116,7 @@ export default function Magic8Ball() {
 
   const [location, setLocation] = useState(initialPosition);
   const [updateFunction, setUpdateFunction] = useState<ShakeDragHandler>();
-  const startDrag = (e: PointerEvent) => {
+  const startDrag = (e: { clientX: number; clientY: number }) => {
     if (typeof window === "undefined") return;
 
     if (updateFunction) {
@@ -191,16 +191,17 @@ export default function Magic8Ball() {
           gap: 2,
           width: 100,
           height: 100,
+          userSelect: "none",
+          fontSize: 8,
         }}
+        onPointerDown={startDrag}
         onTouchEnd={() => {
           // touch will generate a new face since it's hard to shake on mobile
           randomize();
         }}
       >
         {faces[face].message.map((str, index) => (
-          <p key={index} style={{ fontSize: 8 }}>
-            {str}
-          </p>
+          <p key={index}>{str}</p>
         ))}
       </div>
     </div>
