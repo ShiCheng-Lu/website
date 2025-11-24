@@ -41,12 +41,12 @@ export class DragHandler {
   stop() {
     if (this.funcRef) {
       window.removeEventListener("pointermove", this.funcRef);
+      this.funcRef = undefined;
     }
     if (this.stopFuncRef) {
       window.removeEventListener("pointerup", this.stopFuncRef);
+      this.stopFuncRef = undefined;
     }
-    this.funcRef = undefined;
-    this.stopFuncRef = undefined;
   }
 }
 
