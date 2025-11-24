@@ -60,6 +60,18 @@
   display: flex;
 }
 
+.settings {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
 .audio {
   width: 10%;
   position: absolute;

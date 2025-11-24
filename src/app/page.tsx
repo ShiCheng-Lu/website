@@ -11,27 +11,15 @@ import { CgInfo, CgUnavailable } from "react-icons/cg";
 import VideoPlayerWindow from "./VideoPlayerWindow";
 import Magic8Ball from "@/components/Magic8Ball";
 import Advertisement from "@/components/Advertisement";
+import { useCookies } from "react-cookie";
+import { BsGearFill } from "react-icons/bs";
 
 export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
   const [minecraftParkourOpen, setMinecraftParkourOpen] = useState(true);
   const [payment, setPayment] = useState("");
 
-  const width = 9 * 30;
-  const height = 16 * 30 - 1;
-
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number }>();
-
-  useEffect(() => {
-    if (typeof window != "undefined") {
-      setInitialPos({
-        x: Math.random() * (window.innerWidth - width),
-        y: Math.random() * (window.innerHeight - height),
-      });
-    } else {
-      setInitialPos({ x: 150, y: 50 });
-    }
-  }, []);
+  const [cookies] = useCookies(["brainRotOff", "adOff"]);
 
   return (
     <div className={styles.page}>
@@ -102,46 +90,59 @@ export default function Home() {
         I heard ya like JavaScript
       </Link>
 
+      <Link className={styles.settings} href="/settings">
+        <BsGearFill />
+      </Link>
+
       <Magic8Ball></Magic8Ball>
 
-      <div style={{ position: "absolute", right: 50 }}>
-        <Advertisement>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <h1>NO MORE VIOLINS</h1>
-            <div style={{ position: "relative", width: 500, height: 350 }}>
-              <img
-                src="violin.png"
+      {!cookies.adOff && (
+        <div style={{ position: "absolute", right: 50 }}>
+          <Advertisement>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <h1>NO MORE VIOLINS</h1>
+              <div style={{ position: "relative", width: 500, height: 350 }}>
+                <img
+                  src="violin.png"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%) rotate(60deg)",
+                  }}
+                ></img>
+                <CgUnavailable
+                  size={400}
+                  color="darkred"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              </div>
+              <h1>VIOLINS IS NOT THE ANSWER</h1>
+              <p
                 style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%) rotate(60deg)",
+                  marginLeft: "auto",
+                  marginRight: 20,
+                  fontSize: 12,
+                  transform: "translate(0, -10px)",
                 }}
-              ></img>
-              <CgUnavailable
-                size={400}
-                color="darkred"
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
+              >
+                this message is brought to you by viola gang
+              </p>
             </div>
-            <h1>VIOLINS IS NOT THE ANSWER</h1>
-            <p style={{ marginLeft: "auto", marginRight: 20, fontSize: 12, transform: "translate(0, -10px)" }}>
-              this message is brought to you by viola gang
-            </p>
-          </div>
-        </Advertisement>
-      </div>
+          </Advertisement>
+        </div>
+      )}
 
       {/* 
       Overlays
@@ -160,22 +161,26 @@ export default function Home() {
         ></PaymentPopup>
       )}
 
-      <VideoPlayerWindow
-        title={<p className={styles.videoTitle}>For the zoomers</p>}
-        src="subway-surfers.mp4"
-        onClose={() => {
-          setPayment("subway-surfer");
-        }}
-        open={subwaySurferOpen}
-      />
-      <VideoPlayerWindow
-        title={<p className={styles.videoTitle}>For the boomers</p>}
-        src="minecraft-parkour.mp4"
-        onClose={() => {
-          setPayment("minecraft-parkour");
-        }}
-        open={minecraftParkourOpen}
-      />
+      {!cookies.brainRotOff && (
+        <>
+          <VideoPlayerWindow
+            title={<p className={styles.videoTitle}>For the zoomers</p>}
+            src="subway-surfers.mp4"
+            onClose={() => {
+              setPayment("subway-surfer");
+            }}
+            open={subwaySurferOpen}
+          />
+          <VideoPlayerWindow
+            title={<p className={styles.videoTitle}>For the boomers</p>}
+            src="minecraft-parkour.mp4"
+            onClose={() => {
+              setPayment("minecraft-parkour");
+            }}
+            open={minecraftParkourOpen}
+          />
+        </>
+      )}
     </div>
   );
 }
