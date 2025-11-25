@@ -14,6 +14,7 @@ import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
 import { BsGearFill } from "react-icons/bs";
 import QRCode from "react-qr-code";
+import PrivacyPolicy from "@/components/PrivacyPolicy";
 
 function isSafari() {
   if (typeof DeviceMotionEvent != "undefined") {
@@ -43,6 +44,7 @@ export default function Home() {
     "disableBrainRot",
     "disableAd",
     "disable8Ball",
+    "acceptedPolicy",
   ]);
 
   return (
@@ -140,9 +142,9 @@ export default function Home() {
         <BsGearFill />
       </Link>
 
-      {!cookies.disable8Ball && initialized && magic8BallOpen && (
-        <Magic8Ball></Magic8Ball>
-      )}
+      {!cookies.disable8Ball && initialized && magic8BallOpen && <Magic8Ball />}
+
+      {!cookies.acceptedPolicy && <PrivacyPolicy />}
 
       {!cookies.disableAd && initialized && (
         <div style={{ position: "absolute", right: 50 }}>

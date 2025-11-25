@@ -8,12 +8,18 @@ export default function Settings() {
     "disableBrainRot",
     "disableAd",
     "disable8Ball",
+    "acceptedPolicy",
   ]);
   const [initialized, setInitialized] = useState(false);
   useEffect(() => setInitialized(true), []);
 
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 1); // expires in a day
+  const expires = (days: number = 1) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return {
+      expires: date,
+    };
+  };
 
   return (
     initialized && (
@@ -27,7 +33,7 @@ export default function Settings() {
       >
         <div
           onClick={() =>
-            setCookie("disableBrainRot", !cookie.disableBrainRot, { expires })
+            setCookie("disableBrainRot", !cookie.disableBrainRot, expires(1))
           }
           style={{ marginRight: "auto" }}
         >
@@ -39,7 +45,7 @@ export default function Settings() {
           <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
         </div>
         <div
-          onClick={() => setCookie("disableAd", !cookie.disableAd, { expires })}
+          onClick={() => setCookie("disableAd", !cookie.disableAd, expires(1))}
           style={{ marginRight: "auto" }}
         >
           <input type="checkbox" checked={cookie.disableAd || false} readOnly />
@@ -47,7 +53,7 @@ export default function Settings() {
         </div>
         <div
           onClick={() =>
-            setCookie("disable8Ball", !cookie.disable8Ball, { expires })
+            setCookie("disable8Ball", !cookie.disable8Ball, expires(1))
           }
           style={{ marginRight: "auto" }}
         >
@@ -57,6 +63,19 @@ export default function Settings() {
             readOnly
           />
           <label htmlFor="brainrot">DO NOT MAGIC 8 BALL</label>
+        </div>
+        <div
+          onClick={() =>
+            setCookie("acceptedPolicy", !cookie.acceptedPolicy, expires(7))
+          }
+          style={{ marginRight: "auto" }}
+        >
+          <input
+            type="checkbox"
+            checked={cookie.acceptedPolicy || false}
+            readOnly
+          />
+          <label htmlFor="acceptedPolicy">ACCEPTED POLICY</label>
         </div>
       </div>
     )

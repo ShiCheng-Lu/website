@@ -1,0 +1,72 @@
+.PrivacyPolicy {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  height: 500;
+  width: 500;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+
+  padding: 3rem;
+
+  animation-duration: 2s; /* same as transition duration */
+  animation-timing-function: linear; /* kind of same as transition timing */
+  animation-delay: 0ms; /* same as transition delay */
+  animation-iteration-count: infinite; /* set to 2 to make it run twice, or Infinite to run forever!*/
+  animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
+  animation-fill-mode: none; /* can be used to retain keyframe styling after animation, with "forwards" */
+  animation-play-state: running; /* can be set dynamically to pause mid animation*/
+  animation-name: rainbow;
+}
+
+@keyframes rainbow {
+  0% {
+    background: rgba(255, 0, 0, 1);
+  }
+  10% {
+    background: rgba(255, 154, 0, 1);
+  }
+  20% {
+    background: rgba(208, 222, 33, 1);
+  }
+  30% {
+    background: rgba(79, 220, 74, 1);
+  }
+  40% {
+    background: rgba(63, 218, 216, 1);
+  }
+  50% {
+    background: rgba(47, 201, 226, 1);
+  }
+  60% {
+    background: rgba(28, 127, 238, 1);
+  }
+  70% {
+    background: rgba(95, 21, 242, 1);
+  }
+  80% {
+    background: rgba(186, 12, 248, 1);
+  }
+  90% {
+    background: rgba(251, 7, 217, 1);
+  }
+  100% {
+    background: rgba(255, 0, 0, 1);
+  }
+}
+
+.PrivacyPolicyButton {
+  margin: 3rem;
+  padding: 0.5rem;
+  border: solid 2px gray;
+
+  &:hover {
+    background-color: lightskyblue;
+  }
+}
