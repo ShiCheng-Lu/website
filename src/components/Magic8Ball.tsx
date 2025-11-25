@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { DragHandler } from "./DraggableWindow";
 import styles from "./Magic8Ball.module.css";
-import useAccelerometer from "@/hooks/Accelerometer";
 
 // rotation of the message
 //   0 = top heavy triangle
@@ -91,6 +90,50 @@ class ShakeDragHandler extends DragHandler {
   }
 }
 
+class ShakeMotionhandler {
+  onShake: () => void;
+  onEndShake: () => void;
+  shakeHistory = Array(5).fill(0);
+  shaken = false;
+  timeout?: NodeJS.Timeout;
+
+  constructor(onShake: () => void, onEndShake: () => void) {
+    this.onShake = onShake;
+    this.onEndShake = onEndShake;
+  }
+  countShake() {
+    if (this.shakeHistory.every((x) => x > 0)) {
+      this.onShake();
+      this.shaken = true;
+    } else if (this.shaken) {
+      this.onEndShake();
+      this.shaken = false;
+    }
+    this.shakeHistory.unshift(0);
+    this.shakeHistory.pop();
+  }
+
+  devicemotion(e: DeviceMotionEvent) {
+    if (e.acceleration) {
+      const x = e.acceleration.x || 0;
+      const y = e.acceleration.y || 0;
+      const z = e.acceleration.z || 0;
+      if (Math.sqrt(x * x + y * y + z * z) > 10) {
+        this.shakeHistory[0] += 1;
+      }
+    }
+  }
+
+  start() {
+    if (this.timeout) {
+      // already initialized
+      return;
+    }
+    window.addEventListener("devicemotion", this.devicemotion.bind(this));
+    this.timeout = setInterval(this.countShake.bind(this), 100);
+  }
+}
+
 export default function Magic8Ball() {
   const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
@@ -108,8 +151,12 @@ export default function Magic8Ball() {
       y: Math.cos(angle) * radius,
     });
   };
+  const motionHandler = new ShakeMotionhandler(() => setFace(0), randomize);
   useEffect(() => {
     // set up accelerometer for mobile
+    if (window.DeviceMotionEvent != undefined) {
+      motionHandler.start();
+    }
     randomize();
   }, []);
 
@@ -156,6 +203,7 @@ export default function Magic8Ball() {
         top: location.y,
         left: location.x,
         overflow: "hidden",
+        userSelect: "none",
       }}
     >
       <Canvas>
@@ -213,11 +261,6 @@ export default function Magic8Ball() {
             className={styles.fortuneText}
             style={{
               transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-            }}
-            onTouchStart={() => {}}
-            onTouchEnd={() => {
-              // touch will generate a new face since it's hard to shake on mobile
-              randomize();
             }}
           >
             {faces[face].message.map((str, index) => (

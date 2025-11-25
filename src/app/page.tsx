@@ -14,24 +14,36 @@ import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
 import { BsGearFill } from "react-icons/bs";
 import QRCode from "react-qr-code";
-import useAccelerometer from "@/hooks/Accelerometer";
+
+function isSafari() {
+  if (typeof DeviceMotionEvent != "undefined") {
+    return typeof (DeviceMotionEvent as any)?.requestPermission === "function";
+  } else {
+    return false;
+  }
+}
+
+async function requestMotionPermission() {
+  const result = await (DeviceMotionEvent as any).requestPermission();
+  return result === "granted";
+}
 
 export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
   const [minecraftParkourOpen, setMinecraftParkourOpen] = useState(true);
+  const [magic8BallOpen, setMagic8BallOpen] = useState(false);
   const [payment, setPayment] = useState("");
   const [initialized, setInitialized] = useState(false);
-  useEffect(() => setInitialized(true), []);
+  useEffect(() => {
+    setInitialized(true);
+    setMagic8BallOpen(!isSafari());
+  }, []);
 
   const [cookies] = useCookies([
     "disableBrainRot",
     "disableAd",
     "disable8Ball",
   ]);
-
-  const [acc, x] = useAccelerometer();
-
-  useEffect(() => {}, []);
 
   return (
     <div className={styles.page}>
@@ -85,6 +97,26 @@ export default function Home() {
         </div>
       </div>
 
+      {!magic8BallOpen && isSafari() && (
+        <p
+          className={styles.navButton}
+          onClick={() => {
+            requestMotionPermission().then((granted) => {
+              if (granted) {
+                setMagic8BallOpen(true);
+              } else {
+                alert(
+                  "You didn't grant motion permission, reset permission status by closing Safari and re-opening it"
+                );
+              }
+            });
+          }}
+        >
+          You're on Safari, so you need to grant permission to use the 8 ball,
+          Shake your device to get a fortune.
+        </p>
+      )}
+
       {/* TODO: make this a ThreeJS rendered scene
       <Link className={styles.navButton} href="/archery">
         Try archery? 🏹
@@ -102,43 +134,15 @@ export default function Home() {
         I heard ya like JavaScript
       </Link>
 
-      <button
-        onClick={() => {
-          if (
-            typeof (DeviceMotionEvent as any).requestPermission === "function"
-          ) {
-            // Note: You can use "DeviceOrientationEvent" here as well
-
-            (DeviceMotionEvent as any).requestPermission().then((e: any) => {
-              alert(`Permission granted? ${e}`);
-              if (window?.DeviceMotionEvent != undefined) {
-                alert("added device motion");
-                window.addEventListener(
-                  "devicemotion",
-                  (x) => {
-                    alert(
-                      `device has moved by ${x.acceleration?.x} ${x.acceleration?.y} ${x.acceleration?.z}`
-                    );
-                  },
-                  true
-                );
-              }
-            });
-          }
-        }}
-      >
-        Motion permission
-      </button>
-
       <QRCode value={"https://shicheng.lu"} style={{ margin: "3rem" }}></QRCode>
-
-      <p>{JSON.stringify(x)}</p>
 
       <Link className={styles.settings} href="/settings">
         <BsGearFill />
       </Link>
 
-      {!cookies.disable8Ball && initialized && <Magic8Ball></Magic8Ball>}
+      {!cookies.disable8Ball && initialized && magic8BallOpen && (
+        <Magic8Ball></Magic8Ball>
+      )}
 
       {!cookies.disableAd && initialized && (
         <div style={{ position: "absolute", right: 50 }}>
