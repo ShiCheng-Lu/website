@@ -17,6 +17,7 @@
   background-color: var(--background);
 
   flex-direction: column;
+  padding-top: 3rem;
 }
 
 .intro {
@@ -79,7 +80,7 @@
 }
 
 .videoTitle {
-  padding-left: 5px;
+  padding-left: 3px;
 }
 
 @media (max-width: 600px) {

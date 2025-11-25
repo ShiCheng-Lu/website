@@ -35,7 +35,7 @@ const faces = [
 class ShakeDragHandler extends DragHandler {
   onShake: () => void;
   onEndShake: () => void;
-  movements: number[] = Array(5).fill(0);
+  movements: number[] = Array(3).fill(0);
   shaken = false;
   movement: number = 0;
   timeout?: NodeJS.Timeout;
@@ -66,7 +66,7 @@ class ShakeDragHandler extends DragHandler {
     this.movement = 0;
     // check if we shaked the ball, and wait for shakes to finish
     const movementSum = this.movements.reduce((a, b) => a + b, 0);
-    if (movementSum > 1000) {
+    if (movementSum > 300) {
       this.shaken = true;
       this.onShake();
     } else if (this.movement < 5 && this.shaken) {
@@ -121,9 +121,19 @@ class AutoShaker extends DragHandler {
 export default function Magic8Ball() {
   const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   const randomize = () => {
     setFace(Math.floor(Math.random() * 20 + 1));
+    setRotation((Math.random() - 0.5) * 45);
+
+    const radius = Math.random() * 20;
+    const angle = Math.random() * 2 * Math.PI;
+    setOffset({
+      x: Math.sin(angle) * radius,
+      y: Math.cos(angle) * radius,
+    });
   };
   useEffect(randomize, []);
 
@@ -140,7 +150,7 @@ export default function Magic8Ball() {
   );
   const additionalRotation = new THREE.Quaternion().setFromAxisAngle(
     { x: 0, y: 0, z: 1 },
-    0.0 + Math.PI * faces[face].rotation
+    0.0 + Math.PI * faces[face].rotation - (rotation / 180) * Math.PI
   );
   const finalRotation = new THREE.Euler().setFromQuaternion(
     additionalRotation.multiply(baseRotation)
@@ -160,7 +170,7 @@ export default function Magic8Ball() {
       e.clientY - location.y,
       (l) => setLocation(l),
       () => setFace(0),
-      () => setFace(Math.floor(Math.random() * 20 + 1))
+      () => randomize()
     );
     dragHandler.start();
     setUpdateFunction(dragHandler);
@@ -205,9 +215,9 @@ export default function Magic8Ball() {
           style={{
             zIndex: 2,
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%) rotate(0)",
+            top: `calc(50% + ${offset.y}px)`,
+            left: `calc(50% + ${offset.x}px)`,
+            transform: `translate(-50%, -50%)`,
             width: 300,
             height: 300,
             pointerEvents: "none",
@@ -241,7 +251,7 @@ export default function Magic8Ball() {
               position: "absolute",
               top: "50%",
               left: "50%",
-              transform: "translate(-50%, -50%)",
+              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
               zIndex: 1,
               color: "white",
               display: "flex",
