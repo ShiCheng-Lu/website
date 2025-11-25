@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { DragHandler } from "./DraggableWindow";
 import styles from "./Magic8Ball.module.css";
+import useAccelerometer from "@/hooks/Accelerometer";
 
 // rotation of the message
 //   0 = top heavy triangle
@@ -90,34 +91,6 @@ class ShakeDragHandler extends DragHandler {
   }
 }
 
-class AutoShaker extends DragHandler {
-  realPos = { clientX: 0, clientY: 0 };
-  timeout?: NodeJS.Timeout;
-
-  update(e: { clientX: number; clientY: number }) {
-    const offsetX = 0;
-    const offsetY = 0;
-    super.update({
-      clientX: e.clientX + offsetX,
-      clientY: e.clientY + offsetY,
-    });
-  }
-
-  updateAutoShake() {}
-
-  start() {
-    super.start();
-    this.timeout = setInterval(this.updateAutoShake.bind(this), 100);
-  }
-
-  stop() {
-    super.update(this.realPos);
-    super.stop();
-    clearTimeout(this.timeout);
-    this.timeout = undefined;
-  }
-}
-
 export default function Magic8Ball() {
   const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
@@ -135,14 +108,10 @@ export default function Magic8Ball() {
       y: Math.cos(angle) * radius,
     });
   };
-  useEffect(randomize, []);
-
-  const shape = new THREE.Shape();
-  const scale = 0.6;
-  shape.moveTo(0, 1 * scale);
-  shape.lineTo((Math.sqrt(3) / 2) * scale, (-1 / 2) * scale);
-  shape.lineTo((-Math.sqrt(3) / 2) * scale, (-1 / 2) * scale);
-  shape.lineTo(0, 1 * scale);
+  useEffect(() => {
+    // set up accelerometer for mobile
+    randomize();
+  }, []);
 
   const baseRotation = new THREE.Quaternion().setFromAxisAngle(
     { x: 1, y: 0, z: 0 },
@@ -211,16 +180,10 @@ export default function Magic8Ball() {
       </Canvas>
       {face && (
         <div
-          className={styles.fadeIn}
+          className={styles.fortune}
           style={{
-            zIndex: 2,
-            position: "absolute",
             top: `calc(50% + ${offset.y}px)`,
             left: `calc(50% + ${offset.x}px)`,
-            transform: `translate(-50%, -50%)`,
-            width: 300,
-            height: 300,
-            pointerEvents: "none",
           }}
         >
           <Canvas
@@ -247,23 +210,9 @@ export default function Magic8Ball() {
             </mesh>
           </Canvas>
           <div
+            className={styles.fortuneText}
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
               transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-              zIndex: 1,
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-              width: 100,
-              height: 100,
-              userSelect: "none",
-              fontSize: 8,
-              pointerEvents: "none",
             }}
             onTouchStart={() => {}}
             onTouchEnd={() => {

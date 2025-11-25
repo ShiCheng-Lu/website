@@ -14,6 +14,7 @@ import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
 import { BsGearFill } from "react-icons/bs";
 import QRCode from "react-qr-code";
+import useAccelerometer from "@/hooks/Accelerometer";
 
 export default function Home() {
   const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
@@ -27,6 +28,10 @@ export default function Home() {
     "disableAd",
     "disable8Ball",
   ]);
+
+  const [acc, x] = useAccelerometer();
+
+  useEffect(() => {}, []);
 
   return (
     <div className={styles.page}>
@@ -97,7 +102,37 @@ export default function Home() {
         I heard ya like JavaScript
       </Link>
 
+      <button
+        onClick={() => {
+          if (
+            typeof (DeviceMotionEvent as any).requestPermission === "function"
+          ) {
+            // Note: You can use "DeviceOrientationEvent" here as well
+
+            (DeviceMotionEvent as any).requestPermission().then((e: any) => {
+              alert(`Permission granted? ${e}`);
+              if (window?.DeviceMotionEvent != undefined) {
+                alert("added device motion");
+                window.addEventListener(
+                  "devicemotion",
+                  (x) => {
+                    alert(
+                      `device has moved by ${x.acceleration?.x} ${x.acceleration?.y} ${x.acceleration?.z}`
+                    );
+                  },
+                  true
+                );
+              }
+            });
+          }
+        }}
+      >
+        Motion permission
+      </button>
+
       <QRCode value={"https://shicheng.lu"} style={{ margin: "3rem" }}></QRCode>
+
+      <p>{JSON.stringify(x)}</p>
 
       <Link className={styles.settings} href="/settings">
         <BsGearFill />

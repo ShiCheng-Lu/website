@@ -1,4 +1,11 @@
-.fadeIn {
+.fortune {
+  z-index: 2;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 300;
+  height: 300;
+  pointer-events: none;
+
   opacity: 1;
   animation-name: fadeInOpacity;
   animation-iteration-count: 1;
@@ -17,4 +24,22 @@
   div {
     pointer-events: none;
   }
+}
+
+.fortuneText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2;
+  width: 100;
+  height: 100;
+  user-select: none;
+  font-size: 8;
+  pointer-events: none;
 }
