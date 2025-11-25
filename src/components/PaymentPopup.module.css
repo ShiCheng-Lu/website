@@ -1,12 +1,16 @@
+.PaymentPopup {
+  z-index: 30;
+  position: absolute;
+}
+
 .PaymentPopupBackground {
-  z-index: 200;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: white;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
 
   background-color: black;
   opacity: 0.4;
@@ -15,9 +19,8 @@
   align-items: center;
 }
 
-.PaymentPopup {
-  z-index: 3;
-  position: absolute;
+.PaymentPopupContent {
+  position: relative;
   border-width: 10;
   border-radius: 15;
   border: gray solid;

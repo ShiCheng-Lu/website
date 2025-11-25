@@ -11,9 +11,9 @@ export type PaymentPopupProps = {
 export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
   const [paymentType, setPaymentType] = useState<PaymentType>("credit");
   return (
-    <>
+    <div className={styles.PaymentPopup}>
       <div className={styles.PaymentPopupBackground}></div>
-      <div className={styles.PaymentPopup}>
+      <div className={styles.PaymentPopupContent}>
         <div
           style={{
             display: "flex",
@@ -60,6 +60,6 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
           <h2>Submit</h2>
         </button>
       </div>
-    </>
+    </div>
   );
 }
