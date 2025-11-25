@@ -22,7 +22,7 @@ export class DragHandler {
     this.setLocation = setLocation;
   }
 
-  update(e: PointerEvent) {
+  update(e: { clientX: number; clientY: number }) {
     if (!e) return;
 
     this.setLocation({

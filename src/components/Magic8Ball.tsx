@@ -2,12 +2,14 @@ import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { DragHandler } from "./DraggableWindow";
+import styles from "./Magic8Ball.module.css";
 
 // rotation of the message
 //   0 = top heavy triangle
 //   1 = bot heavy triangle
 // and use extra space as padding
 const faces = [
+  { rotation: 0, message: [] }, // none face as empty state
   { rotation: 0, message: ["WITHOUT", "A", "DOUBT"] },
   { rotation: 1, message: ["IT IS", "CERTAIN"] },
   { rotation: 0, message: ["IT IS", "DECIDEDLY", "SO"] },
@@ -32,19 +34,22 @@ const faces = [
 
 class ShakeDragHandler extends DragHandler {
   onShake: () => void;
+  onEndShake: () => void;
   movements: number[] = Array(5).fill(0);
   shaken = false;
   movement: number = 0;
-  timeout: any;
+  timeout?: NodeJS.Timeout;
 
   constructor(
     startX: number,
     startY: number,
     setLocation: (location: any) => void,
-    onShake: () => void
+    onShake: () => void,
+    onEndShake: () => void
   ) {
     super(startX, startY, setLocation);
     this.onShake = onShake;
+    this.onEndShake = onEndShake;
   }
 
   update(e: PointerEvent) {
@@ -63,8 +68,9 @@ class ShakeDragHandler extends DragHandler {
     const movementSum = this.movements.reduce((a, b) => a + b, 0);
     if (movementSum > 1000) {
       this.shaken = true;
-    } else if (this.movement < 5 && this.shaken) {
       this.onShake();
+    } else if (this.movement < 5 && this.shaken) {
+      this.onEndShake();
       this.shaken = false;
     }
   }
@@ -77,11 +83,37 @@ class ShakeDragHandler extends DragHandler {
   stop() {
     super.stop();
     if (this.shaken) {
-      this.onShake();
+      this.onEndShake();
     }
-    if (this.timeout) {
-      clearInterval(this.timeout);
-    }
+    clearInterval(this.timeout);
+    this.timeout = undefined;
+  }
+}
+
+class AutoShaker extends DragHandler {
+  realPos = { clientX: 0, clientY: 0 };
+  timeout?: NodeJS.Timeout;
+
+  update(e: { clientX: number; clientY: number }) {
+    const offsetX = 0;
+    const offsetY = 0;
+    super.update({
+      clientX: e.clientX + offsetX,
+      clientY: e.clientY + offsetY,
+    });
+  }
+
+  updateAutoShake() {}
+
+  start() {
+    super.start();
+    this.timeout = setInterval(this.updateAutoShake.bind(this), 100);
+  }
+
+  stop() {
+    super.update(this.realPos);
+    super.stop();
+    clearTimeout(this.timeout);
     this.timeout = undefined;
   }
 }
@@ -91,7 +123,7 @@ export default function Magic8Ball() {
   const [face, setFace] = useState(0);
 
   const randomize = () => {
-    setFace(Math.floor(Math.random() * 20));
+    setFace(Math.floor(Math.random() * 20 + 1));
   };
   useEffect(randomize, []);
 
@@ -127,11 +159,14 @@ export default function Magic8Ball() {
       e.clientX - location.x,
       e.clientY - location.y,
       (l) => setLocation(l),
-      () => setFace(Math.floor(Math.random() * 20))
+      () => setFace(0),
+      () => setFace(Math.floor(Math.random() * 20 + 1))
     );
     dragHandler.start();
     setUpdateFunction(dragHandler);
   };
+
+  const clippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -2);
 
   return (
     <div
@@ -163,47 +198,75 @@ export default function Magic8Ball() {
             emissive={0x292222}
           />
         </mesh>
-        <mesh position={[0, 0, 1.25]} rotation={finalRotation}>
-          {/* <extrudeGeometry
-            args={[shape, { bevelSegments: 1, depth: 0, bevelSize: 0.1 }]}
-          ></extrudeGeometry> */}
-          <icosahedronGeometry />
-          <meshStandardMaterial
-            color="darkblue"
-            roughness={0.5}
-            metalness={0.3}
-            emissive={0x292222}
-          />
-        </mesh>
       </Canvas>
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) rotate(0)",
-          zIndex: 1,
-          color: "white",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 2,
-          width: 100,
-          height: 100,
-          userSelect: "none",
-          fontSize: 8,
-        }}
-        onPointerDown={startDrag}
-        onTouchEnd={() => {
-          // touch will generate a new face since it's hard to shake on mobile
-          randomize();
-        }}
-      >
-        {faces[face].message.map((str, index) => (
-          <p key={index}>{str}</p>
-        ))}
-      </div>
+      {face && (
+        <div
+          className={styles.fadeIn}
+          style={{
+            zIndex: 2,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%) rotate(0)",
+            width: 300,
+            height: 300,
+            pointerEvents: "none",
+          }}
+        >
+          <Canvas
+            gl={{ localClippingEnabled: true }}
+            style={{ pointerEvents: "none" }}
+          >
+            <ambientLight intensity={1} />
+            <directionalLight
+              position={[5, 5, 5]}
+              color="white"
+              intensity={10}
+            />
+
+            <rectAreaLight />
+            <mesh position={[0, 0, 1.25]} rotation={finalRotation}>
+              <icosahedronGeometry />
+              <meshStandardMaterial
+                color="darkblue"
+                roughness={0.5}
+                metalness={0.3}
+                emissive={0x292222}
+                clippingPlanes={[clippingPlane]}
+              />
+            </mesh>
+          </Canvas>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1,
+              color: "white",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              width: 100,
+              height: 100,
+              userSelect: "none",
+              fontSize: 8,
+              pointerEvents: "none",
+            }}
+            onTouchStart={() => {}}
+            onTouchEnd={() => {
+              // touch will generate a new face since it's hard to shake on mobile
+              randomize();
+            }}
+          >
+            {faces[face].message.map((str, index) => (
+              <p key={index}>{str}</p>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

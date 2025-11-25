@@ -23,7 +23,8 @@ export default function Advertisement({ children }: AdvertisementProps) {
             onClick={() => setWhy(!why)}
             style={why ? { left: 0 } : { right: 0 }}
           >
-            <img src="logos/adchoices.png" width={16}></img>
+            <p>Click me</p>
+            <img src="logos/adchoices.png" width={20}></img>
           </div>
 
           {why && (

@@ -90,8 +90,8 @@
 
 @media (prefers-color-scheme: dark) {
   .page {
-    --background: #000;
-    --foreground: #000;
+    --background: #011635;
+    --foreground: #011635;
 
     --text-primary: #ededed;
     --text-secondary: #999;
