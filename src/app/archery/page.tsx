@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
-import { Point, add, sub, mul, abs } from "@/components/point";
+import { Point, add, sub, mul, abs } from "@/util/point";
 
 export default function Archery() {
   const [location, setLocation] = useState<Point>();

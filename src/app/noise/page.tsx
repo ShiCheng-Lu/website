@@ -44,10 +44,16 @@ export default function NoiseDemo() {
         (e.target as any)?.requestPointerLock();
       }}
     >
-      
-      {blocks.map(() => {
-        return <></>;
-      })}
+      <ambientLight intensity={1} />
+      <directionalLight position={[5, 5, 5]} color="white" intensity={10} />
+
+      <rectAreaLight />
+      {blocks.map((position) => (
+        <mesh position={position}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
+        </mesh>
+      ))}
     </Canvas>
   );
 }
