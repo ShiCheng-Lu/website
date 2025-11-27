@@ -4,7 +4,11 @@ import DraggableWindow from "@/components/DraggableWindow";
 import { useState, useEffect, ReactNode } from "react";
 import styles from "./page.module.css";
 import ReactPlayer from "react-player";
-import { BsFillVolumeMuteFill, BsFillVolumeUpFill } from "react-icons/bs";
+import {
+  BsFillPlayFill,
+  BsFillVolumeMuteFill,
+  BsFillVolumeUpFill,
+} from "react-icons/bs";
 
 export type VideoPlayerWindowProp = {
   title: ReactNode;
@@ -69,7 +73,7 @@ export default function VideoPlayerWindow({
             />
           )}
 
-          {!playing && <img className={styles.start} src="icons/play.svg" />}
+          {!playing && <BsFillPlayFill className={styles.start} />}
           <ReactPlayer
             src={src}
             width={width}

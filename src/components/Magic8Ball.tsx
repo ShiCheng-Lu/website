@@ -134,7 +134,11 @@ class ShakeMotionhandler {
   }
 }
 
-export default function Magic8Ball() {
+export default function Magic8Ball({
+  fixedPosition,
+}: {
+  fixedPosition?: boolean;
+}) {
   const initialPosition = { x: 30, y: 300 };
   const [face, setFace] = useState(0);
   const [rotation, setRotation] = useState(0);
@@ -196,15 +200,23 @@ export default function Magic8Ball() {
 
   return (
     <div
-      style={{
-        position: "absolute",
-        width: 300,
-        height: 300,
-        top: location.y,
-        left: location.x,
-        overflow: "hidden",
-        userSelect: "none",
-      }}
+      style={
+        fixedPosition
+          ? {
+              position: "relative",
+              width: 300,
+              height: 300,
+              userSelect: "none",
+            }
+          : {
+              position: "absolute",
+              width: 300,
+              height: 300,
+              top: location.y,
+              left: location.x,
+              userSelect: "none",
+            }
+      }
     >
       <Canvas>
         <ambientLight intensity={1} />
@@ -212,7 +224,10 @@ export default function Magic8Ball() {
 
         <rectAreaLight />
         {/* top right and from behind view */}
-        <mesh onPointerDown={startDrag}>
+        <mesh
+          onPointerDown={startDrag}
+          onClick={() => (DeviceMotionEvent as any).requestPermission?.()}
+        >
           <torusGeometry args={[1, 2, 64, 32]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>
@@ -226,7 +241,7 @@ export default function Magic8Ball() {
           />
         </mesh>
       </Canvas>
-      {face && (
+      {face ? (
         <div
           className={styles.fortune}
           style={{
@@ -268,7 +283,7 @@ export default function Magic8Ball() {
             ))}
           </div>
         </div>
-      )}
+      ) : undefined}
     </div>
   );
 }

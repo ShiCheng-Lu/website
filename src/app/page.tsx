@@ -12,9 +12,12 @@ import VideoPlayerWindow from "./VideoPlayerWindow";
 import Magic8Ball from "@/components/Magic8Ball";
 import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
-import { BsGearFill } from "react-icons/bs";
+import { BsBadgeAd, BsGearFill } from "react-icons/bs";
 import QRCode from "react-qr-code";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
+import { TabSwitcher, Tab } from "@/components/TabSwitcher";
+import { isMobile } from "react-device-detect";
+import { ViolaAdvert } from "./ViolaAdvert";
 
 function isSafari() {
   if (typeof DeviceMotionEvent != "undefined") {
@@ -45,6 +48,7 @@ export default function Home() {
     "disableAd",
     "disable8Ball",
     "acceptedPolicy",
+    "useTabs",
   ]);
 
   return (
@@ -142,55 +146,23 @@ export default function Home() {
         <BsGearFill />
       </Link>
 
-      {!cookies.disable8Ball && initialized && magic8BallOpen && <Magic8Ball />}
+      {!isMobile && !cookies.disable8Ball && initialized && magic8BallOpen && (
+        <Magic8Ball />
+      )}
 
-      {!cookies.acceptedPolicy && <PrivacyPolicy />}
+      {!isMobile && !cookies.acceptedPolicy && initialized && <PrivacyPolicy />}
 
-      {!cookies.disableAd && initialized && (
-        <div style={{ position: "absolute", right: 50 }}>
-          <Advertisement>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <h1>NO MORE VIOLINS</h1>
-              <div style={{ position: "relative", width: 500, height: 350 }}>
-                <img
-                  src="violin.png"
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%) rotate(60deg)",
-                  }}
-                ></img>
-                <CgUnavailable
-                  size={400}
-                  color="darkred"
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
-              </div>
-              <h1>VIOLINS IS NOT THE ANSWER</h1>
-              <p
-                style={{
-                  marginLeft: "auto",
-                  marginRight: 20,
-                  fontSize: 12,
-                  transform: "translate(0, -10px)",
-                }}
-              >
-                this message is brought to you by viola gang
-              </p>
-            </div>
-          </Advertisement>
+      {!isMobile && !cookies.disableAd && initialized && (
+        <div
+          style={{
+            position: "fixed",
+            right: 50,
+            top: 150,
+            width: "30%",
+            height: "auto",
+          }}
+        >
+          <ViolaAdvert />
         </div>
       )}
 
@@ -211,7 +183,7 @@ export default function Home() {
         ></PaymentPopup>
       )}
 
-      {!cookies.disableBrainRot && (
+      {!isMobile && !cookies.disableBrainRot && (
         <>
           <VideoPlayerWindow
             title={<p className={styles.videoTitle}>For the zoomers</p>}
@@ -230,6 +202,24 @@ export default function Home() {
             open={minecraftParkourOpen}
           />
         </>
+      )}
+
+      {(isMobile || cookies.useTabs) && (
+        <TabSwitcher>
+          <Tab tab="🎱">
+            <Magic8Ball fixedPosition />
+          </Tab>
+          <Tab tab={<BsBadgeAd />}>
+            <div
+              style={{
+                width: 300,
+                height: "auto",
+              }}
+            >
+              <ViolaAdvert />
+            </div>
+          </Tab>
+        </TabSwitcher>
       )}
     </div>
   );

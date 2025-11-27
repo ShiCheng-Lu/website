@@ -1,0 +1,40 @@
+.TabSwitcher {
+  position: fixed;
+
+  display: flex;
+  flex-direction: row;
+  width: 500;
+  height: auto;
+
+  top: 50;
+  left: 0;
+}
+
+.TabSwitcherContainer:has(*) {
+  border: black 2 solid;
+  background-color: white;
+}
+
+.TabSwitcherTab {
+  transform: translate(-2, 0);
+  background-color: white;
+
+  border: black 2 solid;
+  border-top-right-radius: 8;
+  border-bottom-right-radius: 8;
+
+  width: 35;
+  height: 35;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .TabSwitcherContainer,
+  .TabSwitcherTab {
+    background: #011635;
+    border-color: white;
+  }
+}
