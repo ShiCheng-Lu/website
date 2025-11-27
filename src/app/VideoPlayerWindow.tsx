@@ -4,6 +4,7 @@ import DraggableWindow from "@/components/DraggableWindow";
 import { useState, useEffect, ReactNode } from "react";
 import styles from "./page.module.css";
 import ReactPlayer from "react-player";
+import { BsFillVolumeMuteFill, BsFillVolumeUpFill } from "react-icons/bs";
 
 export type VideoPlayerWindowProp = {
   title: ReactNode;
@@ -51,21 +52,19 @@ export default function VideoPlayerWindow({
       >
         <div onClick={() => setPlaying(!playing)}>
           {muted ? (
-            <img
+            <BsFillVolumeMuteFill
               className={styles.audio}
-              src="icons/audio-off.svg"
               onClick={(e) => {
                 e.stopPropagation();
-                setMuted(!muted);
+                setMuted(false);
               }}
             />
           ) : (
-            <img
+            <BsFillVolumeUpFill
               className={styles.audio}
-              src="icons/audio.svg"
               onClick={(e) => {
                 e.stopPropagation();
-                setMuted(!muted);
+                setMuted(true);
               }}
             />
           )}

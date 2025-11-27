@@ -1,6 +1,6 @@
 .DraggableWindow {
   z-index: 10;
-  position: absolute;
+  position: fixed;
   border: gray 2.5 solid;
 }
 

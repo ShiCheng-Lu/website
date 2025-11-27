@@ -75,6 +75,7 @@
 
 .audio {
   width: 10%;
+  height: auto;
   position: absolute;
   z-index: 10;
 }
