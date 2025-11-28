@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useState } from "react";
 import styles from "./DraggableWindow.module.css";
 import { CgCloseO } from "react-icons/cg";
+import { Point } from "@/util/point";
 
 export class DragHandler {
   startX: number;
@@ -55,8 +56,10 @@ export type DraggableWindowProps = {
   title?: ReactNode;
   onClose?: () => void;
   children?: any;
-  initialX?: number;
-  initialY?: number;
+  initialPosition?: Point;
+  width?: number;
+  height?: number;
+  style?: CSSProperties;
 };
 
 export default function DraggableWindow({
@@ -64,19 +67,36 @@ export default function DraggableWindow({
   onClose = () => {},
   title,
   children,
-  initialX = 0,
-  initialY = 0,
+  initialPosition,
+  width = 0,
+  height = 0,
+  style,
 }: DraggableWindowProps) {
-  const [location, setLocation] = useState({ x: initialX, y: initialY });
+  const [location, setLocation] = useState<{ x: number; y: number }>();
   const [updateFunction, setUpdateFunction] = useState<DragHandler>();
 
+  useEffect(() => {
+    if (initialPosition) {
+      setLocation(initialPosition);
+    } else if (typeof window != "undefined") {
+      setLocation({
+        x: Math.random() * (window.innerWidth - width),
+        y: Math.random() * (window.innerHeight - height),
+      });
+    } else {
+      setLocation({ x: 0, y: 0 });
+    }
+  }, []);
+
   return (
-    opened && (
+    opened &&
+    location && (
       <div
         className={styles.DraggableWindow}
         style={{
           top: location.y,
           left: location.x,
+          ...style,
         }}
       >
         <div

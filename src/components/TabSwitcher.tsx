@@ -16,29 +16,37 @@ export function Tab({ children }: TabProps) {
 }
 
 type TabSwitcherProps = {
-  children: React.ReactElement<TabProps>[];
+  children:
+    | (React.ReactElement<TabProps> | false)[]
+    | (React.ReactElement<TabProps> | false)
+    | undefined;
 };
 
 export function TabSwitcher({ children }: TabSwitcherProps) {
   const [open, setOpen] = useState(0);
+  const childrenList = Array.isArray(children) ? children : [children];
+
   return (
     <div className={styles.TabSwitcher}>
       <div className={styles.TabSwitcherContainer}>
-        {open ? children[open - 1] : undefined}
+        {open ? childrenList[open - 1] : undefined}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {children?.map((e, i) => (
-          <div
-            key={i}
-            className={styles.TabSwitcherTab}
-            style={{ borderLeft: i + 1 === open ? 0 : undefined }}
-            onClick={() => (i + 1 === open ? setOpen(0) : setOpen(i + 1))}
-          >
-            {i + 1 === open
-              ? e.props.tabOpen || e.props.tab || <BsChevronDoubleRight />
-              : e.props.tabClose || e.props.tab || <BsChevronDoubleLeft />}
-          </div>
-        ))}
+        {childrenList?.map(
+          (e, i) =>
+            e && (
+              <div
+                key={i}
+                className={styles.TabSwitcherTab}
+                style={{ borderLeft: i + 1 === open ? 0 : undefined }}
+                onClick={() => (i + 1 === open ? setOpen(0) : setOpen(i + 1))}
+              >
+                {i + 1 === open
+                  ? e.props.tabOpen || e.props.tab || <BsChevronDoubleRight />
+                  : e.props.tabClose || e.props.tab || <BsChevronDoubleLeft />}
+              </div>
+            )
+        )}
       </div>
     </div>
   );

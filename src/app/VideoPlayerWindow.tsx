@@ -15,76 +15,64 @@ export type VideoPlayerWindowProp = {
   onClose: () => void;
   open: boolean;
   src: string;
+  fixedPosition?: boolean;
 };
 
-export default function VideoPlayerWindow({
+export function VideoPlayer({ src }: { src: string }) {
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(true);
+
+  return (
+    <div onClick={() => setPlaying(!playing)} style={{ width: 9 * 30 }}>
+      {muted ? (
+        <BsFillVolumeMuteFill
+          className={styles.audio}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMuted(false);
+            console.log("Muted presed");
+          }}
+        />
+      ) : (
+        <BsFillVolumeUpFill
+          className={styles.audio}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMuted(true);
+            console.log("unMuted presed");
+          }}
+        />
+      )}
+
+      {!playing && <BsFillPlayFill className={styles.start} />}
+      <ReactPlayer
+        src={src}
+        width={"100%"}
+        height={"auto"}
+        playing={playing}
+        muted={muted}
+        loop={true}
+        playsInline={true}
+      />
+    </div>
+  );
+}
+
+export function VideoPlayerWindow({
   onClose,
   open,
   src,
   title,
 }: VideoPlayerWindowProp) {
-  const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(true);
-
-  const width = 9 * 30;
-  const height = 16 * 30 - 1;
-
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number }>();
-
-  useEffect(() => {
-    if (typeof window != "undefined") {
-      setInitialPos({
-        x: Math.random() * (window.innerWidth - width),
-        y: Math.random() * (window.innerHeight - height),
-      });
-    } else {
-      setInitialPos({ x: 150, y: 50 });
-    }
-  }, []);
-
   return (
-    initialPos && (
-      <DraggableWindow
-        title={title}
-        opened={open}
-        onClose={() => {
-          setPlaying(false);
-          onClose();
-        }}
-        initialX={initialPos.x}
-        initialY={initialPos.y}
-      >
-        <div onClick={() => setPlaying(!playing)}>
-          {muted ? (
-            <BsFillVolumeMuteFill
-              className={styles.audio}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMuted(false);
-              }}
-            />
-          ) : (
-            <BsFillVolumeUpFill
-              className={styles.audio}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMuted(true);
-              }}
-            />
-          )}
-
-          {!playing && <BsFillPlayFill className={styles.start} />}
-          <ReactPlayer
-            src={src}
-            width={width}
-            height={height}
-            playing={playing}
-            muted={muted}
-            loop={true}
-            playsInline={true}
-          />
-        </div>
-      </DraggableWindow>
-    )
+    <DraggableWindow
+      title={title}
+      opened={open}
+      onClose={() => {
+        onClose();
+      }}
+    >
+      <VideoPlayer src={src} />
+    </DraggableWindow>
   );
 }

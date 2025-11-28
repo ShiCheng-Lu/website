@@ -8,7 +8,7 @@ import PaymentPopup from "@/components/PaymentPopup";
 import Link from "next/link";
 import { Tooltip } from "react-tooltip";
 import { CgInfo, CgUnavailable } from "react-icons/cg";
-import VideoPlayerWindow from "./VideoPlayerWindow";
+import { VideoPlayerWindow, VideoPlayer } from "./VideoPlayerWindow";
 import Magic8Ball from "@/components/Magic8Ball";
 import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
@@ -208,6 +208,12 @@ export default function Home() {
         <TabSwitcher>
           <Tab tab="🎱">
             <Magic8Ball fixedPosition />
+          </Tab>
+          <Tab tab={<img width={32} src="logos/subway-surfer.png" />}>
+            <VideoPlayer src="subway-surfers.mp4" />
+          </Tab>
+          <Tab tab={<img width={24} src="logos/minecraft.png" />}>
+            <VideoPlayer src="minecraft-parkour.mp4" />
           </Tab>
           <Tab tab={<BsBadgeAd />}>
             <div
