@@ -9,15 +9,17 @@
   --button-secondary-hover: #f2f2f2;
   --button-secondary-border: #ebebeb;
 
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  main {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-geist-sans);
+    background-color: var(--background);
 
-  flex-direction: column;
-  padding-top: 3rem;
+    flex-direction: column;
+    padding-top: 3rem;
+  }
 }
 
 .intro {
@@ -79,7 +81,6 @@
   transform: translate(-50%, -50%);
   opacity: 0.8;
 }
-
 
 .videoTitle {
   padding-left: 3px;

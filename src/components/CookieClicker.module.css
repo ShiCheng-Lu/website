@@ -1,0 +1,32 @@
+.CookieClicker {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  user-select: none;
+}
+
+.CookieClickerLeaderboardRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px;
+}
+
+.CookieClickerLeaderboardRowUser {
+  border: 1px solid black;
+}
+
+@media (prefers-color-scheme: dark) {
+  .CookieClicker {
+    background: #011635;
+  }
+  .CookieClickerLeaderboardRowUser {
+    border-color: white;
+  }
+}
