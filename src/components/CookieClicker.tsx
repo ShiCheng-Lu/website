@@ -79,7 +79,7 @@ export default function CookieClicker() {
     } else if (index === 2) {
       return "🥉";
     } else {
-      return "  ";
+      return "";
     }
   };
 
@@ -122,8 +122,10 @@ export default function CookieClicker() {
             );
           })}
           {!userIsOnLeaderboard && (
-            <div className={styles.CookieClickerLeaderboardRow}>
-              <p>{user.display_name}</p>
+            <div
+              className={`${styles.CookieClickerLeaderboardRow} ${styles.CookieClickerLeaderboardRowUser}`}
+            >
+              <p>➡️ {user.display_name}</p>
               <p>{user.count + increment}</p>
             </div>
           )}

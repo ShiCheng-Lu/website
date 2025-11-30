@@ -71,7 +71,8 @@ export async function getUser(): Promise<CookieClickData> {
 // ! will overwrite
 export async function createUser(): Promise<CookieClickData> {
   const document = doc(db, "cookie_clicks", user.user.uid);
-  const data = { display_name: "", count: 0 };
+  const randomNumber = Math.floor(Math.random() * 999) + 1;
+  const data = { display_name: `User${randomNumber}`, count: 0 };
   await setDoc(document, data);
   return { id: user.user.uid, ...data };
 }
