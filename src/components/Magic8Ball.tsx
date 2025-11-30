@@ -184,7 +184,6 @@ export default function Magic8Ball({
     if (updateFunction) {
       updateFunction.stop();
     }
-    // this must be an object reference, otherwise something something to do with states and it doesn't update the state of updateFunction, and we get a null reference on mouse release
     const dragHandler = new ShakeDragHandler(
       e.clientX - location.x,
       e.clientY - location.y,
@@ -228,11 +227,11 @@ export default function Magic8Ball({
           onPointerDown={startDrag}
           onClick={() => (DeviceMotionEvent as any).requestPermission?.()}
         >
-          <torusGeometry args={[1, 2, 64, 32]} />
+          <torusGeometry args={[1, 2, 32, 64]} />
           <meshStandardMaterial color="black" roughness={0.5} metalness={0.7} />
         </mesh>
         <mesh position={[0, 0, 2]}>
-          <ringGeometry args={[0, 1, 32, 32]} />
+          <ringGeometry args={[0, 1, 64, 1]} />
           <meshStandardMaterial
             color="black"
             roughness={0.5}

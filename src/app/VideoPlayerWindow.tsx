@@ -12,13 +12,13 @@ import {
 
 export type VideoPlayerWindowProp = {
   title: ReactNode;
-  onClose: () => void;
+  onClose: () => Promise<boolean>;
   open: boolean;
   src: string;
   fixedPosition?: boolean;
 };
 
-export function VideoPlayer({ src }: { src: string }) {
+export default function VideoPlayer({ src }: { src: string }) {
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
 
@@ -55,24 +55,5 @@ export function VideoPlayer({ src }: { src: string }) {
         playsInline={true}
       />
     </div>
-  );
-}
-
-export function VideoPlayerWindow({
-  onClose,
-  open,
-  src,
-  title,
-}: VideoPlayerWindowProp) {
-  return (
-    <DraggableWindow
-      title={title}
-      opened={open}
-      onClose={() => {
-        onClose();
-      }}
-    >
-      <VideoPlayer src={src} />
-    </DraggableWindow>
   );
 }

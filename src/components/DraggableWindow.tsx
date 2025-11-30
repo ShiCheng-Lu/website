@@ -54,7 +54,7 @@ export class DragHandler {
 export type DraggableWindowProps = {
   opened?: boolean;
   title?: ReactNode;
-  onClose?: () => void;
+  onClose?: () => Promise<boolean>;
   children?: any;
   initialPosition?: Point;
   width?: number;
@@ -63,8 +63,7 @@ export type DraggableWindowProps = {
 };
 
 export default function DraggableWindow({
-  opened = true,
-  onClose = () => {},
+  onClose = async () => true,
   title,
   children,
   initialPosition,
@@ -72,6 +71,7 @@ export default function DraggableWindow({
   height = 0,
   style,
 }: DraggableWindowProps) {
+  const [opened, setOpen] = useState(true);
   const [location, setLocation] = useState<{ x: number; y: number }>();
   const [updateFunction, setUpdateFunction] = useState<DragHandler>();
 
@@ -120,7 +120,11 @@ export default function DraggableWindow({
           <div className={styles.DraggableWindowTitle}>{title}</div>
           <CgCloseO
             className={styles.DraggableWindowCloseIcon}
-            onClick={onClose}
+            onClick={async () => {
+              if (await onClose()) {
+                setOpen(false);
+              }
+            }}
           />
         </div>
         {children}

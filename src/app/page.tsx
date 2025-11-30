@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import DraggableWindow from "@/components/DraggableWindow";
-import ReactPlayer from "react-player";
 import PaymentPopup from "@/components/PaymentPopup";
 import Link from "next/link";
 import { Tooltip } from "react-tooltip";
-import { CgInfo, CgUnavailable } from "react-icons/cg";
-import { VideoPlayerWindow, VideoPlayer } from "./VideoPlayerWindow";
+import { CgInfo } from "react-icons/cg";
+import VideoPlayer from "./VideoPlayerWindow";
 import Magic8Ball from "@/components/Magic8Ball";
-import Advertisement from "@/components/Advertisement";
 import { useCookies } from "react-cookie";
 import { BsBadgeAd, BsGearFill } from "react-icons/bs";
 import QRCode from "react-qr-code";
@@ -34,10 +32,8 @@ async function requestMotionPermission() {
 }
 
 export default function Home() {
-  const [subwaySurferOpen, setSubwaySurferOpen] = useState(true);
-  const [minecraftParkourOpen, setMinecraftParkourOpen] = useState(true);
   const [magic8BallOpen, setMagic8BallOpen] = useState(false);
-  const [payment, setPayment] = useState("");
+  const [paymentAction, setPaymentAction] = useState<any>();
   const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     setInitialized(true);
@@ -184,38 +180,37 @@ export default function Home() {
           </div>
         )}
 
-        {payment && (
+        {paymentAction && (
           <PaymentPopup
             onSubmit={() => {
-              if (payment === "subway-surfer") {
-                setSubwaySurferOpen(false);
-              }
-              if (payment === "minecraft-parkour") {
-                setMinecraftParkourOpen(false);
-              }
-              setPayment("");
+              paymentAction?.resolve(true);
+              setPaymentAction(undefined);
             }}
           ></PaymentPopup>
         )}
 
         {!isMobile && !cookies.disableBrainRot && (
           <>
-            <VideoPlayerWindow
+            <DraggableWindow
               title={<p className={styles.videoTitle}>For the zoomers</p>}
-              src="subway-surfers.mp4"
               onClose={() => {
-                setPayment("subway-surfer");
+                return new Promise((resolve) => {
+                  setPaymentAction({ resolve: resolve });
+                });
               }}
-              open={subwaySurferOpen}
-            />
-            <VideoPlayerWindow
+            >
+              <VideoPlayer src={"subway-surfers.mp4"} />
+            </DraggableWindow>
+            <DraggableWindow
               title={<p className={styles.videoTitle}>For the boomers</p>}
-              src="minecraft-parkour.mp4"
               onClose={() => {
-                setPayment("minecraft-parkour");
+                return new Promise(function (resolve) {
+                  setPaymentAction({ resolve: resolve });
+                });
               }}
-              open={minecraftParkourOpen}
-            />
+            >
+              <VideoPlayer src={"minecraft-parkour.mp4"} />
+            </DraggableWindow>
           </>
         )}
 
