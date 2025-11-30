@@ -55,17 +55,20 @@ export function getTopClickers(
   });
 }
 
-export async function getUser(): Promise<CookieClickData> {
+export function getUser(
+  resultHandler: (data: CookieClickData | undefined) => void
+): Unsubscribe {
   const document = doc(db, "cookie_clicks", user.user.uid);
-  const data = await getDoc(document);
-  if (data.exists()) {
-    return {
-      id: user.user.uid,
-      ...data.data(),
-    } as CookieClickData;
-  } else {
-    throw "User Not Found";
-  }
+  return onSnapshot(document, (data) => {
+    if (data.exists()) {
+      resultHandler({
+        id: user.user.uid,
+        ...data.data(),
+      } as CookieClickData);
+    } else {
+      resultHandler(undefined);
+    }
+  });
 }
 
 // ! will overwrite

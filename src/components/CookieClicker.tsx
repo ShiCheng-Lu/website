@@ -7,13 +7,28 @@ import {
   CookieClickData,
   clickCookie,
 } from "@/util/firebase";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import styles from "./CookieClicker.module.css";
+import React from "react";
+import ClickAnimation from "./ClickAnimation";
 
 function useCookieClickerData() {
   // const data = []; // list of top 10 users + the current user
   // return { data };
 }
+
+const PlusOne = React.memo(
+  ({ style }: { style: CSSProperties }) => (
+    <div
+      className={styles.CookieClickerPlusOne}
+      style={style}
+      key={Math.random()}
+    >
+      +1
+    </div>
+  ),
+  (_1, _2) => false
+);
 
 export default function CookieClicker() {
   const [leaderboard, setLeaderboard] = useState<CookieClickData[]>([]);
@@ -21,13 +36,23 @@ export default function CookieClicker() {
   const [increment, setIncrement] = useState(0);
   const [newName, setNewName] = useState<string>();
   const [pointer, setPointer] = useState(false);
+  const [cursors, setCursors] = useState<React.ReactNode[]>([]);
+  const [clickHandler, setClickHandler] =
+    useState<(x: number, y: number) => void>();
 
   useEffect(() => {
     const unsub = getTopClickers(setLeaderboard);
-    getUser()
-      .then(setUser)
-      .catch(() => createUser().then(setUser));
-    return unsub;
+    const unsub2 = getUser((user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        createUser();
+      }
+    });
+    return () => {
+      unsub();
+      unsub2();
+    };
   }, []);
 
   const onPointerMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -61,14 +86,15 @@ export default function CookieClicker() {
     2000
   );
 
-  const onClick = () => {
-    // if clicked more than 50 times, force sync so we don't have to wait for debounce
+  const onClick = (e: React.PointerEvent) => {
+    // if clicked more than 50 times, force sync so we don't have to wait for debounce to sync, this keeps the leaderboard updated if the user is constantly clicking
     if (increment > 50) {
       clickCookie(increment + 1);
       setIncrement(0);
     } else {
       setIncrement(increment + 1);
     }
+    clickHandler?.(e.clientX, e.clientY);
   };
 
   const place = (index: number) => {
@@ -133,7 +159,7 @@ export default function CookieClicker() {
       </div>
 
       <div
-        onPointerDown={(e) => onPointerMove(e) && onClick()}
+        onPointerDown={(e) => onPointerMove(e) && onClick(e)}
         onPointerMove={onPointerMove}
         onPointerLeave={() => setPointer(false)}
         style={{
@@ -162,6 +188,10 @@ export default function CookieClicker() {
           value={newName || user.display_name}
         />
       </div>
+
+      <ClickAnimation setClickHandler={setClickHandler}>
+        <div className={styles.CookieClickerPlusOne}>+1</div>
+      </ClickAnimation>
     </div>
   );
 }
