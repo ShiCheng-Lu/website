@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { translationList, encode } from "./encode";
 import ReactCodeMirror, { EditorView } from "@uiw/react-codemirror";
 
 export default function JSFuck() {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState("\n\n\n\n\n");
   const [encoded, setEncoded] = useState("");
 
   const [result, setResult] = useState("");
-  const [error, setError] = useState("");
 
   const [showTranslation, setShowTranslation] = useState(false);
 
@@ -21,25 +20,71 @@ export default function JSFuck() {
     const encoded = encode(code) || "";
     setEncoded(encoded);
     try {
-      const encodedRes = `${eval(encoded)}`;
-      setEncodedResult(encodedRes);
-      // stringify result for safety
       const res = `${eval(code)}`;
       setResult(res);
-      setError("");
     } catch {
-      setResult("");
-      setError("failed to eval expression");
+      setResult("⚠ Error");
     }
   };
+
+  useEffect(() => {
+    try {
+      setEncodedResult(`${eval(encoded)}`);
+    } catch {
+      setEncodedResult("⚠ Error");
+    }
+  }, [encoded]);
 
   const theme = EditorView.theme({
     "&": { maxHeight: "200px" },
   });
 
   return (
-    <div>
+    <div className={styles.JSFuck}>
       <h1>I heard ya like JavaScript</h1>
+      <table>
+        <tr>
+          <td>
+            <div>
+              Javascript
+              <ReactCodeMirror
+                className={styles.CodeMirror}
+                value={code}
+                onChange={updateCode}
+              />
+            </div>
+          </td>
+          <td>
+            <div>
+              Javascript output
+              <ReactCodeMirror className={styles.CodeMirror} value={result} />
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div>
+              Javascript but better?
+              <ReactCodeMirror
+                extensions={[theme, EditorView.lineWrapping]}
+                className={styles.CodeMirror}
+                value={encoded}
+                onChange={setEncoded}
+              ></ReactCodeMirror>
+            </div>
+          </td>
+          <td>
+            <div>
+              Back translation
+              <ReactCodeMirror
+                readOnly
+                className={styles.CodeMirror}
+                value={encodedResult}
+              />
+            </div>
+          </td>
+        </tr>
+      </table>
 
       <div
         style={{
@@ -49,43 +94,14 @@ export default function JSFuck() {
           alignItems: "center",
           width: "80vw",
         }}
-      >
-        <div>
-          Javascript
-          <ReactCodeMirror
-            className={styles.CodeMirror}
-            value={code}
-            onChange={(e) => updateCode(e)}
-          />
-        </div>
-        <div>
-          Javascript output
-          <ReactCodeMirror className={styles.CodeMirror} value={result} />
-        </div>
-      </div>
+      ></div>
       <div
         style={{
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-evenly",
         }}
-      >
-        <div>
-          Javascript but better?
-          <ReactCodeMirror
-            extensions={[theme, EditorView.lineWrapping]}
-            className={styles.CodeMirror}
-            value={encoded}
-          ></ReactCodeMirror>
-        </div>
-        <div>
-          Javascript but better? output
-          <ReactCodeMirror
-            className={styles.CodeMirror}
-            value={encodedResult}
-          />
-        </div>
-      </div>
+      ></div>
 
       <button onClick={() => setShowTranslation(!showTranslation)}>
         Show translation

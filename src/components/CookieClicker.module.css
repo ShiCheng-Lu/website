@@ -10,6 +10,14 @@
   user-select: none;
 }
 
+.CookieClickerLeaderboard {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .CookieClickerLeaderboardRow {
   display: flex;
   flex-direction: row;
@@ -22,13 +30,13 @@
   border: 1px solid black;
 }
 
-@media (prefers-color-scheme: dark) {
-  .CookieClicker {
-    background: #011635;
-  }
-  .CookieClickerLeaderboardRowUser {
-    border-color: white;
-  }
+.CookieClickerImage {
+  border: 0px solid black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 250;
 }
 
 .CookieClickerPlusOne {
@@ -58,5 +66,14 @@
   100% {
     opacity: 0;
     transform: translate(0, -250%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .CookieClicker {
+    background: #011635;
+  }
+  .CookieClickerLeaderboardRowUser {
+    border-color: white;
   }
 }

@@ -12,31 +12,12 @@ import styles from "./CookieClicker.module.css";
 import React from "react";
 import ClickAnimation from "./ClickAnimation";
 
-function useCookieClickerData() {
-  // const data = []; // list of top 10 users + the current user
-  // return { data };
-}
-
-const PlusOne = React.memo(
-  ({ style }: { style: CSSProperties }) => (
-    <div
-      className={styles.CookieClickerPlusOne}
-      style={style}
-      key={Math.random()}
-    >
-      +1
-    </div>
-  ),
-  (_1, _2) => false
-);
-
 export default function CookieClicker() {
   const [leaderboard, setLeaderboard] = useState<CookieClickData[]>([]);
   const [user, setUser] = useState({ display_name: "", count: 0, id: "" });
   const [increment, setIncrement] = useState(0);
   const [newName, setNewName] = useState<string>();
   const [pointer, setPointer] = useState(false);
-  const [cursors, setCursors] = useState<React.ReactNode[]>([]);
   const [clickHandler, setClickHandler] =
     useState<(x: number, y: number) => void>();
 
@@ -117,15 +98,7 @@ export default function CookieClicker() {
 
   return (
     <div className={styles.CookieClicker}>
-      <div
-        style={{
-          alignItems: "center",
-          justifyContent: "center",
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-        }}
-      >
+      <div className={styles.CookieClickerLeaderboard}>
         <h2>Leaderboard</h2>
         <div
           style={{
@@ -159,18 +132,11 @@ export default function CookieClicker() {
       </div>
 
       <div
+        className={styles.CookieClickerImage}
         onPointerDown={(e) => onPointerMove(e) && onClick(e)}
         onPointerMove={onPointerMove}
         onPointerLeave={() => setPointer(false)}
-        style={{
-          border: "0px solid black",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: pointer ? "pointer" : "default",
-          width: 250,
-        }}
+        style={{ cursor: pointer ? "pointer" : "default" }}
       >
         <img src="cookie.png" width="100%" />
       </div>
@@ -189,7 +155,7 @@ export default function CookieClicker() {
         />
       </div>
 
-      <ClickAnimation setClickHandler={setClickHandler}>
+      <ClickAnimation setClickHandler={setClickHandler} duration={1000}>
         <div className={styles.CookieClickerPlusOne}>+1</div>
       </ClickAnimation>
     </div>

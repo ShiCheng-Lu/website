@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from "react";
 export default function ClickAnimation({
   children,
   setClickHandler,
+  duration,
 }: {
-  children: React.ReactElement<{ style: CSSProperties; hidden: boolean }>;
+  children: React.ReactElement<{ style: CSSProperties }>;
   setClickHandler: any;
+  duration: number;
 }) {
   const cursors = useRef<React.ReactElement[]>([]);
   const container = useRef<HTMLDivElement>(null);
@@ -21,7 +23,6 @@ export default function ClickAnimation({
     const newCursor = React.cloneElement(children, {
       style: { top: y - bound.y, left: x - bound.x, position: "absolute" },
       key: Math.random(),
-      hidden: false,
     });
 
     cursors.current.push(newCursor);
@@ -29,7 +30,7 @@ export default function ClickAnimation({
     setTimeout(() => {
       cursors.current.shift();
       setUpdate(!update);
-    }, 1000);
+    }, duration);
   };
 
   useEffect(() => {
