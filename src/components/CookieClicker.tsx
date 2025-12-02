@@ -22,18 +22,18 @@ export default function CookieClicker() {
     useState<(x: number, y: number) => void>();
 
   useEffect(() => {
-    // const unsub = getTopClickers(setLeaderboard);
-    // const unsub2 = getUser((user) => {
-    //   if (user) {
-    //     setUser(user);
-    //   } else {
-    //     createUser();
-    //   }
-    // });
-    // return () => {
-    //   unsub();
-    //   unsub2();
-    // };
+    const unsub = getTopClickers(setLeaderboard);
+    const unsub2 = getUser((user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        createUser();
+      }
+    });
+    return () => {
+      unsub();
+      unsub2();
+    };
   }, []);
 
   const onPointerMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -155,9 +155,9 @@ export default function CookieClicker() {
         />
       </div>
 
-      <ClickAnimation setClickHandler={setClickHandler} duration={1000}>
+      {/* <ClickAnimation setClickHandler={setClickHandler} duration={1000}>
         <div className={styles.CookieClickerPlusOne}>+1</div>
-      </ClickAnimation>
+      </ClickAnimation> */}
     </div>
   );
 }
