@@ -22,14 +22,14 @@ export default function CookieClicker() {
     useState<(x: number, y: number) => void>();
 
   useEffect(() => {
-    const unsub = getTopClickers(setLeaderboard);
-    const unsub2 = getUser((user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        createUser();
-      }
-    });
+    // const unsub = getTopClickers(setLeaderboard);
+    // const unsub2 = getUser((user) => {
+    //   if (user) {
+    //     setUser(user);
+    //   } else {
+    //     createUser();
+    //   }
+    // });
     // return () => {
     //   unsub();
     //   unsub2();
