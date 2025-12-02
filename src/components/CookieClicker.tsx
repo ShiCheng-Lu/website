@@ -155,9 +155,9 @@ export default function CookieClicker() {
         />
       </div>
 
-      {/* <ClickAnimation setClickHandler={setClickHandler} duration={1000}>
+      <ClickAnimation setClickHandler={setClickHandler} duration={1000}>
         <div className={styles.CookieClickerPlusOne}>+1</div>
-      </ClickAnimation> */}
+      </ClickAnimation>
     </div>
   );
 }
