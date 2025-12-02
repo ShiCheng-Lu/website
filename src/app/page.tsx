@@ -51,7 +51,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <header>
-        <Link className={styles.settings} href="/settings">
+        <Link className={styles.settings} href="/settings" prefetch={false}>
           <BsGearFill />
         </Link>
       </header>
@@ -142,11 +142,11 @@ export default function Home() {
           More of PROgrammer 💻
         </Link>
 
-        <Link className={styles.navButton} href="/minecraft-computer">
+        <Link className={styles.navButton} href="/minecraft-computer" prefetch={false}>
           Minecraft Computer?
         </Link>
 
-        <Link className={styles.navButton} href="/jsfuck">
+        <Link className={styles.navButton} href="/jsfuck" prefetch={false}>
           I heard ya like JavaScript
         </Link>
 
