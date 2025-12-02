@@ -30,10 +30,10 @@ export default function CookieClicker() {
         createUser();
       }
     });
-    return () => {
-      unsub();
-      unsub2();
-    };
+    // return () => {
+    //   unsub();
+    //   unsub2();
+    // };
   }, []);
 
   const onPointerMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

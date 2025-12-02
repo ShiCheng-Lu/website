@@ -43,47 +43,49 @@ export default function JSFuck() {
     <div className={styles.JSFuck}>
       <h1>I heard ya like JavaScript</h1>
       <table>
-        <tr>
-          <td>
-            <div>
-              Javascript
-              <ReactCodeMirror
-                className={styles.CodeMirror}
-                value={code}
-                onChange={updateCode}
-              />
-            </div>
-          </td>
-          <td>
-            <div>
-              Javascript output
-              <ReactCodeMirror className={styles.CodeMirror} value={result} />
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div>
-              Javascript but better?
-              <ReactCodeMirror
-                extensions={[theme, EditorView.lineWrapping]}
-                className={styles.CodeMirror}
-                value={encoded}
-                onChange={setEncoded}
-              ></ReactCodeMirror>
-            </div>
-          </td>
-          <td>
-            <div>
-              Back translation
-              <ReactCodeMirror
-                readOnly
-                className={styles.CodeMirror}
-                value={encodedResult}
-              />
-            </div>
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td>
+              <div>
+                Javascript
+                <ReactCodeMirror
+                  className={styles.CodeMirror}
+                  value={code}
+                  onChange={updateCode}
+                />
+              </div>
+            </td>
+            <td>
+              <div>
+                Javascript output
+                <ReactCodeMirror className={styles.CodeMirror} value={result} />
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                Javascript but better?
+                <ReactCodeMirror
+                  extensions={[theme, EditorView.lineWrapping]}
+                  className={styles.CodeMirror}
+                  value={encoded}
+                  onChange={setEncoded}
+                ></ReactCodeMirror>
+              </div>
+            </td>
+            <td>
+              <div>
+                Back translation
+                <ReactCodeMirror
+                  readOnly
+                  className={styles.CodeMirror}
+                  value={encodedResult}
+                />
+              </div>
+            </td>
+          </tr>
+        </tbody>
       </table>
 
       <div
