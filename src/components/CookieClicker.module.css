@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 1rem;
   padding: 1rem;
-  background: white;
+  background: var(--background);
   user-select: none;
 }
 
@@ -36,11 +36,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 250;
+  width: 250px;
+  height: auto;
 }
 
 .CookieClickerPlusOne {
-  color: white;
+  color: var(--foreground);
   font-weight: bold;
   pointer-events: none;
 
@@ -66,14 +67,5 @@
   100% {
     opacity: 0;
     transform: translate(0, -250%);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .CookieClicker {
-    background: #011635;
-  }
-  .CookieClickerLeaderboardRowUser {
-    border-color: white;
   }
 }
