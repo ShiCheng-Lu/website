@@ -198,6 +198,8 @@ export default function Home() {
                   setPaymentAction({ resolve: resolve });
                 });
               }}
+              width={9 * 30}
+              height={16 * 30}
             >
               <VideoPlayer src={"subway-surfers.mp4"} />
             </DraggableWindow>
@@ -208,6 +210,8 @@ export default function Home() {
                   setPaymentAction({ resolve: resolve });
                 });
               }}
+              width={9 * 30}
+              height={16 * 30}
             >
               <VideoPlayer src={"minecraft-parkour.mp4"} />
             </DraggableWindow>
@@ -215,7 +219,11 @@ export default function Home() {
         )}
 
         {!isMobile && (
-          <DraggableWindow title={"Cookie Clicker"}>
+          <DraggableWindow
+            title={"Cookie Clicker"}
+            width={10 * 30}
+            height={16 * 30}
+          >
             <CookieClicker />
           </DraggableWindow>
         )}

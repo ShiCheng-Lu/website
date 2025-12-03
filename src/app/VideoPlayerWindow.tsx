@@ -1,7 +1,6 @@
 "use client";
 
-import DraggableWindow from "@/components/DraggableWindow";
-import { useState, useEffect, ReactNode } from "react";
+import { useState, ReactNode } from "react";
 import styles from "./page.module.css";
 import ReactPlayer from "react-player";
 import {
