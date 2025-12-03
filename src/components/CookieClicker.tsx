@@ -11,6 +11,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import styles from "./CookieClicker.module.css";
 import React from "react";
 import ClickAnimation from "./ClickAnimation";
+import { Tooltip } from "react-tooltip";
 
 export default function CookieClicker() {
   const [leaderboard, setLeaderboard] = useState<CookieClickData[]>([]);

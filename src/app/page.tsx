@@ -224,6 +224,16 @@ export default function Home() {
           <TabSwitcher>
             <Tab tab="🎱">
               <Magic8Ball fixedPosition />
+              <p
+                style={{
+                  width: "100%",
+                  textAlign: "center",
+                  fontStyle: "italic",
+                  userSelect: "none",
+                }}
+              >
+                Click or Shake!
+              </p>
             </Tab>
             <Tab tab={<img width={24} src="cookie.png" />}>
               <CookieClicker />

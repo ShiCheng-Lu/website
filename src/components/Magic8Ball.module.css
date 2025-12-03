@@ -43,3 +43,10 @@
   font-size: 8;
   pointer-events: none;
 }
+
+.Magic8BallGrab {
+  cursor: grab;
+  &:active {
+    cursor: grabbing;
+  }
+}

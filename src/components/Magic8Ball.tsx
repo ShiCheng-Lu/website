@@ -143,6 +143,7 @@ export default function Magic8Ball({
   const [face, setFace] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [pointerOver, setPointerOver] = useState(false);
 
   const randomize = () => {
     setFace(Math.floor(Math.random() * 20 + 1));
@@ -179,6 +180,12 @@ export default function Magic8Ball({
   const [location, setLocation] = useState(initialPosition);
   const [updateFunction, setUpdateFunction] = useState<ShakeDragHandler>();
   const startDrag = (e: { clientX: number; clientY: number }) => {
+    if (fixedPosition) {
+      setFace(0);
+      setTimeout(randomize, 10);
+      return;
+    }
+
     if (typeof window === "undefined") return;
 
     if (updateFunction) {
@@ -199,6 +206,7 @@ export default function Magic8Ball({
 
   return (
     <div
+      className={pointerOver && !fixedPosition ? styles.Magic8BallGrab : ""}
       style={
         fixedPosition
           ? {
@@ -216,6 +224,16 @@ export default function Magic8Ball({
               userSelect: "none",
             }
       }
+      onPointerMove={(e) => {
+        const bound = e.currentTarget!.getBoundingClientRect();
+        const dy = e.clientY - (bound.top + bound.bottom) / 2;
+        const dx = e.clientX - (bound.left + bound.right) / 2;
+        const r =
+          (bound.bottom - bound.top + bound.right - bound.left - 70) / 4;
+        const inside = dx * dx + dy * dy < r * r;
+        setPointerOver(inside);
+        return inside;
+      }}
     >
       <Canvas>
         <ambientLight intensity={1} />
