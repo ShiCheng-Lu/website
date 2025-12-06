@@ -17,6 +17,9 @@ import { TabSwitcher, Tab } from "@/components/TabSwitcher";
 import { isMobile } from "react-device-detect";
 import { ViolaAdvert } from "./ViolaAdvert";
 import CookieClicker from "@/app/games/cookie-clicker/CookieClicker";
+import { PetData, pet_owners, pets } from "@/util/database";
+import { documentId, limit, where } from "firebase/firestore";
+import PetDisplay from "./games/pet/PetDisplay";
 
 function isSafari() {
   if (typeof DeviceMotionEvent != "undefined") {
@@ -35,9 +38,25 @@ export default function Home() {
   const [magic8BallOpen, setMagic8BallOpen] = useState(false);
   const [paymentAction, setPaymentAction] = useState<any>();
   const [initialized, setInitialized] = useState(false);
+  const [ownedPets, setPets] = useState<PetData[]>();
   useEffect(() => {
     setInitialized(true);
     setMagic8BallOpen(!isSafari());
+    pet_owners()
+      .read()
+      .then((owner) => {
+        if (!owner) return;
+        const petIds = owner.pets.flatMap((pet) => pet.id);
+        if (petIds.length > 0) {
+          pets()
+            .query(where(documentId(), "in", petIds), limit(petIds.length))
+            .then((pets) => {
+              setPets(Object.entries(pets).map((value) => value[1]));
+            });
+        } else {
+          setPets([]);
+        }
+      });
   }, []);
 
   const [cookies] = useCookies([
@@ -268,6 +287,8 @@ export default function Home() {
             </Tab>
           </TabSwitcher>
         )}
+
+        {ownedPets && <PetDisplay pets={ownedPets} />}
       </footer>
     </div>
   );

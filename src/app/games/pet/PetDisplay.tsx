@@ -69,6 +69,7 @@ export function RandomMove({ children }: { children: React.ReactElement }) {
         x: Math.random() * (bounds.width - PET_SIZE),
         y: Math.random() * (bounds.height - PET_SIZE),
       });
+      setIdle(Math.random() * 5);
     }
   }, []);
 
