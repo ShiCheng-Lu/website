@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 import { DEFAULT_PALETTE, fromPixels } from "./Pet";
 import { PetData } from "@/util/database";
+import { Timestamp } from "firebase/firestore";
 
 export type PetDrawerProps = {
   setData: (pet: PetData) => void;
@@ -41,7 +42,7 @@ export default function PetDrawer({ setData }: PetDrawerProps) {
 
   useEffect(() => {
     setData({
-      createdAt: new Date(),
+      createdAt: Timestamp.now(),
       createdBy: "",
       palette,
       shape: fromPixels(pixels),

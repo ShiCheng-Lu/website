@@ -44,6 +44,7 @@ export function getTopClickers(
     orderBy("count", "desc"),
     limit(count)
   );
+
   return onSnapshot(topCountQuery, (data) => {
     const cookieClickData = data.docs.map(
       (doc) =>
