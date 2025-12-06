@@ -7,33 +7,97 @@
  *
  */
 
-import { collection, doc } from "firebase/firestore";
+import {
+  DocumentReference,
+  FieldPath,
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { deleteDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { CookieClickData, db, user } from "./firebase";
 
-export class Collection {
+export class Collection<T extends { [key: string]: any }> {
   collection;
   constructor(name: string) {
     this.collection = collection(db, name);
   }
 
-  query(filter: any) {}
+  async query(filter: any, constraint: any): Promise<{ [id: string]: T }> {
+    const queries = query(this.collection, filter, constraint);
+    const documents = await getDocs(queries);
+    const data: { [id: string]: T } = {};
+    documents.forEach((document) => {
+      if (document.exists()) {
+        data[document.id] = document.data() as T;
+      }
+    });
+    return data;
+  }
 
-  create() {}
+  async create(data: T, id: string | null = user.user.uid) {
+    if (id) {
+      await setDoc(doc(this.collection, id), data);
+    } else {
+      await addDoc(this.collection, data);
+    }
+  }
 
-  read() {}
+  async read(id: string = user.user.uid) {
+    const document = await getDoc(doc(this.collection, id));
+    if (document.exists()) {
+      return document.data() as T;
+    } else {
+      return null;
+    }
+  }
 
-  update() {}
+  async update(data: T, id: string = user.user.uid) {
+    await updateDoc(doc(this.collection, id), data);
+  }
 
   async delete(id: string) {
     await deleteDoc(doc(this.collection, id));
   }
+
+  ref(id: string) {
+    return doc(this.collection, id);
+  }
 }
 
 export const database = {
-  collection: (name: string) => new Collection(name),
+  collection: <T extends { [key: string]: any }>(collectionName: string) =>
+    new Collection<T>(collectionName),
 };
 
 export function cookie_clicks() {
-  return database.collection("cookie_clicks");
+  return database.collection<CookieClickData>("cookie_clicks");
+}
+
+export type PetData = {
+  createdAt: Date;
+  createdBy: string;
+  palette: string[];
+  shape: string;
+};
+
+export function pets() {
+  return database.collection<PetData>("pets");
+}
+
+export type PetOwnerData = {
+  lastClaimed: Date;
+  lastCreated: Date;
+  pets: DocumentReference[];
+};
+
+export function pet_owners() {
+  return database.collection<PetOwnerData>("pet_owners");
 }

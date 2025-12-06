@@ -57,19 +57,17 @@
   animation-fill-mode: forwards;
   animation-play-state: running;
   animation-name: bounce;
-
-  filter: drop-shadow(0 0 5px #000);
 }
 
 @keyframes bounce {
   0% {
-    transform:translate(0, 0%);
+    transform: scale(var(--flip), 1) translate(0, 0%);
   }
   20% {
-    transform:translate(0, 1%);
+    transform: scale(var(--flip), 1) translate(0, 1%);
   }
   100% {
-    transform: scale(1, 0.9) translate(0, 5%);
+    transform: scale(var(--flip), 0.9) translate(0, 5%);
   }
 }
 

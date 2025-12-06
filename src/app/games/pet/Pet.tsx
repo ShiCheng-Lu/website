@@ -1,5 +1,6 @@
 "use client";
 
+import { PetData } from "@/util/database";
 import { useCallback, useEffect, useRef } from "react";
 
 export const DEFAULT_PALETTE = [
@@ -12,12 +13,6 @@ export const DEFAULT_PALETTE = [
   "#00ff",
   "#80ff",
 ];
-
-export class PetData {
-  palette: string[] = DEFAULT_PALETTE;
-  shape: string =
-    "AAAAAAAAAAAAAAAAACAiAAAAACIiAAAAQCIhAAAARCIiIiIiACIiIiIiACIiIiIiACIiIiIAACAiIiIAAAAAQAAAAEAARAAA";
-}
 
 const base64encode =
   "ABCDEFGHIJKLMNOPQRSTVUWXYZabcdefghijklmnopqrstuwvxyz0123456789+/";

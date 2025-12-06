@@ -26,7 +26,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 const auth = getAuth(app);
-const user = await signInAnonymously(auth);
+export const user = await signInAnonymously(auth);
 
 export type CookieClickData = {
   id: string;

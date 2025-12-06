@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
-import { PetData, DEFAULT_PALETTE, fromPixels, getPixels } from "./Pet";
+import { DEFAULT_PALETTE, fromPixels } from "./Pet";
+import { PetData } from "@/util/database";
 
 export type PetDrawerProps = {
   setData: (pet: PetData) => void;
@@ -40,6 +41,8 @@ export default function PetDrawer({ setData }: PetDrawerProps) {
 
   useEffect(() => {
     setData({
+      createdAt: new Date(),
+      createdBy: "",
       palette,
       shape: fromPixels(pixels),
     });
