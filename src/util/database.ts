@@ -10,6 +10,7 @@
 import {
   DocumentReference,
   FieldPath,
+  Timestamp,
   addDoc,
   collection,
   doc,
@@ -82,7 +83,7 @@ export function cookie_clicks() {
 }
 
 export type PetData = {
-  createdAt: Date;
+  createdAt: Timestamp;
   createdBy: string;
   palette: string[];
   shape: string;
@@ -93,8 +94,8 @@ export function pets() {
 }
 
 export type PetOwnerData = {
-  lastClaimed: Date;
-  lastCreated: Date;
+  lastClaimed: Timestamp;
+  lastCreated: Timestamp;
   pets: DocumentReference[];
 };
 

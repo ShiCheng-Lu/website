@@ -6,11 +6,11 @@ import PetDisplay, { PET_SIZE, RandomMove } from "./PetDisplay";
 import Pet, { DEFAULT_PALETTE } from "./Pet";
 import { PetData, PetOwnerData, pet_owners, pets } from "@/util/database";
 import { user } from "@/util/firebase";
-import { documentId, doc, limit, where } from "firebase/firestore";
+import { documentId, doc, limit, where, Timestamp } from "firebase/firestore";
 
 export default function Pets() {
   const [pet, setPet] = useState({
-    createdAt: new Date(),
+    createdAt: Timestamp.now(),
     createdBy: "",
     palette: DEFAULT_PALETTE,
     shape:
@@ -18,8 +18,8 @@ export default function Pets() {
   });
 
   const [petOwner, setPetOwner] = useState<PetOwnerData>({
-    lastClaimed: new Date(0),
-    lastCreated: new Date(0),
+    lastClaimed: Timestamp.fromMillis(0),
+    lastCreated: Timestamp.fromMillis(0),
     pets: [],
   });
 
@@ -30,7 +30,7 @@ export default function Pets() {
       await pets().create(
         {
           ...pet,
-          createdAt: new Date(),
+          createdAt: Timestamp.now(),
           createdBy: user.user.uid,
         },
         null
@@ -38,7 +38,7 @@ export default function Pets() {
 
       await pet_owners().update({
         ...petOwner,
-        lastCreated: new Date(),
+        lastCreated: Timestamp.now(),
       });
     })();
   };
@@ -46,8 +46,20 @@ export default function Pets() {
   const claimPet = () => {
     (async () => {
       if (!petOwner) return;
+      const secondsSinceLastClaim =
+        Timestamp.now().seconds - petOwner.lastClaimed.seconds;
+      const petClaimCooldownSeconds = 12 * 60 * 60;
+      if (secondsSinceLastClaim < petClaimCooldownSeconds) {
+        console.log("Cannot claim another pet, on cool down");
+        alert(
+          `You can claim another pet in ${
+            petClaimCooldownSeconds - secondsSinceLastClaim
+          } seconds`
+        );
+        return;
+      }
 
-      const randId = doc(pets().collection).id;
+      const randId = "AAAAA";
       var randomPet = await pets().query(
         where(documentId(), ">=", randId),
         limit(1)
@@ -64,11 +76,20 @@ export default function Pets() {
         return;
       }
       const claimedPet = Object.entries(randomPet)[0];
-      const petRef = pets().ref(claimedPet[0]);
 
-      pet_owners().update({
+      if (petOwner.pets.every((pet) => pet.id === claimedPet[0])) {
+        // already own this pet
+        console.log(`Already owns pet ${claimedPet[0]}`);
+        await pet_owners().update({
+          ...petOwner,
+          lastClaimed: Timestamp.now(),
+        });
+        return;
+      }
+      await pet_owners().update({
         ...petOwner,
-        pets: [...(petOwner.pets ?? []), petRef],
+        lastClaimed: Timestamp.now(),
+        pets: [...(petOwner.pets ?? []), pets().ref(claimedPet[0])],
       });
 
       setPets([...ownedPets, claimedPet[1]]);
@@ -94,6 +115,8 @@ export default function Pets() {
         );
         setPets(Object.entries(ownedPets).map((value) => value[1]));
       }
+
+      console.log(Timestamp.now().seconds - me.lastClaimed.seconds > 12 * 60);
     })();
   }, []);
 
