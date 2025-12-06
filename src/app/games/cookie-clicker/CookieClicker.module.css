@@ -31,7 +31,7 @@
 }
 
 .CookieClickerPlusOne {
-  color: var(--foreground);
+  color: white;
   font-weight: bold;
   pointer-events: none;
 

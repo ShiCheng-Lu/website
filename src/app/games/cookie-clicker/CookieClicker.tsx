@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import styles from "./CookieClicker.module.css";
 import React from "react";
-import ClickAnimation from "./ClickAnimation";
+import ClickAnimation from "@/components/ClickAnimation";
 
 export type CookieClickerProps = {
   leaderboard_count?: number;
@@ -94,6 +94,8 @@ export default function CookieClicker({
       return "🥈";
     } else if (index === 2) {
       return "🥉";
+    } else if (isUser(leaderboard[index])) {
+      return "➡️";
     } else {
       return "     ";
     }
@@ -122,7 +124,7 @@ export default function CookieClicker({
                 }`}
                 key={index}
               >
-                <p style={{whiteSpace: "pre"}}>
+                <p style={{ whiteSpace: "pre" }}>
                   {place(index)} {row.display_name}
                 </p>
                 <p>{row.count + (isUser(row) ? increment : 0)}</p>
