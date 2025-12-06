@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Pet from "./Pet";
 import styles from "./page.module.css";
 import { Point, sub, abs, div, mul, add } from "@/util/point";
@@ -59,14 +59,28 @@ export function RandomMove({ children }: { children: React.ReactElement }) {
     return () => clearTimeout(timer);
   }, [position, idle]);
 
+  const setContainer = useCallback((element: HTMLDivElement) => {
+    if (!element) return;
+    const initializePosition = container.current == null;
+    container.current = element;
+    if (initializePosition) {
+      const bounds = element.getBoundingClientRect();
+      setPosition({
+        x: Math.random() * (bounds.width - PET_SIZE),
+        y: Math.random() * (bounds.height - PET_SIZE),
+      });
+    }
+  }, []);
+
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
+        position: "absolute",
         filter: "drop-shadow(0 0 5px #000)",
       }}
-      ref={container}
+      ref={setContainer}
     >
       <div
         className={styles.PetBounce}
