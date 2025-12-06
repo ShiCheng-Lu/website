@@ -1,47 +1,26 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
-
-const DEFAULT_PALETTE = [
-  "#0000",
-  "#000f",
-  "#ffff",
-  "#f00f",
-  "#f80f",
-  "#ff0f",
-  "#0f0f",
-  "#0aff",
-  "#00ff",
-  "#80ff",
-];
+import { PetData, DEFAULT_PALETTE, fromPixels, getPixels } from "./Pet";
 
 export type PetDrawerProps = {
-
+  setData: (pet: PetData) => void;
 };
 
-export class Pet {
-  
-  constructor() {}
-
-  
-
-};
-
-export default function PetDrawer() {
-  const size = 16;
+export default function PetDrawer({ setData }: PetDrawerProps) {
+  const size = 12;
   const scale = 20;
-  const [data, setData] = useState(Array(16).fill(Array(16).fill(0)));
   const [drawing, setDrawing] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const [pixels, setPixels] = useState(Array(size * size).fill(0));
   const [palette, setPalette] = useState(DEFAULT_PALETTE);
 
   const draw = (e: React.PointerEvent) => {
     const context = canvas.current?.getContext("2d");
-    if (context == null) {
-      return;
-    }
+    if (context == null) return;
+
     const bounds = e.currentTarget.getBoundingClientRect();
 
     const x = Math.floor((e.clientX - bounds.x) / scale);
@@ -50,7 +29,21 @@ export default function PetDrawer() {
     context.clearRect(x * scale, y * scale, scale, scale);
     context.fillStyle = palette[colorIndex];
     context.fillRect(x * scale, y * scale, scale, scale);
+
+    const index = x + y * size;
+    if (pixels[index] != colorIndex) {
+      const newPixels = [...pixels];
+      newPixels[x + y * size] = colorIndex;
+      setPixels(newPixels);
+    }
   };
+
+  useEffect(() => {
+    setData({
+      palette,
+      shape: fromPixels(pixels),
+    });
+  }, [palette, pixels]);
 
   const onPointerUp = (e: React.PointerEvent) => {
     setDrawing(false);
@@ -98,7 +91,7 @@ export default function PetDrawer() {
             type="radio"
             name="color"
             checked={colorIndex == index}
-            onPointerDown={() => onSelectColor(index)}
+            onChange={(e) => e.target.checked && onSelectColor(index)}
           />
         ))}
       </div>

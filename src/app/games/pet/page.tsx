@@ -1,8 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
-import PetDrawer from "./pet-drawer";
+import { useState } from "react";
+import PetDrawer from "./PetDrawer";
+import PetDisplay from "./PetDisplay";
+import { PetData } from "./Pet";
 
 export default function Pets() {
-  return <PetDrawer />;
+  const [pet, setPet] = useState([new PetData()]);
+
+  return (
+    <div>
+      <PetDrawer setData={(pet) => setPet([pet])} />
+      <PetDisplay pets={pet} />
+    </div>
+  );
 }

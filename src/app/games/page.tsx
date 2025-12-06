@@ -10,6 +10,9 @@ export default function Games() {
       <Link className={styles.GameNav} href="/games/pet">
         Pet
       </Link>
+      {/* <Link className={styles.GameNav} href="/games/archery">
+        Archery
+      </Link> */}
     </div>
   );
 }
