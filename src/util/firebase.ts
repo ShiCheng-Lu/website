@@ -26,7 +26,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 const auth = getAuth(app);
-const user = await signInAnonymously(auth);
+export const user = await signInAnonymously(auth);
 
 export type CookieClickData = {
   id: string;
@@ -35,13 +35,14 @@ export type CookieClickData = {
 };
 
 export function getTopClickers(
+  count: number = 3,
   resultHandler: (data: CookieClickData[]) => void
 ): Unsubscribe {
   const cookie_clicks = collection(db, "cookie_clicks");
   const topCountQuery = query(
     cookie_clicks,
     orderBy("count", "desc"),
-    limit(3)
+    limit(count)
   );
   return onSnapshot(topCountQuery, (data) => {
     const cookieClickData = data.docs.map(

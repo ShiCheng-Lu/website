@@ -1,0 +1,11 @@
+.GameNav {
+  padding: 15;
+  margin-top: 20;
+  border: 0;
+  border-radius: 20;
+  background-color: orange;
+  width: 220;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}

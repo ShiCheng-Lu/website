@@ -16,7 +16,7 @@ import PrivacyPolicy from "@/components/PrivacyPolicy";
 import { TabSwitcher, Tab } from "@/components/TabSwitcher";
 import { isMobile } from "react-device-detect";
 import { ViolaAdvert } from "./ViolaAdvert";
-import CookieClicker from "@/components/CookieClicker";
+import CookieClicker from "@/app/games/cookie-clicker/CookieClicker";
 
 function isSafari() {
   if (typeof DeviceMotionEvent != "undefined") {
@@ -134,6 +134,10 @@ export default function Home() {
       <Link className={styles.navButton} href="/archery">
         Try archery? 🏹
       </Link> */}
+
+        <Link className={styles.navButton} href="/games">
+          Games!
+        </Link>
 
         <Link
           className={styles.navButton}

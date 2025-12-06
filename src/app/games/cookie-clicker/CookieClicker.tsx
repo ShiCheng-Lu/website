@@ -7,23 +7,27 @@ import {
   CookieClickData,
   clickCookie,
 } from "@/util/firebase";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./CookieClicker.module.css";
 import React from "react";
-import ClickAnimation from "./ClickAnimation";
-import { Tooltip } from "react-tooltip";
+import ClickAnimation from "@/components/ClickAnimation";
 
-export default function CookieClicker() {
+export type CookieClickerProps = {
+  leaderboard_count?: number;
+};
+
+export default function CookieClicker({
+  leaderboard_count = 3,
+}: CookieClickerProps) {
   const [leaderboard, setLeaderboard] = useState<CookieClickData[]>([]);
   const [user, setUser] = useState({ display_name: "", count: 0, id: "" });
   const [increment, setIncrement] = useState(0);
   const [newName, setNewName] = useState<string>();
   const [pointer, setPointer] = useState(false);
-  const [clickHandler, setClickHandler] =
-    useState<(x: number, y: number) => void>();
+  const [clickHandler] = useState<(x: number, y: number) => void>();
 
   useEffect(() => {
-    const unsub = getTopClickers(setLeaderboard);
+    const unsub = getTopClickers(leaderboard_count, setLeaderboard);
     const unsub2 = getUser((user) => {
       if (user) {
         setUser(user);
@@ -90,8 +94,10 @@ export default function CookieClicker() {
       return "🥈";
     } else if (index === 2) {
       return "🥉";
+    } else if (isUser(leaderboard[index])) {
+      return "➡️";
     } else {
-      return "";
+      return "     ";
     }
   };
 
@@ -118,7 +124,7 @@ export default function CookieClicker() {
                 }`}
                 key={index}
               >
-                <p>
+                <p style={{ whiteSpace: "pre" }}>
                   {place(index)} {row.display_name}
                 </p>
                 <p>{row.count + (isUser(row) ? increment : 0)}</p>
@@ -143,7 +149,7 @@ export default function CookieClicker() {
         clickAnimation={<div className={styles.CookieClickerPlusOne}>+1</div>}
       >
         <img
-          src="cookie.png"
+          src="/cookie.png"
           width={250}
           style={{ cursor: pointer ? "pointer" : "default" }}
         />
