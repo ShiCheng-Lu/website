@@ -35,13 +35,14 @@ export type CookieClickData = {
 };
 
 export function getTopClickers(
+  count: number = 3,
   resultHandler: (data: CookieClickData[]) => void
 ): Unsubscribe {
   const cookie_clicks = collection(db, "cookie_clicks");
   const topCountQuery = query(
     cookie_clicks,
     orderBy("count", "desc"),
-    limit(3)
+    limit(count)
   );
   return onSnapshot(topCountQuery, (data) => {
     const cookieClickData = data.docs.map(
