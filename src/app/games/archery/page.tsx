@@ -73,13 +73,15 @@ export default function Archery() {
     }, 1000 / fps);
   }, [aimTime, drift, driftTarget]);
 
-  const onPointerDown = () => {
+  const onPointerDown = (e: React.PointerEvent) => {
     if (checkTarget) {
       return;
     }
     setPower(0);
     setNewDriftTarget();
     setAimTime(Date.now());
+
+    (e.target as any)?.requestPointerLock();
   };
 
   const onPointerUp = () => {
