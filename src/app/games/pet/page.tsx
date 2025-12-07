@@ -31,7 +31,6 @@ export default function Pets() {
   });
 
   const [ownedPets, setPets] = useState<PetData[]>([]);
-  const [submitConfirm, setSubmitConfirm] = useState(false);
 
   const submit = () => {
     (async () => {
@@ -105,16 +104,6 @@ export default function Pets() {
         return;
       }
       const claimedPet = Object.entries(randomPet)[0];
-
-      if (petOwner.pets.every((pet) => pet.id === claimedPet[0])) {
-        // already own this pet
-        console.log(`Already owns pet ${claimedPet[0]}`);
-        await pet_owners().update({
-          ...petOwner,
-          lastClaimed: Timestamp.now(),
-        });
-        return;
-      }
       await pet_owners().update({
         ...petOwner,
         lastClaimed: Timestamp.now(),
@@ -158,9 +147,8 @@ export default function Pets() {
         alignItems: "center",
       }}
     >
-      <div>
-        <h1>Draw your browser pet</h1>
-      </div>
+      <h1>Check out these cuties!</h1>
+      <p>You can draw 1 pet per day, and claim 1 random pet per day.</p>
       <div
         style={{
           height: "fit-content",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { BsChevronLeft } from "react-icons/bs";
 
@@ -15,8 +14,6 @@ export default function Settings() {
     "acceptedPolicy",
     "useTabs",
   ]);
-  const [initialized, setInitialized] = useState(false);
-  useEffect(() => setInitialized(true), []);
 
   const expires = (days: number = 1) => {
     const date = new Date();
@@ -27,81 +24,79 @@ export default function Settings() {
   };
 
   return (
-    initialized && (
-      <div
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        padding: "3rem",
+        gap: "1rem",
+      }}
+    >
+      <BsChevronLeft
         style={{
-          display: "flex",
-          flexDirection: "column",
-          padding: "3rem",
-          gap: "1rem",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          padding: "1rem",
+          width: "auto",
+          height: "auto",
         }}
-      >
-        <BsChevronLeft
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            padding: "1rem",
-            width: "auto",
-            height: "auto",
-          }}
-          onClick={router.back}
-        />
+        onClick={router.back}
+      />
 
-        <div
-          onClick={() =>
-            setCookie("disableBrainRot", !cookie.disableBrainRot, expires(1))
-          }
-          style={{ marginRight: "auto" }}
-        >
-          <input
-            type="checkbox"
-            checked={cookie.disableBrainRot || false}
-            readOnly
-          />
-          <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
-        </div>
-        <div
-          onClick={() => setCookie("disableAd", !cookie.disableAd, expires(1))}
-          style={{ marginRight: "auto" }}
-        >
-          <input type="checkbox" checked={cookie.disableAd || false} readOnly />
-          <label htmlFor="brainrot">DO NOT SHOW AD</label>
-        </div>
-        <div
-          onClick={() =>
-            setCookie("disable8Ball", !cookie.disable8Ball, expires(1))
-          }
-          style={{ marginRight: "auto" }}
-        >
-          <input
-            type="checkbox"
-            checked={cookie.disable8Ball || false}
-            readOnly
-          />
-          <label htmlFor="brainrot">DO NOT MAGIC 8 BALL</label>
-        </div>
-        <div
-          onClick={() =>
-            setCookie("acceptedPolicy", !cookie.acceptedPolicy, expires(7))
-          }
-          style={{ marginRight: "auto" }}
-        >
-          <input
-            type="checkbox"
-            checked={cookie.acceptedPolicy || false}
-            readOnly
-          />
-          <label htmlFor="acceptedPolicy">ACCEPTED POLICY</label>
-        </div>
-        <div
-          onClick={() => setCookie("useTabs", !cookie.useTabs, expires(7))}
-          style={{ marginRight: "auto" }}
-        >
-          <input type="checkbox" checked={cookie.useTabs || false} readOnly />
-          <label htmlFor="acceptedPolicy">USE TABS</label>
-        </div>
+      <div
+        onClick={() =>
+          setCookie("disableBrainRot", !cookie.disableBrainRot, expires(1))
+        }
+        style={{ marginRight: "auto" }}
+      >
+        <input
+          type="checkbox"
+          checked={cookie.disableBrainRot || false}
+          readOnly
+        />
+        <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
       </div>
-    )
+      <div
+        onClick={() => setCookie("disableAd", !cookie.disableAd, expires(1))}
+        style={{ marginRight: "auto" }}
+      >
+        <input type="checkbox" checked={cookie.disableAd || false} readOnly />
+        <label htmlFor="brainrot">DO NOT SHOW AD</label>
+      </div>
+      <div
+        onClick={() =>
+          setCookie("disable8Ball", !cookie.disable8Ball, expires(1))
+        }
+        style={{ marginRight: "auto" }}
+      >
+        <input
+          type="checkbox"
+          checked={cookie.disable8Ball || false}
+          readOnly
+        />
+        <label htmlFor="brainrot">DO NOT MAGIC 8 BALL</label>
+      </div>
+      <div
+        onClick={() =>
+          setCookie("acceptedPolicy", !cookie.acceptedPolicy, expires(7))
+        }
+        style={{ marginRight: "auto" }}
+      >
+        <input
+          type="checkbox"
+          checked={cookie.acceptedPolicy || false}
+          readOnly
+        />
+        <label htmlFor="acceptedPolicy">ACCEPTED POLICY</label>
+      </div>
+      <div
+        onClick={() => setCookie("useTabs", !cookie.useTabs, expires(7))}
+        style={{ marginRight: "auto" }}
+      >
+        <input type="checkbox" checked={cookie.useTabs || false} readOnly />
+        <label htmlFor="acceptedPolicy">USE TABS</label>
+      </div>
+    </div>
   );
 }
