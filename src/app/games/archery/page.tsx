@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
-import { Arrow, Target } from "./ArcheryModels";
+import { Arrow, Floor, Target } from "./ArcheryModels";
 import BackButton from "@/components/BackButton";
 
 function Camera({ fov, position }: { fov: number; position: number[] }) {
@@ -30,6 +30,7 @@ export default function Archery() {
 
   const fps = 60;
   const distance = 18; // or 25
+  const floor = -1.25;
 
   useEffect(() => {
     if (velocity.lengthSq() == 0 || aimTime) {
@@ -37,7 +38,7 @@ export default function Archery() {
     }
     const timeout = setTimeout(() => {
       setPosition(position.add(velocity.clone().divideScalar(fps)).clone());
-      if (position.z > 1 - distance && position.y > -5) {
+      if (position.z > 1 - distance && position.y > floor) {
         setVelocity(velocity.add(new Vector3(0, -9.8 / fps, 0)).clone());
       } else {
         setVelocity(new Vector3(0));
@@ -83,8 +84,18 @@ export default function Archery() {
 
   const onPointerUp = () => {
     setAimTime(undefined);
+    if (position.y < floor + 0.01) {
+      setPosition(new Vector3(0, -0.05, 0.3));
+      setRotation(new Vector2(0));
+      setDrift(new Vector2());
+      setVelocity(new Vector3(0));
+      setCheckTarget(false);
+      return;
+    }
     if (position.z < -2) {
       setPosition(new Vector3(0, -0.05, 0.3));
+      setRotation(new Vector2(0));
+      setDrift(new Vector2());
       setVelocity(new Vector3(0));
       return;
     }
@@ -106,6 +117,16 @@ export default function Archery() {
     const movement = new Vector2(e.movementY, e.movementX);
     movement.multiplyScalar(0.0001);
     setRotation(rotation.clone().sub(movement));
+  };
+
+  const cameraPosition = () => {
+    if (!checkTarget) {
+      return [0, 0, 0];
+    } else if (position.y < floor + 0.01) {
+      return [position.x, position.y + 0.15, position.z + 3];
+    } else {
+      return [0, 0, 3 - distance];
+    }
   };
 
   return (
@@ -130,22 +151,18 @@ export default function Archery() {
           position: [0, 0, 0],
         }}
       >
-        <Camera
-          fov={30}
-          position={[0, 0, checkTarget ? 2 - distance : 0]}
-        ></Camera>
+        <Camera fov={30} position={cameraPosition()}></Camera>
         <directionalLight position={[2, 2, 5]} color="white" intensity={3} />
 
-        {/* Target */}
         <Target distance={distance} />
-
-        {/* Arrow */}
         <Arrow
           position={position}
           rotation={[rotation.x + drift.x, rotation.y + drift.y, 0]}
         />
 
         {/* Sight */}
+
+        <Floor floorLevel={floor} />
         <mesh></mesh>
       </Canvas>
     </div>

@@ -6,13 +6,12 @@ export function Target({ distance }: TargetProps) {
   return (
     <mesh
       position={[0, 0, -distance]}
-      rotation={[-((10 / 180) * Math.PI), 0, 0]}
-      scale={0.4 / 5}
+      rotation={[-((0 / 180) * Math.PI), 0, 0]}
     >
       {["yellow", "red", "blue", "black", "white"].map((color, index) => {
         const ringColor = color == "black" ? "white" : "black";
         return (
-          <mesh key={index}>
+          <mesh key={index} scale={0.4 / 5}>
             {/* inner ring */}
             <mesh>
               <ringGeometry args={[index, index + 0.45, 64, 1]} />
@@ -34,6 +33,10 @@ export function Target({ distance }: TargetProps) {
           </mesh>
         );
       })}
+      <mesh position={[0, -0.25, -0.6]}>
+        <boxGeometry args={[1.5, 2, 0.5]} />
+        <meshStandardMaterial color={"black"} />
+      </mesh>
     </mesh>
   );
 }
@@ -75,6 +78,33 @@ export function Arrow({ position, rotation }: ArrowProps) {
             <cylinderGeometry args={[width, prev, 1, 16, 1, true]} />
             <meshStandardMaterial color={"gray"} metalness={0.5} />
           </mesh>
+        );
+      })}
+    </mesh>
+  );
+}
+
+type FloorProps = {
+  floorLevel: number;
+};
+export function Floor({ floorLevel }: FloorProps) {
+  return (
+    <mesh>
+      {[-5, -3, -1, 1, 3, 5].map((position) => {
+        return (
+          <>
+            <mesh
+              position={[position, floorLevel, -10]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
+              <planeGeometry args={[1, 20, 1, 1]} />
+              <meshStandardMaterial color={"white"} />
+            </mesh>
+            <mesh
+              position={[0, -2, position]}
+              rotation={[0, 0, Math.PI / 2]}
+            ></mesh>
+          </>
         );
       })}
     </mesh>
