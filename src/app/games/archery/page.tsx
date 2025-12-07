@@ -23,20 +23,21 @@ export default function Archery() {
   const [rotation, setRotation] = useState(new Vector2());
   const [drift, setDrift] = useState(new Vector2());
   const [driftTarget, setDriftTarget] = useState(new Vector2());
-  const [aiming, setAiming] = useState(false);
+  const [aimTime, setAimTime] = useState<number>();
   const [velocity, setVelocity] = useState(new Vector3(0));
   const [checkTarget, setCheckTarget] = useState(false);
+  const [power, setPower] = useState(0);
 
   const fps = 60;
   const distance = 18; // or 25
 
   useEffect(() => {
-    if (velocity.lengthSq() == 0) {
+    if (velocity.lengthSq() == 0 && !aimTime) {
       return;
     }
     const timeout = setTimeout(() => {
       setPosition(position.add(velocity.clone().divideScalar(fps)).clone());
-      if (position.z > 1 - distance) {
+      if (position.z > 1 - distance && position.y > -5) {
         setVelocity(velocity.add(new Vector3(0, -9.8 / fps, 0)).clone());
       } else {
         setVelocity(new Vector3(0));
@@ -56,7 +57,7 @@ export default function Archery() {
   };
 
   useEffect(() => {
-    if (!aiming) return;
+    if (!aimTime) return;
     setTimeout(() => {
       const diff = driftTarget.clone().sub(drift);
       if (diff.lengthSq() < 0.0001 * 0.0001) {
@@ -65,37 +66,43 @@ export default function Archery() {
         diff.normalize().multiplyScalar(0.0001);
         setDrift(drift.clone().add(diff));
       }
+      const power = Math.min(1, (Date.now() - aimTime) / 2000);
+      setPower(power);
+      setPosition(new Vector3(0, -0.05, (power - 1) * 0.3));
     }, 1000 / fps);
-  }, [aiming, drift, driftTarget]);
+  }, [aimTime, drift, driftTarget]);
 
   const onPointerDown = () => {
     if (checkTarget) {
       return;
     }
+    setPower(0);
     setNewDriftTarget();
-    setAiming(true);
+    setAimTime(Date.now());
   };
 
   const onPointerUp = () => {
+    setAimTime(undefined);
     if (position.z < -2) {
       setPosition(new Vector3(0, -0.05, 0));
       setVelocity(new Vector3(0));
       return;
     }
-    if (checkTarget || !aiming) {
+    if (checkTarget || !aimTime) {
       setCheckTarget(false);
       return;
     }
-    setAiming(false);
-
-    const vel = new Vector3(0, 0, -50);
+    // aim for 2 seconds for full power
+    console.log(power);
+    const vel = new Vector3(0, 0, -50 * power);
+    console.log(vel);
     const rotator = new Euler(rotation.x + drift.x, rotation.y + drift.y, 0);
     // const rotator = new Euler();
     setVelocity(vel.applyEuler(rotator));
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (checkTarget || !aiming) {
+    if (checkTarget || !aimTime) {
       return;
     }
     const movement = new Vector2(e.movementY, e.movementX);
