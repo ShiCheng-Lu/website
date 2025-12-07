@@ -90,9 +90,9 @@ type FloorProps = {
 export function Floor({ floorLevel }: FloorProps) {
   return (
     <mesh>
-      {[-5, -3, -1, 1, 3, 5].map((position) => {
+      {[-5, -3, -1, 1, 3, 5].map((position, index) => {
         return (
-          <>
+          <mesh key={index}>
             <mesh
               position={[position, floorLevel, -10]}
               rotation={[-Math.PI / 2, 0, 0]}
@@ -104,7 +104,7 @@ export function Floor({ floorLevel }: FloorProps) {
               position={[0, -2, position]}
               rotation={[0, 0, Math.PI / 2]}
             ></mesh>
-          </>
+          </mesh>
         );
       })}
     </mesh>

@@ -33,6 +33,7 @@ export default function Archery() {
   const fps = 60;
   const floor = -1.25;
 
+  // fired arrow, this function compute physics
   useEffect(() => {
     if (velocity.lengthSq() == 0 || aimTime) {
       return;
@@ -41,6 +42,16 @@ export default function Archery() {
       setPosition(position.add(velocity.clone().divideScalar(fps)).clone());
       if (position.z > 1 - distance && position.y > floor) {
         setVelocity(velocity.add(new Vector3(0, -9.8 / fps, 0)).clone());
+        setRotation(
+          new Vector2(
+            Math.atan2(
+              velocity.y,
+              Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z)
+            ),
+            Math.atan2(-velocity.x, -velocity.z)
+          )
+        );
+        setDrift(new Vector2());
       } else {
         setVelocity(new Vector3(0));
         setCheckTarget(true);
@@ -58,6 +69,7 @@ export default function Archery() {
     setDriftTarget(target);
   };
 
+  // aiming, this function randomly drift the aim left and right
   useEffect(() => {
     if (!aimTime) return;
     setTimeout(() => {
@@ -87,20 +99,16 @@ export default function Archery() {
 
   const onPointerUp = () => {
     setAimTime(undefined);
-    if (position.y < floor + 0.01) {
+    const onFloor = position.y < floor + 0.01;
+    const onTarget = position.z < -2;
+    if (onTarget || onFloor) {
       setPosition(new Vector3(0, -0.05, 0.3));
-      setRotation(new Vector2(0));
+      setRotation(new Vector2(distance / 1500, 0));
       setDrift(new Vector2());
       setVelocity(new Vector3(0));
-      setCheckTarget(false);
-      return;
-    }
-    if (position.z < -2) {
-      setPosition(new Vector3(0, -0.05, 0.3));
-      setRotation(new Vector2(0));
-      setDrift(new Vector2());
-      setVelocity(new Vector3(0));
-      return;
+      if (!onFloor) {
+        return;
+      }
     }
     if (checkTarget || !aimTime) {
       setCheckTarget(false);
@@ -132,14 +140,31 @@ export default function Archery() {
     }
   };
 
+  const changeRange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (aimTime) {
+      return;
+    }
+    const newDistance = parseInt(e.target.value);
+    setDistance(newDistance);
+    setRotation(new Vector2(newDistance / 1500, 0));
+  };
+
   return (
     <div
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
-        height: "100vh",
+        width: "100%",
+        height: "100%",
         userSelect: "none",
+      }}
+      onScroll={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
       }}
     >
       <BackButton />
@@ -159,10 +184,7 @@ export default function Archery() {
         <directionalLight position={[2, 2, 5]} color="white" intensity={3} />
 
         <Target distance={distance} />
-        <Arrow
-          position={position}
-          rotation={[rotation.x + drift.x, rotation.y + drift.y, 0]}
-        />
+        <Arrow position={position} rotation={[rotation.x, rotation.y, 0]} />
 
         {/* Sight */}
 
@@ -186,7 +208,7 @@ export default function Archery() {
             value={distance}
             min="5"
             max="70"
-            onChange={(e) => setDistance(parseInt(e.target.value))}
+            onChange={changeRange}
           />
           <p style={{ width: "32px" }}>{distance}m</p>
         </div>
