@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { translationList, encode } from "./encode";
 import ReactCodeMirror, { EditorView } from "@uiw/react-codemirror";
+import BackButton from "@/components/BackButton";
 
 export default function JSFuck() {
   const [code, setCode] = useState("\n\n\n\n\n");
@@ -41,6 +42,8 @@ export default function JSFuck() {
 
   return (
     <div className={styles.JSFuck}>
+      <BackButton />
+
       <h1>I heard ya like JavaScript</h1>
       <table>
         <tbody>
