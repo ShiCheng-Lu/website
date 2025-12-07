@@ -32,7 +32,7 @@ export default function Archery() {
   const distance = 18; // or 25
 
   useEffect(() => {
-    if (velocity.lengthSq() == 0 && !aimTime) {
+    if (velocity.lengthSq() == 0 || aimTime) {
       return;
     }
     const timeout = setTimeout(() => {
@@ -84,7 +84,7 @@ export default function Archery() {
   const onPointerUp = () => {
     setAimTime(undefined);
     if (position.z < -2) {
-      setPosition(new Vector3(0, -0.05, 0));
+      setPosition(new Vector3(0, -0.05, 0.3));
       setVelocity(new Vector3(0));
       return;
     }
@@ -93,9 +93,7 @@ export default function Archery() {
       return;
     }
     // aim for 2 seconds for full power
-    console.log(power);
     const vel = new Vector3(0, 0, -50 * power);
-    console.log(vel);
     const rotator = new Euler(rotation.x + drift.x, rotation.y + drift.y, 0);
     // const rotator = new Euler();
     setVelocity(vel.applyEuler(rotator));
