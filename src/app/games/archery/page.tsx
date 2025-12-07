@@ -60,6 +60,7 @@ export default function Archery() {
     return () => clearTimeout(timeout);
   }, [velocity, position]);
 
+  // aiming, this function randomly drift the aim left and right
   const setNewDriftTarget = () => {
     const angle = Math.random() * Math.PI;
     const x = Math.sin(angle);
@@ -69,7 +70,6 @@ export default function Archery() {
     setDriftTarget(target);
   };
 
-  // aiming, this function randomly drift the aim left and right
   useEffect(() => {
     if (!aimTime) return;
     setTimeout(() => {
@@ -87,7 +87,7 @@ export default function Archery() {
   }, [aimTime, drift, driftTarget]);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (checkTarget) {
+    if (e.button === 2 || checkTarget) {
       return;
     }
     setPower(0);
@@ -97,6 +97,7 @@ export default function Archery() {
     (e.target as any)?.requestPointerLock();
   };
 
+  // release + reset, depending on if the arrow is drawn or fired
   const onPointerUp = () => {
     setAimTime(undefined);
     const onFloor = position.y < floor + 0.01;
@@ -169,7 +170,7 @@ export default function Archery() {
     >
       <BackButton />
       <Canvas
-        style={{ flex: 1 }}
+        style={{ flex: 1, touchAction: "none" }}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerMove={onPointerMove}
