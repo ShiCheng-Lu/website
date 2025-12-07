@@ -12,6 +12,7 @@ export default function BackButton() {
         padding: "1rem",
         width: "auto",
         height: "auto",
+        zIndex: 1000,
       }}
       onClick={router.back}
     />
