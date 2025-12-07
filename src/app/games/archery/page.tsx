@@ -184,7 +184,10 @@ export default function Archery() {
         <directionalLight position={[2, 2, 5]} color="white" intensity={3} />
 
         <Target distance={distance} />
-        <Arrow position={position} rotation={[rotation.x, rotation.y, 0]} />
+        <Arrow
+          position={position}
+          rotation={[rotation.x + drift.x, rotation.y + drift.y, 0]}
+        />
 
         {/* Sight */}
 
