@@ -126,7 +126,7 @@ export default function Archery() {
       return;
     }
     const movement = new Vector2(e.movementY, e.movementX);
-    movement.multiplyScalar(0.0001);
+    movement.multiplyScalar(0.00015);
     setRotation(rotation.clone().sub(movement));
   };
 
