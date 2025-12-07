@@ -35,7 +35,7 @@ export function Target({ distance }: TargetProps) {
       })}
       <mesh position={[0, -0.25, -0.6]}>
         <boxGeometry args={[1.5, 2, 0.5]} />
-        <meshStandardMaterial color={"black"} />
+        <meshStandardMaterial color={"#011635"} />
       </mesh>
     </mesh>
   );

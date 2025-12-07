@@ -5,6 +5,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
 import { Arrow, Floor, Target } from "./ArcheryModels";
 import BackButton from "@/components/BackButton";
+import SettingsButton from "@/components/SettingsButton";
 
 function Camera({ fov, position }: { fov: number; position: number[] }) {
   const { camera } = useThree();
@@ -27,9 +28,9 @@ export default function Archery() {
   const [velocity, setVelocity] = useState(new Vector3(0));
   const [checkTarget, setCheckTarget] = useState(false);
   const [power, setPower] = useState(0);
+  const [distance, setDistance] = useState(18);
 
   const fps = 60;
-  const distance = 18; // or 25
   const floor = -1.25;
 
   useEffect(() => {
@@ -138,6 +139,7 @@ export default function Archery() {
         alignItems: "center",
         flexDirection: "column",
         height: "100vh",
+        userSelect: "none",
       }}
     >
       <BackButton />
@@ -167,6 +169,28 @@ export default function Archery() {
         <Floor floorLevel={floor} />
         <mesh></mesh>
       </Canvas>
+      <SettingsButton>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "1rem",
+            userSelect: "none",
+          }}
+        >
+          <label htmlFor="target-distance">Distance</label>
+          <input
+            id="target-distance"
+            type="range"
+            value={distance}
+            min="5"
+            max="70"
+            onChange={(e) => setDistance(parseInt(e.target.value))}
+          />
+          <p style={{ width: "32px" }}>{distance}m</p>
+        </div>
+      </SettingsButton>
     </div>
   );
 }
