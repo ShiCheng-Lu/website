@@ -8,9 +8,10 @@ import { Timestamp } from "firebase/firestore";
 
 export type PetDrawerProps = {
   setData: (pet: PetData) => void;
+  submit: () => void;
 };
 
-export default function PetDrawer({ setData }: PetDrawerProps) {
+export default function PetDrawer({ setData, submit }: PetDrawerProps) {
   const size = 12;
   const scale = 20;
   const [drawing, setDrawing] = useState(false);
@@ -38,6 +39,16 @@ export default function PetDrawer({ setData }: PetDrawerProps) {
       newPixels[x + y * size] = colorIndex;
       setPixels(newPixels);
     }
+  };
+
+  const clear = () => {
+    const context = canvas.current?.getContext("2d");
+    if (context == null) return;
+
+    const bounds = canvas.current!.getBoundingClientRect();
+
+    context.clearRect(0, 0, bounds.width, bounds.height);
+    setPixels(Array(pixels.length).fill(0));
   };
 
   useEffect(() => {
@@ -98,6 +109,16 @@ export default function PetDrawer({ setData }: PetDrawerProps) {
             onChange={(e) => e.target.checked && onSelectColor(index)}
           />
         ))}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <button onClick={clear}>Clear</button>
+        <button onClick={submit}>Submit</button>
       </div>
     </div>
   );

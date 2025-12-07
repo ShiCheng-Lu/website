@@ -31,8 +31,9 @@ export default function Pets() {
   });
 
   const [ownedPets, setPets] = useState<PetData[]>([]);
+  const [submitConfirm, setSubmitConfirm] = useState(false);
 
-  const submitPet = () => {
+  const submit = () => {
     (async () => {
       if (!petOwner) return;
       const secondsSinceLastCreation =
@@ -149,30 +150,63 @@ export default function Pets() {
   }, []);
 
   return (
-    <div>
-      <PetDrawer setData={(pet) => setPet(pet)} />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div>
+        <h1>Draw your browser pet</h1>
+      </div>
       <div
         style={{
-          width: 300,
-          height: 300,
-          border: "solid 1px",
+          height: "fit-content",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          padding: "2rem",
+          gap: "2rem",
         }}
       >
-        Preview:
+        <div style={{ width: "fit-content" }}>
+          <PetDrawer setData={(pet) => setPet(pet)} submit={submit} />
+        </div>
         <div
           style={{
+            height: "auto",
             width: 300,
-            height: 300,
-            position: "absolute",
+            border: "solid 1px",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <RandomMove>
-            <Pet data={pet} style={{ width: PET_SIZE, height: PET_SIZE }} />
-          </RandomMove>
+          <p>Preview:</p>
+          <div
+            style={{
+              height: "auto",
+              width: "auto",
+              position: "relative",
+              flex: 1,
+            }}
+          >
+            <RandomMove>
+              <Pet data={pet} style={{ width: PET_SIZE, height: PET_SIZE }} />
+            </RandomMove>
+          </div>
         </div>
       </div>
-      <button onClick={submitPet}>Submit</button>
-      <button onClick={claimPet}>Claim</button>
+      <button
+        style={{
+          width: 200,
+          height: 100,
+        }}
+        onClick={claimPet}
+      >
+        Claim a random pet!
+      </button>
       <PetDisplay pets={ownedPets} />
     </div>
   );
