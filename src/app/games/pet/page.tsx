@@ -98,10 +98,7 @@ export default function Pets() {
           where(documentId(), "not-in", petIds)
         ) : where(documentId(), "<", randId);
         randomPet = await pets().query(
-          and(
-            where(documentId(), "<", randId),
-            where(documentId(), "not-in", petIds)
-          ),
+          q,
           limit(1)
         );
       }
@@ -117,7 +114,7 @@ export default function Pets() {
       });
 
       setPets([...ownedPets, claimedPet[1]]);
-      alert("You claimed a pet, I think");
+      alert(`You claimed a pet ${claimedPet[0]}, I think`);
     })();
   };
 
