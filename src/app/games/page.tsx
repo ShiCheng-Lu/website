@@ -15,15 +15,26 @@ export default function Games() {
       }}
     >
       <BackButton />
-      <Link className={styles.GameNav} href="/games/cookie-clicker">
-        Cookie clicker
-      </Link>
-      <Link className={styles.GameNav} href="/games/pet">
-        Pet
-      </Link>
-      <Link className={styles.GameNav} href="/games/archery">
-        Archery
-      </Link>
+      <div style={{
+        width: "600px",
+        alignItems: "center",
+        justifyContent: "space-between",
+        display: "flex",
+        flexWrap: "wrap",
+        alignContent: "flex-start",
+        gap: "20px",
+        padding: "20px"
+      }}>
+        <Link className={styles.GameNav} href="/games/cookie-clicker">
+          Cookie clicker
+        </Link>
+        <Link className={styles.GameNav} href="/games/pet">
+          Pet
+        </Link>
+        <Link className={styles.GameNav} href="/games/archery">
+          Archery
+        </Link>
+      </div>
     </div>
   );
 }
