@@ -83,20 +83,22 @@ export default function Pets() {
 
       const randId = doc(pets().collection).id;
       const petIds = petOwner.pets.flatMap((pet) => pet.id);
+      const q = petIds.length > 0 ? and(
+        where(documentId(), ">=", randId),
+        where(documentId(), "not-in", petIds)
+      ) : where(documentId(), ">=", randId);
       var randomPet = await pets().query(
-        and(
-          where(documentId(), ">=", randId),
-          where(documentId(), "not-in", petIds)
-        ),
+        q,
         limit(1)
       );
       if (Object.entries(randomPet).length === 0) {
         console.log(`no pets with id higher than: ${randId}`);
+        const q = petIds.length > 0 ? and(
+          where(documentId(), "<", randId),
+          where(documentId(), "not-in", petIds)
+        ) : where(documentId(), "<", randId);
         randomPet = await pets().query(
-          and(
-            where(documentId(), "<", randId),
-            where(documentId(), "not-in", petIds)
-          ),
+          q,
           limit(1)
         );
       }
@@ -112,6 +114,7 @@ export default function Pets() {
       });
 
       setPets([...ownedPets, claimedPet[1]]);
+      alert(`You claimed a pet ${claimedPet[0]}, I think`);
     })();
   };
 
