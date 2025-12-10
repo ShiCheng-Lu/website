@@ -16,14 +16,15 @@ import {
 } from "firebase/firestore";
 import BackButton from "@/components/BackButton";
 
+const EMPTY_PET = {
+  createdAt: Timestamp.now(),
+  createdBy: "",
+  palette: DEFAULT_PALETTE,
+  shape: "A".repeat(72),
+};
+
 export default function Pets() {
-  const [pet, setPet] = useState({
-    createdAt: Timestamp.now(),
-    createdBy: "",
-    palette: DEFAULT_PALETTE,
-    shape:
-      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-  });
+  const [pet, setPet] = useState(EMPTY_PET);
 
   const [petOwner, setPetOwner] = useState<PetOwnerData>({
     lastClaimed: Timestamp.fromMillis(0),
@@ -64,6 +65,9 @@ export default function Pets() {
       };
       await pet_owners().update(newPetOwner);
       setPetOwner(newPetOwner);
+      setPet(EMPTY_PET);
+
+      alert("Created!");
     })();
   };
 
