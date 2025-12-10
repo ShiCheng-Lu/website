@@ -5,6 +5,7 @@ import {
   doc,
   onSnapshot,
   Unsubscribe,
+  serverTimestamp,
 } from "firebase/firestore";
 import { getDoc, getDocs } from "firebase/firestore";
 import { query, orderBy, limit } from "firebase/firestore";
@@ -77,7 +78,11 @@ export function getUser(
 export async function createUser(): Promise<CookieClickData> {
   const document = doc(db, "cookie_clicks", user.user.uid);
   const randomNumber = Math.floor(Math.random() * 999) + 1;
-  const data = { display_name: `User${randomNumber}`, count: 0 };
+  const data = {
+    display_name: `User${randomNumber}`,
+    count: 0,
+    updatedAt: serverTimestamp(),
+  };
   await setDoc(document, data);
   return { id: user.user.uid, ...data };
 }
@@ -95,5 +100,6 @@ export async function clickCookie(count: number) {
 
   await updateDoc(document, {
     count: increment(count),
+    updatedAt: serverTimestamp(),
   });
 }
