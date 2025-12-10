@@ -16,7 +16,8 @@ export default function Games() {
     >
       <BackButton />
       <div style={{
-        width: "600px",
+        marginTop: 40,
+        width: "max(400px, 50%)",
         alignItems: "center",
         justifyContent: "space-between",
         display: "flex",
