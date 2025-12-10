@@ -168,7 +168,6 @@ export default function Archery() {
         e.preventDefault();
       }}
     >
-      <BackButton />
       <Canvas
         style={{ flex: 1, touchAction: "none" }}
         onPointerDown={onPointerDown}
@@ -195,6 +194,7 @@ export default function Archery() {
         <Floor floorLevel={floor} />
         <mesh></mesh>
       </Canvas>
+      <BackButton />
       <SettingsButton>
         <div
           style={{

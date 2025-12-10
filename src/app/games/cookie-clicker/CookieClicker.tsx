@@ -25,6 +25,7 @@ export default function CookieClicker({
   const [newName, setNewName] = useState<string>();
   const [pointer, setPointer] = useState(false);
   const [clickHandler] = useState<(x: number, y: number) => void>();
+  const [lastSyncTime, setLastSyncTime] = useState(Date.now());
 
   useEffect(() => {
     const unsub = getTopClickers(leaderboard_count, setLeaderboard);
@@ -75,9 +76,18 @@ export default function CookieClicker({
   const onPointerDown = (e: React.PointerEvent) => {
     if (onPointerMove(e)) {
       // if clicked more than 50 times, force sync so we don't have to wait for debounce to sync, this keeps the leaderboard updated if the user is constantly clicking
+      if (increment == 0) {
+        setLastSyncTime(Date.now());
+      }
       if (increment > 50) {
-        clickCookie(increment + 1);
+        if (Date.now() - lastSyncTime > 5000) {
+          clickCookie(increment + 1);
+          console.log(Date.now() - lastSyncTime);
+        } else {
+          console.log("Rate limit!");
+        }
         setIncrement(0);
+        setLastSyncTime(Date.now());
       } else {
         setIncrement(increment + 1);
       }
