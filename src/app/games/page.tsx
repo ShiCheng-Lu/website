@@ -15,17 +15,19 @@ export default function Games() {
       }}
     >
       <BackButton />
-      <div style={{
-        marginTop: 40,
-        width: "max(400px, 50%)",
-        alignItems: "center",
-        justifyContent: "space-between",
-        display: "flex",
-        flexWrap: "wrap",
-        alignContent: "flex-start",
-        gap: "20px",
-        padding: "20px"
-      }}>
+      <div
+        style={{
+          marginTop: 40,
+          width: "max(400px, 50%)",
+          alignItems: "center",
+          justifyContent: "space-between",
+          display: "flex",
+          flexWrap: "wrap",
+          alignContent: "flex-start",
+          gap: "20px",
+          padding: "20px",
+        }}
+      >
         <Link className={styles.GameNav} href="/games/cookie-clicker">
           Cookie clicker
         </Link>
@@ -34,6 +36,9 @@ export default function Games() {
         </Link>
         <Link className={styles.GameNav} href="/games/archery">
           Archery
+        </Link>
+        <Link className={styles.GameNav} href="/games/noise">
+          Noise
         </Link>
       </div>
     </div>
