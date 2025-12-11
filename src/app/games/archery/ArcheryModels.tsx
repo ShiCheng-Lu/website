@@ -1,3 +1,5 @@
+import { Shape } from "three";
+
 export type TargetProps = {
   distance: number;
 };
@@ -49,12 +51,21 @@ export function Arrow({ position, rotation }: ArrowProps) {
   const length = 0.75;
   const diameter = 0.0065;
 
+  const fletching = new Shape();
+  fletching.moveTo(0, 0);
+  fletching.lineTo(0, 0.1);
+  fletching.lineTo(0.015, 0.05);
+  fletching.lineTo(0.015, 0.02);
+  fletching.lineTo(0, 0);
+
   return (
     <mesh position={position} rotation={rotation}>
+      {/* shaft */}
       <mesh position={[0, 0, -length / 2]} rotation={[-Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[diameter, diameter, length, 32]} />
         <meshStandardMaterial color={"sienna"} metalness={0.5} />
       </mesh>
+      {/* tip neck */}
       <mesh
         position={[0, 0, -length + diameter]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -64,6 +75,7 @@ export function Arrow({ position, rotation }: ArrowProps) {
         />
         <meshStandardMaterial color={"gray"} metalness={0.5} />
       </mesh>
+      {/* tip */}
       {[1.1, 0.9, 0.7, 0.4, 0].map((width, index, array) => {
         const prev = index == 0 ? 0 : array[index - 1];
         const position: any = [0, 0, -length - index * diameter];
@@ -80,6 +92,28 @@ export function Arrow({ position, rotation }: ArrowProps) {
           </mesh>
         );
       })}
+      {/* fletchings */}
+      {[1, 3, 5].map((rotation, index) => (
+        <mesh
+          position={[0, 0, -0.01]}
+          rotation={[-Math.PI / 2, (rotation * Math.PI) / 3, 0]}
+          key={index}
+        >
+          <extrudeGeometry
+            args={[
+              fletching,
+              {
+                steps: 1,
+                bevelSegments: 1,
+                depth: 0.001,
+                bevelSize: 0.005,
+                bevelThickness: 0.002,
+              },
+            ]}
+          />
+          <meshStandardMaterial color={"blue"} metalness={0.5} />
+        </mesh>
+      ))}
     </mesh>
   );
 }

@@ -29,6 +29,7 @@ export default function Archery() {
   const [checkTarget, setCheckTarget] = useState(false);
   const [power, setPower] = useState(0);
   const [distance, setDistance] = useState(18);
+  const [hint, setHint] = useState(true);
 
   const fps = 60;
   const floor = -1.25;
@@ -91,10 +92,13 @@ export default function Archery() {
       return;
     }
     setPower(0);
+    setPosition(new Vector3(0, -0.05, 0.3));
+    setRotation(new Vector2(distance / 1500, 0));
     setNewDriftTarget();
     setAimTime(Date.now());
 
     (e.target as any)?.requestPointerLock();
+    setHint(false);
   };
 
   // release + reset, depending on if the arrow is drawn or fired
@@ -134,10 +138,10 @@ export default function Archery() {
   const cameraPosition = () => {
     if (!checkTarget) {
       return [0, 0, 0];
-    } else if (position.y < floor + 0.01) {
-      return [position.x, position.y + 0.15, position.z + 3];
-    } else {
+    } else if (position.distanceTo({ x: 0, y: 0, z: -distance }) < 0.8) {
       return [0, 0, 3 - distance];
+    } else {
+      return [position.x, position.y + 0.15, position.z + 3];
     }
   };
 
@@ -169,7 +173,7 @@ export default function Archery() {
       }}
     >
       <Canvas
-        style={{ flex: 1, touchAction: "none" }}
+        style={{ flex: 1, touchAction: "none", background: "wheat" }}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerMove={onPointerMove}
@@ -194,6 +198,30 @@ export default function Archery() {
         <Floor floorLevel={floor} />
         <mesh></mesh>
       </Canvas>
+      {hint && (
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            translate: "-50% -50%",
+            color: "white",
+            fontSize: 28,
+            background: "#0008",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "1rem",
+            pointerEvents: "none",
+          }}
+        >
+          <p>Hold to draw the bow</p>
+          <p>Move to aim</p>
+          <p>Release to shoot</p>
+          <p>Click to pick up arrow</p>
+        </div>
+      )}
+
       <BackButton />
       <SettingsButton>
         <div
