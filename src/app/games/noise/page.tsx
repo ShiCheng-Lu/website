@@ -3,7 +3,7 @@
 import BackButton from "@/components/BackButton";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
-import { Euler, Vector3 } from "three";
+import { Euler, Vector3, Vector2 } from "three";
 import { noise } from "./SimplexNoise";
 
 function Camera({
@@ -35,11 +35,19 @@ const movementKeys: { [key: string]: Vector3 } = {
   Space: new Vector3(0, 1, 0),
   ShiftLeft: new Vector3(0, -1, 0),
 };
+const rotationKeys: { [key: string]: Vector2 } = {
+  ArrowUp: new Vector2(0, 1),
+  ArrowDown: new Vector2(0, -1),
+  ArrowLeft: new Vector2(1, 0),
+  ArrowRight: new Vector2(-1, 0),
+};
 
-function getBlocks() {
+function getBlocks(center: Vector2) {
   const blocks = [];
-  for (let x = -50; x < 50; ++x) {
-    for (let z = -50; z < 50; ++z) {
+  for (let dx = -50; dx < 50; ++dx) {
+    for (let dz = -50; dz < 50; ++dz) {
+      const x = center.x + dx;
+      const z = center.y + dz;
       const y = noise(new Vector3(x / 10, 0, z / 10)) * 10;
       blocks.push(new Vector3(x, y, z));
     }
@@ -48,10 +56,12 @@ function getBlocks() {
 }
 
 export default function NoiseDemo() {
-  const [blocks, setBlocks] = useState(getBlocks());
+  const [blocks, setBlocks] = useState(getBlocks(new Vector2()));
   const movement = useRef(new Vector3());
+  const rotate = useRef(new Vector2());
   const [location, setLocation] = useState(new Vector3(0, 5, 0));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
+  const renderCenter = useRef(new Vector2());
 
   // setup input
   useEffect(() => {
@@ -60,6 +70,11 @@ export default function NoiseDemo() {
       for (const key in movementKeys) {
         if (e.code === key) {
           movement.current.add(movementKeys[key]);
+        }
+      }
+      for (const key in rotationKeys) {
+        if (e.code === key) {
+          rotate.current.add(rotationKeys[key]);
         }
       }
       //
@@ -72,6 +87,11 @@ export default function NoiseDemo() {
           movement.current.sub(movementKeys[key]);
         }
       }
+      for (const key in rotationKeys) {
+        if (e.code === key) {
+          rotate.current.sub(rotationKeys[key]);
+        }
+      }
       console.log(`up ${e.code} ${JSON.stringify(movement)}`);
     };
     const mouseMoveEventHandler = (e: MouseEvent) => {
@@ -80,6 +100,8 @@ export default function NoiseDemo() {
         return;
       }
 
+      // x axis controls y look (up/down)
+      // y axis controls x look, (left/right)
       rotation.x -= e.movementY * 0.001;
       rotation.x = Math.min(Math.max(rotation.x, -Math.PI / 2), Math.PI / 2);
       rotation.y -= e.movementX * 0.001;
@@ -90,13 +112,25 @@ export default function NoiseDemo() {
     window.addEventListener("mousemove", mouseMoveEventHandler);
 
     // game loop
-    const fps = 60;
+    const fps = 120;
     const timout = setInterval(() => {
       const diff = movement.current.clone();
-      diff.multiplyScalar(0.2);
-      diff.applyEuler(new Euler(0, rotation.y, 0));
+      diff.multiplyScalar(0.3);
+      diff.applyEuler(rotation);
       location.add(diff);
       setLocation(location.clone());
+
+      // x axis controls y look (up/down)
+      // y axis controls x look, (left/right)
+      rotation.y += rotate.current.x * 0.05;
+      rotation.x += rotate.current.y * 0.05;
+      setRotation(rotation.clone());
+
+      const locationXZ = new Vector2(location.x, location.z).floor();
+      if (renderCenter.current.manhattanDistanceTo(locationXZ) > 10) {
+        renderCenter.current = locationXZ;
+        setBlocks(getBlocks(locationXZ));
+      }
     }, 1000 / fps);
 
     return () => {
@@ -126,21 +160,20 @@ export default function NoiseDemo() {
       }}
     >
       <Canvas
-        style={{ flex: 1, touchAction: "none", background: "blue" }}
+        style={{ flex: 1, touchAction: "none", background: "white" }}
         onClick={(e) => {
           (e.target as any)?.requestPointerLock();
         }}
       >
         <Camera fov={70} location={location} rotation={rotation}></Camera>
         <ambientLight intensity={1} />
-        <directionalLight position={[5, 5, 5]} color="white" intensity={3} />
+        <directionalLight position={[5, 5, 5]} color="blue" intensity={3} />
 
-        <rectAreaLight />
-        {blocks.map((position, index) => (
-          <mesh position={position} key={index}>
+        {blocks.map((position) => (
+          <mesh position={position} key={`${position.x}_${position.z}`}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial
-              color="white"
+              color="blue"
               roughness={0.5}
               metalness={0.7}
             />
