@@ -111,7 +111,7 @@ export function Arrow({ position, rotation }: ArrowProps) {
               },
             ]}
           />
-          <meshStandardMaterial color={"blue"} metalness={0.5} />
+          <meshStandardMaterial color={"green"} metalness={0.5} />
         </mesh>
       ))}
     </mesh>

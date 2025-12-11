@@ -7,12 +7,12 @@ import { Arrow, Floor, Target } from "./ArcheryModels";
 import BackButton from "@/components/BackButton";
 import SettingsButton from "@/components/SettingsButton";
 
-function Camera({ fov, position }: { fov: number; position: number[] }) {
+function Camera({ fov, position }: { fov: number; position: Vector3 }) {
   const { camera } = useThree();
 
   useEffect(() => {
     (camera as any).fov = fov;
-    camera.position.set(position[0], position[1], position[2]);
+    camera.position.set(position.x, position.y, position.z);
     camera.updateProjectionMatrix();
   }, [fov, position]);
 
@@ -30,6 +30,7 @@ export default function Archery() {
   const [power, setPower] = useState(0);
   const [distance, setDistance] = useState(18);
   const [hint, setHint] = useState(true);
+  const [camera, setCamera] = useState(new Vector3());
 
   const fps = 60;
   const floor = -1.25;
@@ -54,8 +55,14 @@ export default function Archery() {
         );
         setDrift(new Vector2());
       } else {
+        // hit target
         setVelocity(new Vector3(0));
         setCheckTarget(true);
+        if (position.distanceTo({ x: 0, y: 0, z: -distance }) < 0.8) {
+          setCamera(new Vector3(0, 0, 3 - distance));
+        } else {
+          setCamera(new Vector3(0, 0.15, 3).add(position));
+        }
       }
     }, 1000 / fps);
     return () => clearTimeout(timeout);
@@ -117,6 +124,7 @@ export default function Archery() {
     }
     if (checkTarget || !aimTime) {
       setCheckTarget(false);
+      setCamera(new Vector3());
       return;
     }
     // aim for 2 seconds for full power
@@ -133,16 +141,6 @@ export default function Archery() {
     const movement = new Vector2(e.movementY, e.movementX);
     movement.multiplyScalar(0.00015);
     setRotation(rotation.clone().sub(movement));
-  };
-
-  const cameraPosition = () => {
-    if (!checkTarget) {
-      return [0, 0, 0];
-    } else if (position.distanceTo({ x: 0, y: 0, z: -distance }) < 0.8) {
-      return [0, 0, 3 - distance];
-    } else {
-      return [position.x, position.y + 0.15, position.z + 3];
-    }
   };
 
   const changeRange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +182,7 @@ export default function Archery() {
           position: [0, 0, 0],
         }}
       >
-        <Camera fov={30} position={cameraPosition()}></Camera>
+        <Camera fov={30} position={camera}></Camera>
         <directionalLight position={[2, 2, 5]} color="white" intensity={3} />
 
         <Target distance={distance} />
