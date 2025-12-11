@@ -159,7 +159,6 @@ export default function Pets() {
         alignItems: "center",
       }}
     >
-      <BackButton />
       <h1>Check out these cuties!</h1>
       <p>You can draw 1 pet per day, and claim 1 random pet per day.</p>
       <div
@@ -209,6 +208,7 @@ export default function Pets() {
         Claim a random pet!
       </button>
       <PetDisplay pets={ownedPets} />
+      <BackButton link={"/games"} />
     </div>
   );
 }

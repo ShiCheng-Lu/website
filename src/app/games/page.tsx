@@ -14,7 +14,7 @@ export default function Games() {
         justifyContent: "center",
       }}
     >
-      <BackButton />
+      <BackButton link={"/"} />
       <div
         style={{
           marginTop: 40,

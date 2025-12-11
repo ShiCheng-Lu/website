@@ -7,7 +7,7 @@ import BackButton from "@/components/BackButton";
 export default function CookieClickerPage() {
   return (
     <div className={styles.CookieClickerPage}>
-      <BackButton />
+      <BackButton link={"/games"} />
       <CookieClicker leaderboard_count={10} />
     </div>
   );

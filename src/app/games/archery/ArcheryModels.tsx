@@ -3,7 +3,6 @@ import { Shape } from "three";
 export type TargetProps = {
   distance: number;
 };
-
 export function Target({ distance }: TargetProps) {
   return (
     <mesh
@@ -141,6 +140,20 @@ export function Floor({ floorLevel }: FloorProps) {
           </mesh>
         );
       })}
+    </mesh>
+  );
+}
+
+type BowProps = {
+  rotation: any;
+};
+export function Bow({ rotation }: BowProps) {
+  return (
+    <mesh rotation={rotation}>
+      <mesh position={[0.05, 0.2, -1]}>
+        <boxGeometry args={[0.05, 0.5, 0.01]} />
+        <meshStandardMaterial color={"sienna"} />
+      </mesh>
     </mesh>
   );
 }

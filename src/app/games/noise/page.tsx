@@ -180,7 +180,7 @@ export default function NoiseDemo() {
           </mesh>
         ))}
       </Canvas>
-      <BackButton />
+      <BackButton link={"/games"} />
     </div>
   );
 }

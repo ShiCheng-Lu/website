@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
-import { Arrow, Floor, Target } from "./ArcheryModels";
+import { Arrow, Bow, Floor, Target } from "./ArcheryModels";
 import BackButton from "@/components/BackButton";
 import SettingsButton from "@/components/SettingsButton";
+import styles from "./page.module.css";
 
 function Camera({ fov, position }: { fov: number; position: Vector3 }) {
   const { camera } = useThree();
@@ -154,17 +155,7 @@ export default function Archery() {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        width: "100%",
-        height: "100%",
-        userSelect: "none",
-      }}
+      className={styles.MainGame}
       onScroll={(e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -191,28 +182,13 @@ export default function Archery() {
           rotation={[rotation.x + drift.x, rotation.y + drift.y, 0]}
         />
 
-        {/* Sight */}
+        {/* <Bow rotation={[rotation.x + drift.x, rotation.y + drift.y, 0]} /> */}
 
         <Floor floorLevel={floor} />
         <mesh></mesh>
       </Canvas>
       {hint && (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            translate: "-50% -50%",
-            color: "white",
-            fontSize: 28,
-            background: "#0008",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "1rem",
-            pointerEvents: "none",
-          }}
-        >
+        <div className={styles.Hint}>
           <p>Hold to draw the bow</p>
           <p>Move to aim</p>
           <p>Release to shoot</p>
@@ -220,17 +196,9 @@ export default function Archery() {
         </div>
       )}
 
-      <BackButton />
+      <BackButton link={"/games"} />
       <SettingsButton>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: "1rem",
-            userSelect: "none",
-          }}
-        >
+        <div className={styles.Settings}>
           <label htmlFor="target-distance">Distance</label>
           <input
             id="target-distance"
