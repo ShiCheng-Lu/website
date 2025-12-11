@@ -59,7 +59,7 @@ export default function CookieClicker({
       }
     },
     increment,
-    2000
+    5000
   );
 
   useDebounce(
@@ -75,7 +75,7 @@ export default function CookieClicker({
   const onPointerDown = (e: React.PointerEvent) => {
     if (onPointerMove(e)) {
       // if clicked more than 50 times, force sync so we don't have to wait for debounce to sync, this keeps the leaderboard updated if the user is constantly clicking
-      if (increment > 1) {
+      if (increment >= 49) {
         clickCookie(increment + 1);
         setIncrement(0);
       } else {
