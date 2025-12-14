@@ -1,24 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Euler, Quaternion, Vector2, Vector3 } from "three";
-import { Arrow, Bow, Floor, Target } from "./ArcheryModels";
+import { Canvas } from "@react-three/fiber";
+import { Euler, Vector2, Vector3 } from "three";
+import { Arrow, Floor, Target } from "./ArcheryModels";
 import BackButton from "@/components/BackButton";
 import SettingsButton from "@/components/SettingsButton";
+import Camera from "@/util/three-camera";
 import styles from "./page.module.css";
-
-function Camera({ fov, position }: { fov: number; position: Vector3 }) {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    (camera as any).fov = fov;
-    camera.position.set(position.x, position.y, position.z);
-    camera.updateProjectionMatrix();
-  }, [fov, position]);
-
-  return null;
-}
 
 export default function Archery() {
   const [position, setPosition] = useState(new Vector3(0, -0.05, 0));

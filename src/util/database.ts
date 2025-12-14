@@ -10,6 +10,7 @@
 import {
   DocumentReference,
   FieldPath,
+  FieldValue,
   Timestamp,
   addDoc,
   collection,
@@ -25,14 +26,18 @@ import {
 import { deleteDoc } from "firebase/firestore";
 import { CookieClickData, db, user } from "./firebase";
 
+type WithFieldValue<T> = {
+  [K in keyof T]: T[K] | FieldValue;
+};
+
 export class Collection<T extends { [key: string]: any }> {
   collection;
   constructor(name: string) {
     this.collection = collection(db, name);
   }
 
-  async query(filter: any, constraint: any): Promise<{ [id: string]: T }> {
-    const queries = query(this.collection, filter, constraint);
+  async query(filter: any, ...constraint: any[]): Promise<{ [id: string]: T }> {
+    const queries = query(this.collection, filter, ...constraint);
     const documents = await getDocs(queries);
     const data: { [id: string]: T } = {};
     documents.forEach((document) => {
@@ -64,11 +69,11 @@ export class Collection<T extends { [key: string]: any }> {
     await updateDoc(doc(this.collection, id), data);
   }
 
-  async delete(id: string) {
+  async delete(id: string = user.user.uid) {
     await deleteDoc(doc(this.collection, id));
   }
 
-  ref(id: string) {
+  ref(id: string = user.user.uid) {
     return doc(this.collection, id);
   }
 }
@@ -101,4 +106,15 @@ export type PetOwnerData = {
 
 export function pet_owners() {
   return database.collection<PetOwnerData>("pet_owners");
+}
+
+export type LobbyData = {
+  createdAt: Timestamp;
+  offer: string;
+  answer: string;
+  ice: RTCIceCandidateInit[];
+};
+
+export function lobby() {
+  return database.collection<LobbyData>("lobby");
 }

@@ -1,31 +1,11 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import { Canvas, useThree } from "@react-three/fiber";
+import Camera from "@/util/three-camera";
+import { Canvas } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { Euler, Vector3, Vector2 } from "three";
 import { noise } from "./SimplexNoise";
-
-function Camera({
-  fov,
-  location,
-  rotation,
-}: {
-  fov: number;
-  location: Vector3;
-  rotation: Euler;
-}) {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    (camera as any).fov = fov;
-    camera.position.set(location.x, location.y, location.z);
-    camera.rotation.set(rotation.x, rotation.y, rotation.z, rotation.order);
-    camera.updateProjectionMatrix();
-  }, [fov, location]);
-
-  return null;
-}
 
 const movementKeys: { [key: string]: Vector3 } = {
   KeyW: new Vector3(0, 0, -1),
