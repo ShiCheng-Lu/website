@@ -145,7 +145,7 @@ export default function NoiseDemo() {
           (e.target as any)?.requestPointerLock();
         }}
       >
-        <Camera fov={70} location={location} rotation={rotation}></Camera>
+        <Camera fov={70} position={location} rotation={rotation}></Camera>
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="blue" intensity={3} />
 
