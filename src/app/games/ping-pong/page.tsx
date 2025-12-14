@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { Vector3 } from "three";
-import { Table } from "./PingPongModels";
+import { Paddle, Table } from "./PingPongModels";
 import Camera from "@/util/three-camera";
 import {
   connected,
@@ -208,33 +208,15 @@ export default function PingPong() {
         </mesh>
 
         {/* Paddle */}
-        <mesh
+        <Paddle
           position={paddle}
           rotation={[0, 0, !hosting.current ? Math.PI : 0]}
-        >
-          <mesh>
-            <circleGeometry args={[0.25]} />
-            <meshStandardMaterial color="red" roughness={0.5} metalness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.35, 0]}>
-            <cylinderGeometry args={[0.04, 0.05, 0.3]} />
-            <meshStandardMaterial color={"#966F33"} />
-          </mesh>
-        </mesh>
+        />
 
-        <mesh
+        <Paddle
           position={opponent}
           rotation={[0, 0, hosting.current ? Math.PI : 0]}
-        >
-          <mesh>
-            <circleGeometry args={[0.25]} />
-            <meshStandardMaterial color="red" roughness={0.5} metalness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.35, 0]}>
-            <cylinderGeometry args={[0.04, 0.05, 0.3]} />
-            <meshStandardMaterial color={"#966F33"} />
-          </mesh>
-        </mesh>
+        />
       </Canvas>
       <div style={{ position: "fixed", top: 0, left: 0 }}>
         <div className={styles.LobbyCard}>
