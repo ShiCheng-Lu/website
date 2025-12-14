@@ -38,6 +38,7 @@ export default function PingPong() {
     `Lobby${Math.floor(Math.random() * 999) + 1}`
   );
   const [currLobby, setCurrLobby] = useState<string>();
+  const hosting = useRef(true);
   const canHit = useRef(true);
   const mouse = useRef(new Vector3());
 
@@ -49,7 +50,11 @@ export default function PingPong() {
       const y = (window.innerHeight / 2 - e.clientY) * scale;
       const x = (e.clientX - window.innerWidth / 2) * scale;
 
-      mouse.current.set(x, y, PADDLE_HEIGHT);
+      if (hosting.current) {
+        mouse.current.set(x, y, PADDLE_HEIGHT);
+      } else {
+        mouse.current.set(-x, -y, PADDLE_HEIGHT);
+      }
     };
 
     const fps = 60;
@@ -131,16 +136,16 @@ export default function PingPong() {
     setOnMessage((message) => {
       const data = JSON.parse(message);
       if (data.paddle) {
-        opponent.set(-data.paddle.x, -data.paddle.y, data.paddle.z);
+        opponent.copy(data.paddle);
         setOpponent(opponent.clone());
       }
       if (data.ball) {
-        ball.set(-data.ball.x, -data.ball.y, data.ball.z);
+        ball.copy(data.ball);
         setBall(ball.clone());
         canHit.current = true;
       }
       if (data.vel) {
-        ballVel.set(-data.vel.x, -data.vel.y, data.vel.z);
+        ballVel.copy(data.vel);
         setBallVel(ballVel.clone());
         canHit.current = true;
       }
@@ -163,6 +168,7 @@ export default function PingPong() {
     setCurrLobby(undefined);
     if (currLobby != user.user.uid) {
       setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
+      hosting.current = true;
     }
   };
 
@@ -185,7 +191,11 @@ export default function PingPong() {
       }}
     >
       <Canvas style={{ flex: 1, touchAction: "none", background: "green" }}>
-        <Camera position={[0, 0, 50]} fov={15} />
+        <Camera
+          position={[0, 0, 50]}
+          fov={15}
+          rotation={[0, 0, !hosting.current ? Math.PI : 0]}
+        />
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={3} />
 
@@ -198,7 +208,10 @@ export default function PingPong() {
         </mesh>
 
         {/* Paddle */}
-        <mesh position={paddle}>
+        <mesh
+          position={paddle}
+          rotation={[0, 0, !hosting.current ? Math.PI : 0]}
+        >
           <mesh>
             <circleGeometry args={[0.25]} />
             <meshStandardMaterial color="red" roughness={0.5} metalness={0.7} />
@@ -209,7 +222,10 @@ export default function PingPong() {
           </mesh>
         </mesh>
 
-        <mesh position={opponent} rotation={[0, 0, Math.PI]}>
+        <mesh
+          position={opponent}
+          rotation={[0, 0, hosting.current ? Math.PI : 0]}
+        >
           <mesh>
             <circleGeometry args={[0.25]} />
             <meshStandardMaterial color="red" roughness={0.5} metalness={0.7} />
@@ -243,10 +259,7 @@ export default function PingPong() {
                     joinLobby(id, lob);
                     setCurrLobby(id);
                     setLobbyName(lob.name);
-                    // lobby host always start with the ball
-                    ball.copy(BALL_START.clone());
-                    ball.setY(-ball.y);
-                    setBall(ball.clone());
+                    hosting.current = false;
                   }}
                 >
                   Join lobby
