@@ -26,10 +26,6 @@ import {
 import { deleteDoc } from "firebase/firestore";
 import { CookieClickData, db, user } from "./firebase";
 
-type WithFieldValue<T> = {
-  [K in keyof T]: T[K] | FieldValue;
-};
-
 export class Collection<T extends { [key: string]: any }> {
   collection;
   constructor(name: string) {
@@ -113,6 +109,7 @@ export type LobbyData = {
   offer: string;
   answer: string;
   ice: RTCIceCandidateInit[];
+  name: string;
 };
 
 export function lobby() {

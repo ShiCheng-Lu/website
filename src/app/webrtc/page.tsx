@@ -1,13 +1,8 @@
 "use client";
 
 import { LobbyData, lobby } from "@/util/database";
-import {
-  joinLobby,
-  leaveLobby,
-  startLobby,
-  sendData,
-} from "@/util/peer2peer";
-import { query, where } from "firebase/firestore";
+import { joinLobby, leaveLobby, startLobby, sendData } from "@/util/peer2peer";
+import { where } from "firebase/firestore";
 import { useState } from "react";
 
 export default function WebRTC() {
@@ -23,7 +18,7 @@ export default function WebRTC() {
   return (
     <div>
       <div>
-        <button onClick={startLobby}>Start</button>
+        <button onClick={() => startLobby()}>Start</button>
       </div>
       <button onClick={getLobbies}>Get lobbies</button>
 

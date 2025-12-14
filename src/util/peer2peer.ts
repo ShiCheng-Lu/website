@@ -8,8 +8,9 @@ import { LobbyData, lobby } from "./database";
 
 let pc: RTCPeerConnection | undefined;
 let channel: RTCDataChannel | undefined;
+let onMessage = (message: string) => {};
 
-export async function startLobby() {
+export async function startLobby(lobbyName?: string) {
   if (pc) {
     console.error("existing connection");
     return;
@@ -39,7 +40,8 @@ export async function startLobby() {
     console.log(`closed ${JSON.stringify(e)}`);
   };
   channel.onmessage = (e) => {
-    console.log(`message ${JSON.stringify(e)}`);
+    // console.log(`message ${JSON.stringify(e)}`);
+    onMessage(e.data);
   };
 
   const offer = await pc.createOffer();
@@ -52,6 +54,7 @@ export async function startLobby() {
     offer: offer.sdp ?? "",
     answer: "",
     ice: [],
+    name: lobbyName ?? "",
   });
 
   // handle connection and ice update
@@ -111,7 +114,8 @@ export async function joinLobby(id: string, l: LobbyData) {
       console.log(`closed ${JSON.stringify(e)}`);
     };
     channel.onmessage = (e) => {
-      console.log(`message ${JSON.stringify(e)}`);
+      // console.log(`message ${JSON.stringify(e)}`);
+      onMessage(e.data);
     };
   };
   await pc.setRemoteDescription({ type: "offer", sdp: l.offer });
@@ -144,7 +148,13 @@ export async function sendData(message: string) {
   channel.send(message);
 }
 
-export function listLobby() {}
+export function setOnMessage(handler: (m: string) => void) {
+  onMessage = handler;
+}
+
+export function connected() {
+  return Boolean(channel && pc?.remoteDescription);
+}
 
 export async function leaveLobby() {
   if (pc) {
