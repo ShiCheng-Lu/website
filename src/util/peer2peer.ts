@@ -16,7 +16,17 @@ export async function startLobby(lobbyName?: string) {
     return;
   }
 
-  pc = new RTCPeerConnection();
+  pc = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun.l.google.com:19302",
+          "stun1.l.google.com:19302",
+          "stun2.l.google.com:19302",
+        ],
+      },
+    ],
+  });
   pc.onicecandidate = (e: RTCPeerConnectionIceEvent) => {
     console.log(
       `onIceCandidate ${JSON.stringify(e)}  ${JSON.stringify(e.candidate)}`
@@ -86,7 +96,17 @@ export async function joinLobby(id: string, l: LobbyData) {
     return;
   }
 
-  pc = new RTCPeerConnection();
+  pc = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun.l.google.com:19302",
+          "stun1.l.google.com:19302",
+          "stun2.l.google.com:19302",
+        ],
+      },
+    ],
+  });
   pc.onicecandidate = (e: RTCPeerConnectionIceEvent) => {
     console.log(
       `onIceCandidate ${JSON.stringify(e)}  ${JSON.stringify(e.candidate)}`
