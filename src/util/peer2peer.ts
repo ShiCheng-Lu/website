@@ -10,8 +10,8 @@ let pc: RTCPeerConnection | undefined;
 let channel: RTCDataChannel | undefined;
 let onMessage = (message: string) => {};
 
-const USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME;
-const PASSWORD = process.env.NEXT_PUBLIC_TURN_PASSWORD;
+const USERNAME = '20466bc28b62b2c87a299b2e';
+const PASSWORD = 'pgWt7dj0H4i/WkRh';
 
 const ICE_SERVERS = [
   {
