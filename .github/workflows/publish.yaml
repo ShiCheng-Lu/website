@@ -73,6 +73,10 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+        env:
+          NEXT_PUBLIC_TURN_USERNAME: ${{ secrets.NEXT_PUBLIC_TURN_USERNAME }}
+          NEXT_PUBLIC_TURN_PASSWORD: ${{ secrets.NEXT_PUBLIC_TURN_PASSWORD }}
+          NEXT_PUBLIC_FIREBASE_CONFIG: ${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }}
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
