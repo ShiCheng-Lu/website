@@ -41,6 +41,18 @@ export default function Games() {
           Noise
         </Link>
       </div>
+      <button
+        onClick={() => {
+          const config = process.env.NEXT_PUBLIC_FIREBASE_CONFIG ?? "";
+          console.log(config);
+          const x = config.replaceAll(/^(\s*)(\w*?):/gm, '$1"$2":');
+          console.log(x);
+          console.log(process.env.NEXT_PUBLIC_TURN_USERNAME);
+          console.log(process.env.NEXT_PUBLIC_TURN_PASSWORD);
+        }}
+      >
+        Var
+      </button>
     </div>
   );
 }
