@@ -13,7 +13,7 @@ export function Table({ position, rotation, scale }: Props) {
         <planeGeometry args={[5, 9]} />
         <meshStandardMaterial color="white" roughness={0.5} metalness={0.7} />
       </mesh>
-      <mesh>
+      <mesh receiveShadow={true}>
         <planeGeometry args={[4.9, 8.9]} />
         <meshStandardMaterial
           color="darkblue"
@@ -47,12 +47,17 @@ export function Table({ position, rotation, scale }: Props) {
 
 export function Paddle({ position, rotation, scale }: Props) {
   return (
-    <mesh position={position} rotation={rotation} scale={scale}>
-      <mesh>
-        <circleGeometry args={[0.25]} />
+    <mesh
+      position={position}
+      rotation={rotation}
+      scale={scale}
+      castShadow={true}
+    >
+      <mesh castShadow={true} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.25, 0.25, 0.01]} />
         <meshStandardMaterial color="red" roughness={0.5} metalness={0.7} />
       </mesh>
-      <mesh position={[0, -0.35, 0]}>
+      <mesh position={[0, -0.35, 0]} castShadow={true}>
         <cylinderGeometry args={[0.04, 0.05, 0.3]} />
         <meshStandardMaterial color={"#966F33"} />
       </mesh>

@@ -1,8 +1,8 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
-import { Vector3 } from "three";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DirectionalLight, OrthographicCamera, Vector3 } from "three";
 import { Paddle, Table } from "./PingPongModels";
 import Camera from "@/util/three-camera";
 import {
@@ -17,6 +17,7 @@ import { LobbyData, lobby } from "@/util/database";
 import styles from "./page.module.css";
 import { onSnapshot, query, where } from "firebase/firestore";
 import { user } from "@/util/firebase";
+import { clamp } from "three/src/math/MathUtils.js";
 
 /**
  * Ping pong network messages will look like:
@@ -25,8 +26,8 @@ import { user } from "@/util/firebase";
  * }
  */
 
-const PADDLE_HEIGHT = 2;
-const BALL_START = new Vector3(0, -3.5, PADDLE_HEIGHT - 0.4);
+const PADDLE_HEIGHT = 0.4;
+const BALL_START = new Vector3(0, -3.5, 0.3);
 
 export default function PingPong() {
   const [ball, setBall] = useState(BALL_START.clone());
@@ -42,12 +43,14 @@ export default function PingPong() {
   const canHit = useRef(true);
   const mouse = useRef(new Vector3());
 
+  const [target, setTarget] = useState(new Vector3());
+
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
         (Math.tan((15 * Math.PI) / 180) * (50 - PADDLE_HEIGHT)) /
         window.innerHeight;
-      const y = (window.innerHeight / 2 - e.clientY) * scale;
+      const y = Math.min((window.innerHeight / 2 - e.clientY) * scale, -0.3);
       const x = (e.clientX - window.innerWidth / 2) * scale;
 
       if (hosting.current) {
@@ -79,8 +82,24 @@ export default function PingPong() {
         const b = end.x * (end.y / (end.y - start.y));
         const x = a + b;
         if (Math.abs(x) - 0.25 < 0) {
+          // reflect across vertical axes
+          let target = ballVel.clone().multiplyScalar(1);
+          target.y *= -1;
+
+          // add paddle velocity
           const paddleVel = newPaddle.clone().sub(paddle).multiplyScalar(0.5);
-          ballVel.copy(paddleVel);
+          target.add(paddleVel);
+
+          // target location is based on velocity
+          target.multiply({ x: 20, y: 10, z: 0 });
+          target.x = clamp(target.x, -2, 2);
+          target.y = clamp(target.y, -4, 4);
+
+          setTarget(target);
+
+          ballVel.copy(target);
+          ballVel.sub(ball).multiplyScalar(0.02);
+          ballVel.z = 0;
           setBallVel(paddleVel);
           console.log(
             `collided ${JSON.stringify(ball)} ${JSON.stringify(paddleVel)}`
@@ -172,6 +191,13 @@ export default function PingPong() {
     }
   };
 
+  // const light = useMemo(() => {
+  //   const l = new DirectionalLight();
+  //   l.intensity = 0.5;
+  //   l.position.set(100, 100, 100);
+  //   l.
+  // }, []);
+
   return (
     <div
       style={{
@@ -190,21 +216,29 @@ export default function PingPong() {
         e.preventDefault();
       }}
     >
-      <Canvas style={{ flex: 1, touchAction: "none", background: "green" }}>
+      <Canvas
+        shadows
+        style={{ flex: 1, touchAction: "none", background: "green" }}
+      >
         <Camera
           position={[0, 0, 50]}
           fov={15}
           rotation={[0, 0, !hosting.current ? Math.PI : 0]}
         />
-        <ambientLight intensity={1} />
-        <directionalLight position={[5, 5, 5]} color="white" intensity={3} />
+        {/* <ambientLight intensity={1} /> */}
+        <directionalLight
+          position={[5, 5, 5]}
+          color="white"
+          intensity={3}
+          castShadow={true}
+        />
 
         <Table />
 
         {/* Ball */}
-        <mesh position={ball}>
+        <mesh position={ball} castShadow={true}>
           <sphereGeometry args={[0.0656168]} />
-          <meshStandardMaterial color="white" roughness={0.5} metalness={0.7} />
+          <meshPhongMaterial color="white" />
         </mesh>
 
         {/* Paddle */}
@@ -217,6 +251,11 @@ export default function PingPong() {
           position={opponent}
           rotation={[0, 0, hosting.current ? Math.PI : 0]}
         />
+
+        {/* <mesh position={target}>
+          <circleGeometry args={[0.1, 32]} />
+          <meshStandardMaterial color={"#966F33"} />
+        </mesh> */}
       </Canvas>
       <div style={{ position: "fixed", top: 0, left: 0 }}>
         <div className={styles.LobbyCard}>
