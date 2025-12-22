@@ -182,7 +182,7 @@ export default function PingPong() {
         style={{
           position: "fixed",
           top: "50%",
-          transform: `translate(${window.innerHeight * 0.2}px,-50%)`,
+          transform: `translate(${(window?.innerHeight ?? 0) * 0.2}px,-50%)`,
           color: "white",
           display: "flex",
           flexDirection: "column",
