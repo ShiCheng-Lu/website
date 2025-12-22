@@ -180,16 +180,6 @@ export default class PingPongGame {
     position.y -= 0.0656168;
     const cross = position.y / (position.y - target.y);
 
-    const gx = 2 ** cross - 1;
-    // find the curve of the ball, which must clear the net
-    // net / position.z = -gx^2 + c(gx - gx^2) + 1
-    // net / position.z - 1 = gx^2 + c(gx^2 - gx)
-    // (net / position.z - 1 - gx^2) / (gx^2 - gx) = c
-    const c = (1 / position.z - 1 + gx * gx) / (gx - gx * gx);
-
-    const j = 1.8; // time of second bounce
-    const i = (2 + c) / (j - 1);
-
     // models as a projectile with decreasing x velocity (air resistance)
     // and parabolic z (height) trajectory (no air resistence)
     // this is for simplicity do that each axis is independent while still
@@ -197,6 +187,20 @@ export default class PingPongGame {
 
     // z: f(x) = (1 - c) g(x)^2 + c g(x) +  1
     // g(x) = (k^x - 1) / (k - 1); with k = 2
+    const gx = 2 ** cross - 1;
+    // find the curve of the ball, which must clear the net
+    // net / position.z = -gx^2 + c(gx - gx^2) + 1
+    // net / position.z - 1 = gx^2 + c(gx^2 - gx)
+    // (net / position.z - 1 - gx^2) / (gx^2 - gx) = c
+    const c = (1 / position.z - 1 + gx * gx) / (gx - gx * gx);
+
+    // the second bounce is modeled by the equation
+    // z: f(x) = -i (g(x)^2 - (j + 1)g(x) + j)
+    // where j = 1.8 to approximate a 75% height/energy retention
+    // and i is chosen so that the bounce is elastic
+    // angle in = angle out
+    const j = 1.8; // time of second bounce
+    const i = (2 + c) / (j - 1);
 
     const scale = position.z;
     const pos = new Vector2(position.x, position.y);
