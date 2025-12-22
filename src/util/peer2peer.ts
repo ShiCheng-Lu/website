@@ -192,6 +192,11 @@ export async function sendData(message: string) {
     console.log("no channel");
     return;
   }
+  if (channel.readyState != "open") {
+    console.log("channel not open");
+    return;
+  }
+
   channel.send(message);
 }
 

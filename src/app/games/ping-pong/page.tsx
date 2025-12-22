@@ -86,7 +86,7 @@ export default function PingPong() {
 
     setOnConnection(() => {
       game.current.reset();
-    })
+    });
 
     return () => {
       window.removeEventListener("pointermove", pointerMove);
@@ -107,6 +107,7 @@ export default function PingPong() {
       setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
       game.current.player = 0;
     }
+    game.current.paddle1 = new Vector3(NaN);
     // go back to AI opponent
   };
 

@@ -11,6 +11,14 @@ export type SyncState = {
   score?: [number, number];
 };
 
+export type GameState = {
+  paddle0: Vector3;
+  paddle1: Vector3;
+  score0: number;
+  score1: number;
+  ball: Vector3;
+};
+
 export default class PingPongGame {
   ball: Vector3;
   paddle0: Vector3;
@@ -101,20 +109,13 @@ export default class PingPongGame {
     if (!newPaddle.equals(this.player ? this.paddle1 : this.paddle0)) {
       sync.paddle = newPaddle.clone();
     }
+    const paddleZ = (newBall ? newBall.z : this.ball.z) + PADDLE_OFFSET;
     if (this.player) {
-      this.paddle1 = new Vector3(
-        newPaddle.x,
-        newPaddle.y,
-        this.ball.z + PADDLE_OFFSET
-      );
-      this.paddle0.z = this.ball.z;
+      this.paddle1 = new Vector3(newPaddle.x, newPaddle.y, paddleZ);
+      this.paddle0.z = paddleZ;
     } else {
-      this.paddle0 = new Vector3(
-        newPaddle.x,
-        newPaddle.y,
-        this.ball.z + PADDLE_OFFSET
-      );
-      this.paddle1.z = this.ball.z;
+      this.paddle0 = new Vector3(newPaddle.x, newPaddle.y, paddleZ);
+      this.paddle1.z = paddleZ;
     }
 
     // set new ball position
@@ -239,7 +240,7 @@ export default class PingPongGame {
     this.time = 0;
   }
 
-  state() {
+  state(): GameState {
     return {
       ball: this.ball.clone(),
       paddle0: this.paddle0.clone(),
