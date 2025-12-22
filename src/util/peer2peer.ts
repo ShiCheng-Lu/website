@@ -9,6 +9,7 @@ import { LobbyData, lobby } from "./database";
 let pc: RTCPeerConnection | undefined;
 let channel: RTCDataChannel | undefined;
 let onMessage = (message: string) => {};
+let onConnection = () => {};
 
 const USERNAME = "20466bc28b62b2c87a299b2e";
 const PASSWORD = "pgWt7dj0H4i/WkRh";
@@ -114,6 +115,8 @@ export async function startLobby(lobbyName?: string) {
     }
     if (!pc.remoteDescription) {
       await pc.setRemoteDescription({ type: "answer", sdp: lobby.answer });
+
+      onConnection();
     }
 
     for (const candidate of lobby.ice) {
@@ -195,6 +198,8 @@ export async function sendData(message: string) {
 export function setOnMessage(handler: (m: string) => void) {
   onMessage = handler;
 }
+
+export function setOnConnection(handler: () => void) {}
 
 export function connected() {
   return Boolean(channel && pc?.remoteDescription);

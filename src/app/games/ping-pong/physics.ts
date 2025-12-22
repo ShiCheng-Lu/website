@@ -26,8 +26,8 @@ export default class PingPongGame {
 
   constructor() {
     this.ball = new Vector3(0, -3.5, 0.3);
-    this.paddle0 = new Vector3(1.5, -3.5, PADDLE_OFFSET);
-    this.paddle1 = new Vector3(-1.5, 3.5, PADDLE_OFFSET);
+    this.paddle0 = new Vector3(NaN);
+    this.paddle1 = new Vector3(NaN);
     this.score0 = 0;
     this.score1 = 0;
     this.player = 0;
@@ -120,6 +120,12 @@ export default class PingPongGame {
     // set new ball position
     if (newBall) {
       this.ball = newBall;
+    } else if (Number.isNaN(this.paddle0.x) || Number.isNaN(this.paddle1.x)) {
+      // player haven't joined
+      this.ballDynamics = () => {
+        return new Vector3(0, -3.5, 0.3);
+      };
+      this.turn = this.player;
     } else if (this.turn == this.player) {
       // was scored on, set state and notify the other player
       if (this.player) {

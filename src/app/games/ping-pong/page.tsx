@@ -10,6 +10,7 @@ import {
   joinLobby,
   leaveLobby,
   sendData,
+  setOnConnection,
   setOnMessage,
   startLobby,
 } from "@/util/peer2peer";
@@ -83,6 +84,10 @@ export default function PingPong() {
       game.current.receiveSyncState(data);
     });
 
+    setOnConnection(() => {
+      game.current.reset();
+    })
+
     return () => {
       window.removeEventListener("pointermove", pointerMove);
       clearInterval(timout);
@@ -102,6 +107,7 @@ export default function PingPong() {
       setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
       game.current.player = 0;
     }
+    // go back to AI opponent
   };
 
   const joinLob = (id: string, lob: LobbyData) => {
