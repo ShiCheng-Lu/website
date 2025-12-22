@@ -62,7 +62,8 @@ export default class PingPongGame {
       Math.min(Math.max(mouse.x, -5), 5) * (this.player ? -1 : 1),
       Math.min(mouse.y, -0.3) * (this.player ? -1 : 1)
     );
-    // try to compute collision
+
+    // compute collision if its my turn to hit the ball
     if (newBall && this.turn == this.player) {
       // this.turn = 1 - this.player;
       const paddle = this.player ? this.paddle1 : this.paddle0;
@@ -84,10 +85,10 @@ export default class PingPongGame {
           const paddleVel = newPaddle.clone().sub(paddle);
           const target = new Vector3(
             clamp(paddleVel.x * 10 + ballVel.x * 20, -2, 2),
-            clamp(paddleVel.y * 20 - ballVel.y * 10, -4, 4),
+            clamp(paddleVel.y * 10 - ballVel.y * 10, -3.5, 3.5),
             0.3
           );
-          this.hitBall(newBall, target);
+          this.hitBall(newBall.clone(), target);
           sync.ball = newBall;
           sync.target = target;
         }
@@ -174,6 +175,7 @@ export default class PingPongGame {
     // where would the net intersect this path?
     // this will determine the initial angle and velocity to get the ball over the net
     // to the target location
+    position.y -= 0.0656168;
     const cross = position.y / (position.y - target.y);
 
     const gx = 2 ** cross - 1;
@@ -206,7 +208,7 @@ export default class PingPongGame {
 
         const a = pos.clone().multiplyScalar(1 - dx);
         const b = tar.clone().multiplyScalar(dx);
-        return new Vector3(a.x + b.x, a.y + b.y, z);
+        return new Vector3(a.x + b.x, a.y + b.y, z + 0.0656168);
       }
 
       // second bounce takes j seconds
@@ -216,7 +218,7 @@ export default class PingPongGame {
 
         const a = pos.clone().multiplyScalar(1 - dx);
         const b = tar.clone().multiplyScalar(dx);
-        return new Vector3(a.x + b.x, a.y + b.y, z);
+        return new Vector3(a.x + b.x, a.y + b.y, z + 0.0656168);
       }
 
       return null;

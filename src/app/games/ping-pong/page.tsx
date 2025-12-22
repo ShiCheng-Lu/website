@@ -17,7 +17,6 @@ import { LobbyData, lobby } from "@/util/database";
 import styles from "./page.module.css";
 import { onSnapshot, query, where } from "firebase/firestore";
 import { user } from "@/util/firebase";
-import { clamp } from "three/src/math/MathUtils.js";
 import PingPongGame from "./physics";
 
 /**
@@ -91,6 +90,7 @@ export default function PingPong() {
   const startLob = () => {
     startLobby(lobbyName);
     setCurrLobby(user.user.uid);
+    resetGame();
   };
 
   const endLob = () => {
@@ -106,6 +106,7 @@ export default function PingPong() {
     joinLobby(id, lob);
     setCurrLobby(id);
     setLobbyName(lob.name);
+    resetGame();
     game.current.player = 1;
   };
 
@@ -149,14 +150,14 @@ export default function PingPong() {
         />
         {/* <ambientLight intensity={1} /> */}
         <directionalLight
-          position={[5, 5, 5]}
+          position={[2, 2, 5]}
           color="white"
           intensity={3}
           castShadow={true}
         />
 
         {/* Table, down by ball size so we bounce at z = 0 */}
-        <Table position={[0, 0, -0.0656168]} />
+        <Table />
 
         {/* Ball */}
         <mesh position={state.ball} castShadow={true}>
@@ -174,6 +175,27 @@ export default function PingPong() {
           <meshStandardMaterial color={"#966F33"} />
         </mesh> */}
       </Canvas>
+
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          transform: `translate(${window.innerHeight * 0.2}px,-50%)`,
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          fontSize: 20,
+        }}
+      >
+        <div>
+          {game.current.player ? game.current.score0 : game.current.score1}
+        </div>
+        <div>
+          {game.current.player ? game.current.score1 : game.current.score0}
+        </div>
+      </div>
+
       <div style={{ position: "fixed", top: 0, left: 0 }}>
         <div className={styles.LobbyCard}>
           <input
