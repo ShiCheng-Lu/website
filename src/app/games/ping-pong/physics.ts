@@ -185,7 +185,7 @@ export default class PingPongGame {
     // net / position.z = -gx^2 + c(gx - gx^2) + 1
     // net / position.z - 1 = gx^2 + c(gx^2 - gx)
     // (net / position.z - 1 - gx^2) / (gx^2 - gx) = c
-    const c = (0.7 / position.z - 1 + gx * gx) / (gx - gx * gx);
+    const c = (1 / position.z - 1 + gx * gx) / (gx - gx * gx);
 
     const j = 1.8; // time of second bounce
     const i = (2 + c) / (j - 1);
