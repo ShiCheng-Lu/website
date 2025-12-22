@@ -34,7 +34,7 @@ export default function PingPong() {
     `Lobby${Math.floor(Math.random() * 999) + 1}`
   );
   const [currLobby, setCurrLobby] = useState<string>();
-  const mouse = useRef(new Vector2());
+  const mouse = useRef(new Vector2(NaN, NaN));
 
   const game = useRef(new PingPongGame());
   const [state, setState] = useState(game.current.state());
@@ -51,6 +51,9 @@ export default function PingPong() {
 
     const fps = 60;
     const timout = setInterval(() => {
+      if (Number.isNaN(mouse.current.x)) {
+        return;
+      }
       // update game
       const sync = game.current.update(mouse.current);
       if (Object.entries(sync).length > 0) {
@@ -83,7 +86,6 @@ export default function PingPong() {
     return () => {
       window.removeEventListener("pointermove", pointerMove);
       clearInterval(timout);
-      console.log("Cleared");
     };
   }, []);
 

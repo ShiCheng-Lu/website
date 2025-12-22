@@ -91,6 +91,8 @@ export default class PingPongGame {
           this.hitBall(newBall.clone(), target);
           sync.ball = newBall;
           sync.target = target;
+
+          console.log(paddle, newPaddle);
         }
       }
     }
