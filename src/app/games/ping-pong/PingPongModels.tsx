@@ -13,7 +13,7 @@ export function Table({ position, rotation, scale }: Props) {
         <planeGeometry args={[5, 9]} />
         <meshStandardMaterial color="white" roughness={0.5} metalness={0.7} />
       </mesh>
-      <mesh receiveShadow={true}>
+      <mesh receiveShadow>
         <planeGeometry args={[4.9, 8.9]} />
         <meshStandardMaterial
           color="darkblue"
@@ -27,7 +27,7 @@ export function Table({ position, rotation, scale }: Props) {
       </mesh>
 
       {/* net */}
-      <mesh>
+      <mesh castShadow>
         <boxGeometry args={[6, 0.05, 0.5]} />
         <meshStandardMaterial color="white" />
       </mesh>

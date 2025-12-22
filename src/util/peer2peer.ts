@@ -10,17 +10,10 @@ let pc: RTCPeerConnection | undefined;
 let channel: RTCDataChannel | undefined;
 let onMessage = (message: string) => {};
 
-const USERNAME = '20466bc28b62b2c87a299b2e';
-const PASSWORD = 'pgWt7dj0H4i/WkRh';
+const USERNAME = "20466bc28b62b2c87a299b2e";
+const PASSWORD = "pgWt7dj0H4i/WkRh";
 
-const ICE_SERVERS = [
-  {
-    urls: [
-      "stun:stun.l.google.com:19302",
-      "stun:stun1.l.google.com:19302",
-      "stun:stun2.l.google.com:19302",
-    ],
-  },
+const OPEN_RELAY_ICE_SERVERS = [
   {
     urls: "stun:stun.relay.metered.ca:80",
   },
@@ -44,6 +37,17 @@ const ICE_SERVERS = [
     username: USERNAME,
     credential: PASSWORD,
   },
+];
+
+const ICE_SERVERS = [
+  {
+    urls: [
+      "stun:stun.l.google.com:19302",
+      "stun:stun1.l.google.com:19302",
+      "stun:stun2.l.google.com:19302",
+    ],
+  },
+  ...(process.env.NODE_ENV === "production" ? OPEN_RELAY_ICE_SERVERS : []),
 ];
 
 export async function startLobby(lobbyName?: string) {

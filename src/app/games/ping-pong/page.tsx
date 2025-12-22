@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DirectionalLight, OrthographicCamera, Vector3 } from "three";
+import { DirectionalLight, OrthographicCamera, Vector2, Vector3 } from "three";
 import { Paddle, Table } from "./PingPongModels";
 import Camera from "@/util/three-camera";
 import {
@@ -18,6 +18,7 @@ import styles from "./page.module.css";
 import { onSnapshot, query, where } from "firebase/firestore";
 import { user } from "@/util/firebase";
 import { clamp } from "three/src/math/MathUtils.js";
+import PingPongGame from "./physics";
 
 /**
  * Ping pong network messages will look like:
@@ -26,115 +27,38 @@ import { clamp } from "three/src/math/MathUtils.js";
  * }
  */
 
-const PADDLE_HEIGHT = 0.4;
-const BALL_START = new Vector3(0, -3.5, 0.3);
+const CAMERA_HEIGHT = 60;
 
 export default function PingPong() {
-  const [ball, setBall] = useState(BALL_START.clone());
-  const [ballVel, setBallVel] = useState(new Vector3());
-  const [paddle, setPaddle] = useState(new Vector3(0, -5, PADDLE_HEIGHT));
-  const [opponent, setOpponent] = useState(new Vector3(0, 3.5, PADDLE_HEIGHT));
   const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
   const [lobbyName, setLobbyName] = useState(
     `Lobby${Math.floor(Math.random() * 999) + 1}`
   );
   const [currLobby, setCurrLobby] = useState<string>();
-  const hosting = useRef(true);
-  const canHit = useRef(true);
-  const mouse = useRef(new Vector3());
+  const mouse = useRef(new Vector2());
 
-  const [target, setTarget] = useState(new Vector3());
+  const game = useRef(new PingPongGame());
+  const [state, setState] = useState(game.current.state());
 
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
-        (Math.tan((15 * Math.PI) / 180) * (50 - PADDLE_HEIGHT)) /
-        window.innerHeight;
-      const y = Math.min((window.innerHeight / 2 - e.clientY) * scale, -0.3);
+        (Math.tan((15 * Math.PI) / 180) * CAMERA_HEIGHT) / window.innerHeight;
+      const y = (window.innerHeight / 2 - e.clientY) * scale;
       const x = (e.clientX - window.innerWidth / 2) * scale;
 
-      if (hosting.current) {
-        mouse.current.set(x, y, PADDLE_HEIGHT);
-      } else {
-        mouse.current.set(-x, -y, PADDLE_HEIGHT);
-      }
+      mouse.current.set(x, y);
     };
 
     const fps = 60;
     const timout = setInterval(() => {
-      const newPaddle = mouse.current.clone();
-      const newBall = ball.clone().add(ballVel);
-
-      // handle collision with the ball
-      // completely change the paddle's movement into the reference frame of the ball
-      // and check for (0,0) for a collision
-      const start = paddle.clone().sub(ball);
-      const end = newPaddle.clone().sub(newBall);
-      // crosses in x and different in y vel
-      let hit = false;
-      if (
-        canHit.current &&
-        start.y > 0 != end.y > 0 &&
-        end.y - start.y > 0 != ballVel.y > 0
-      ) {
-        // interpolate the paddle position at y=0
-        const a = start.x * (start.y / (start.y - end.y));
-        const b = end.x * (end.y / (end.y - start.y));
-        const x = a + b;
-        if (Math.abs(x) - 0.25 < 0) {
-          // reflect across vertical axes
-          let target = ballVel.clone().multiplyScalar(1);
-          target.y *= -1;
-
-          // add paddle velocity
-          const paddleVel = newPaddle.clone().sub(paddle).multiplyScalar(0.5);
-          target.add(paddleVel);
-
-          // target location is based on velocity
-          target.multiply({ x: 20, y: 10, z: 0 });
-          target.x = clamp(target.x, -2, 2);
-          target.y = clamp(target.y, -4, 4);
-
-          setTarget(target);
-
-          ballVel.copy(target);
-          ballVel.sub(ball).multiplyScalar(0.02);
-          ballVel.z = 0;
-          setBallVel(paddleVel);
-          console.log(
-            `collided ${JSON.stringify(ball)} ${JSON.stringify(paddleVel)}`
-          );
-          canHit.current = false;
-          hit = true;
-        }
+      // update game
+      const sync = game.current.update(mouse.current);
+      if (Object.entries(sync).length > 0) {
+        // send data to opponent
+        sendData(JSON.stringify(sync));
       }
-
-      if (Math.abs(ball.y) > 10) {
-        newBall.copy(BALL_START.clone());
-        ballVel.copy(new Vector3());
-        setBallVel(new Vector3());
-        console.log(`resetting`);
-        canHit.current = true;
-      }
-
-      const data: { paddle?: Vector3; ball?: Vector3; vel?: Vector3 } = {};
-      if (newPaddle.distanceToSquared(paddle) != 0) {
-        data.paddle = newPaddle;
-      }
-      if (hit) {
-        data.ball = newBall;
-        data.vel = ballVel;
-      }
-      if (Object.keys(data).length > 0) {
-        sendData(JSON.stringify(data));
-      }
-
-      // update paddle location, we also need to update paddle, because the const reference
-      // it's janky code I know, but otherwise need to maintain another ref.
-      paddle.copy(newPaddle);
-      setPaddle(newPaddle);
-      ball.copy(newBall);
-      setBall(newBall);
+      setState(game.current.state());
     }, 1000 / fps);
 
     window.addEventListener("pointermove", pointerMove);
@@ -154,20 +78,7 @@ export default function PingPong() {
 
     setOnMessage((message) => {
       const data = JSON.parse(message);
-      if (data.paddle) {
-        opponent.copy(data.paddle);
-        setOpponent(opponent.clone());
-      }
-      if (data.ball) {
-        ball.copy(data.ball);
-        setBall(ball.clone());
-        canHit.current = true;
-      }
-      if (data.vel) {
-        ballVel.copy(data.vel);
-        setBallVel(ballVel.clone());
-        canHit.current = true;
-      }
+      game.current.receiveSyncState(data);
     });
 
     return () => {
@@ -187,8 +98,19 @@ export default function PingPong() {
     setCurrLobby(undefined);
     if (currLobby != user.user.uid) {
       setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
-      hosting.current = true;
+      game.current.player = 0;
     }
+  };
+
+  const joinLob = (id: string, lob: LobbyData) => {
+    joinLobby(id, lob);
+    setCurrLobby(id);
+    setLobbyName(lob.name);
+    game.current.player = 1;
+  };
+
+  const resetGame = () => {
+    game.current.reset();
   };
 
   // const light = useMemo(() => {
@@ -221,9 +143,9 @@ export default function PingPong() {
         style={{ flex: 1, touchAction: "none", background: "green" }}
       >
         <Camera
-          position={[0, 0, 50]}
+          position={[0, 0, CAMERA_HEIGHT]}
           fov={15}
-          rotation={[0, 0, !hosting.current ? Math.PI : 0]}
+          rotation={[0, 0, game.current.player ? Math.PI : 0]}
         />
         {/* <ambientLight intensity={1} /> */}
         <directionalLight
@@ -233,24 +155,19 @@ export default function PingPong() {
           castShadow={true}
         />
 
-        <Table />
+        {/* Table, down by ball size so we bounce at z = 0 */}
+        <Table position={[0, 0, -0.0656168]} />
 
         {/* Ball */}
-        <mesh position={ball} castShadow={true}>
+        <mesh position={state.ball} castShadow={true}>
           <sphereGeometry args={[0.0656168]} />
           <meshPhongMaterial color="white" />
         </mesh>
 
         {/* Paddle */}
-        <Paddle
-          position={paddle}
-          rotation={[0, 0, !hosting.current ? Math.PI : 0]}
-        />
+        <Paddle position={state.paddle0} rotation={[0, 0, 0]} />
 
-        <Paddle
-          position={opponent}
-          rotation={[0, 0, hosting.current ? Math.PI : 0]}
-        />
+        <Paddle position={state.paddle1} rotation={[0, 0, Math.PI]} />
 
         {/* <mesh position={target}>
           <circleGeometry args={[0.1, 32]} />
@@ -269,22 +186,14 @@ export default function PingPong() {
           ) : (
             <button onClick={endLob}>Leave lobby</button>
           )}
+          <button onClick={resetGame}>Reset</button>
         </div>
         {!currLobby &&
           Object.entries(lobbies).map(([id, lob]) => {
             return (
               <div className={styles.LobbyCard} key={id}>
                 <p>{lob.name}</p>
-                <button
-                  onClick={() => {
-                    joinLobby(id, lob);
-                    setCurrLobby(id);
-                    setLobbyName(lob.name);
-                    hosting.current = false;
-                  }}
-                >
-                  Join lobby
-                </button>
+                <button onClick={() => joinLob(id, lob)}>Join lobby</button>
               </div>
             );
           })}
