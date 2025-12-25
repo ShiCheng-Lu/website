@@ -48,7 +48,7 @@ export default function Archery() {
         // hit target
         setVelocity(new Vector3(0));
         setCheckTarget(true);
-        if (position.distanceTo({ x: 0, y: 0, z: -distance }) < 0.8) {
+        if (position.distanceTo({ x: 0, y: 0, z: 1-distance }) < 1) {
           setCamera(new Vector3(0, 0, 3 - distance));
         } else {
           setCamera(new Vector3(0, 0.15, 3).add(position));
@@ -94,8 +94,8 @@ export default function Archery() {
     setNewDriftTarget();
     setAimTime(Date.now());
 
-    (e.target as any)?.requestPointerLock();
     setHint(false);
+    (e.target as any)?.requestPointerLock();
   };
 
   // release + reset, depending on if the arrow is drawn or fired
@@ -125,6 +125,7 @@ export default function Archery() {
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
+    setHint(false);
     if (checkTarget || !aimTime) {
       return;
     }
