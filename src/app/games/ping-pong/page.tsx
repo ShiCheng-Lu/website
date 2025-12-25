@@ -35,7 +35,7 @@ export default function PingPong() {
     `Lobby${Math.floor(Math.random() * 999) + 1}`
   );
   const [currLobby, setCurrLobby] = useState<string>();
-  const mouse = useRef(new Vector2(NaN, NaN));
+  const mouse = useRef(new Vector2(NaN));
 
   const game = useRef(new PingPongGame());
   const [state, setState] = useState(game.current.state());

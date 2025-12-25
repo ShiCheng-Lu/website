@@ -48,9 +48,11 @@ export default function Archery() {
         // hit target
         setVelocity(new Vector3(0));
         setCheckTarget(true);
-        if (position.distanceTo({ x: 0, y: 0, z: 1-distance }) < 1) {
+        if (position.distanceTo({ x: 0, y: 0, z: -distance }) < 0.8) {
+          console.log("on target");
           setCamera(new Vector3(0, 0, 3 - distance));
         } else {
+          console.log("on floor");
           setCamera(new Vector3(0, 0.15, 3).add(position));
         }
       }
@@ -114,6 +116,7 @@ export default function Archery() {
     }
     if (checkTarget || !aimTime) {
       setCheckTarget(false);
+      console.log("reset cam");
       setCamera(new Vector3());
       return;
     }
@@ -156,14 +159,8 @@ export default function Archery() {
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerMove={onPointerMove}
-        camera={{
-          fov: 30,
-          near: 0.1,
-          far: 1000,
-          position: [0, 0, 0],
-        }}
       >
-        <Camera fov={30} position={camera}></Camera>
+        <Camera fov={30} position={camera} />
         <directionalLight position={[2, 2, 5]} color="white" intensity={3} />
 
         <Target distance={distance} />

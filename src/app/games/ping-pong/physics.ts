@@ -61,6 +61,12 @@ export default class PingPongGame {
 
   update(mouse: Vector2): SyncState {
     const sync: SyncState = {};
+    
+    // do not update if mouse isn't real
+    if (Number.isNaN(mouse.x) || Number.isNaN(mouse.y)) {
+      return sync;
+    }
+
     // update ball
     const newBall = this.ballDynamics(this.time);
     this.time += 1;

@@ -13,19 +13,22 @@ export default function Camera({
 }) {
   const { camera } = useThree();
 
+  const pos = Array.isArray(position)
+    ? new Vector3(position[0], position[1], position[2])
+    : position;
+
+  const rot = Array.isArray(rotation)
+    ? new Euler(rotation[0], rotation[1], rotation[2])
+    : rotation;
+
   useEffect(() => {
-    const pos = Array.isArray(position)
-      ? new Vector3(position[0], position[1], position[2])
-      : position;
-    const rot = Array.isArray(rotation)
-      ? new Euler(rotation[0], rotation[1], rotation[2])
-      : rotation;
+    console.log("updated camera");
 
     (camera as any).fov = fov;
     pos && camera.position.set(pos.x, pos.y, pos.z);
     rot && camera.rotation.set(rot.x, rot.y, rot.z, rot.order);
     camera.updateProjectionMatrix();
-  }, [fov, location, rotation]);
+  }, [fov, pos?.x, pos?.y, pos?.z, rot?.x, rot?.y, rot?.z]);
 
   return null;
 }
