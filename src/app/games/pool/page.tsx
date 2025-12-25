@@ -1,3 +1,5 @@
+"use client";
+
 import { Canvas } from "@react-three/fiber"
 // import { useEffect, useRef, useState } from "react"
 // import PoolGame from "./physics"
