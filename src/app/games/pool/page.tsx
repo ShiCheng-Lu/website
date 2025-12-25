@@ -1,11 +1,11 @@
-// import { Canvas } from "@react-three/fiber"
+import { Canvas } from "@react-three/fiber"
 // import { useEffect, useRef, useState } from "react"
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
 
 // const CAMERA_HEIGHT = 1;
 
-// export default function Pool() {
+export default function Pool() {
 //   // const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
 //   const [lobbyName, setLobbyName] = useState(
 //     `Lobby${Math.floor(Math.random() * 999) + 1}`
@@ -100,15 +100,15 @@
 //   };
 
 
-//   return <div>
-//     <Canvas>
+  return <div>
+    <Canvas>
 
 
-//       <mesh>
-//         <sphereGeometry />
-//         <meshBasicMaterial />
-//       </mesh>
+      <mesh>
+        <sphereGeometry />
+        <meshBasicMaterial />
+      </mesh>
 
-//     </Canvas>
-//   </div>
-// }
+    </Canvas>
+  </div>
+}
