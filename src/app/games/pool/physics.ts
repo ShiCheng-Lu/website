@@ -36,18 +36,18 @@ export default class PoolGame {
   constructor() {
     this.balls = [
       {
-        position: new Vector3(0, 20, 0),
-        velocity: new Vector3(),
-        angular_velocity: new Vector3(),
-        angular_position: new Quaternion(),
-        color: "red",
-      },
-      {
         position: new Vector3(0, -20, 0),
         velocity: new Vector3(),
         angular_velocity: new Vector3(),
         angular_position: new Quaternion(),
         color: "white",
+      },
+      {
+        position: new Vector3(0, 20, 0),
+        velocity: new Vector3(),
+        angular_velocity: new Vector3(),
+        angular_position: new Quaternion(),
+        color: "red",
       },
     ];
     this.player = 0;
@@ -62,17 +62,28 @@ export default class PoolGame {
     for (const ball of this.balls) {
       ball.position.add(ball.velocity);
     }
+    
+    // calculate collision
+    for (const ball of this.balls) {
+      
+    }
 
     // update velocity
     for (const ball of this.balls) {
       // if the velocity is already super low, just stop the ball
-      const friction = ball.velocity.lengthSq() < 1e-9 ? 0 : 0.9;
+      const friction = ball.velocity.lengthSq() < 1e-9 ? 0 : 0.997;
       ball.velocity.multiplyScalar(friction);
 
       ball.angular_position;
     }
 
     return sync;
+  }
+
+  test() {
+    console.log("Test here");
+    // do something,
+    this.balls[0].velocity = new Vector3(0, 0.1, 0);
   }
 
   state(): GameState {

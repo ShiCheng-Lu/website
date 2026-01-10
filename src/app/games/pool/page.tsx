@@ -3,14 +3,14 @@
 import { Canvas } from "@react-three/fiber";
 import { Ball, Table } from "./models";
 import Camera from "@/util/three-camera";
-import { DirectionalLight } from "three";
-import { useRef, useState } from "react";
+import { DirectionalLight, Vector2 } from "three";
+import { useEffect, useRef, useState } from "react";
 import PoolGame from "./physics";
 // import { useEffect, useRef, useState } from "react"
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
 
-// const CAMERA_HEIGHT = 1;
+const CAMERA_HEIGHT = 100;
 
 export default function Pool() {
   //   // const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
@@ -18,64 +18,83 @@ export default function Pool() {
   //     `Lobby${Math.floor(Math.random() * 999) + 1}`
   //   );
   //   const [currLobby, setCurrLobby] = useState<string>();
-  //   const mouse = useRef(new Vector2(NaN));
+  const mouse = useRef(new Vector2(NaN));
 
   const game = useRef(new PoolGame());
   const [state, setState] = useState(game.current.state());
 
-  //   useEffect(() => {
-  //     const pointerMove = (e: PointerEvent) => {
-  //       const scale =
-  //         (Math.tan((15 * Math.PI) / 180) * CAMERA_HEIGHT) / window.innerHeight;
-  //       const y = (window.innerHeight / 2 - e.clientY) * scale;
-  //       const x = (e.clientX - window.innerWidth / 2) * scale;
+  useEffect(() => {
+    const pointerMove = (e: PointerEvent) => {
+      const scale =
+        (Math.tan((15 * Math.PI) / 180) * CAMERA_HEIGHT) / window.innerHeight;
+      const y = (window.innerHeight / 2 - e.clientY) * scale;
+      const x = (e.clientX - window.innerWidth / 2) * scale;
 
-  //       mouse.current.set(x, y);
-  //     };
+      mouse.current.set(x, y);
+    };
 
-  //     const fps = 60;
-  //     const timout = setInterval(() => {
-  //       if (Number.isNaN(mouse.current.x)) {
-  //         return;
-  //       }
-  //       // update game
-  //       const sync = game.current.update(mouse.current);
-  //       if (Object.entries(sync).length > 0) {
-  //         // send data to opponent
-  //         sendData(JSON.stringify(sync));
-  //       }
-  //       setState(game.current.state());
-  //     }, 1000 / fps);
+    const pointerDown = (e: PointerEvent) => {
+      console.log(`pointer down ${e}`);
+      game.current.test();
+    };
 
-  //     window.addEventListener("pointermove", pointerMove);
+    const pointerUp = (e: PointerEvent) => {
+      console.log(`pointer up ${e}`);
+    };
 
-  //     onSnapshot(
-  //       query(lobby().collection, where("answer", "==", "")),
-  //       (lobbyList) => {
-  //         const lobbies: { [key: string]: LobbyData } = {};
-  //         lobbyList.forEach((lob) => {
-  //           if (lob.exists() && lob.id != user.user.uid) {
-  //             lobbies[lob.id] = lob.data() as LobbyData;
-  //           }
-  //         });
-  //         setLobbies(lobbies);
-  //       }
-  //     );
+    const fps = 60;
+    const subtick = 5; // simulate at smaller step then rendering for better accuracy
+    let tick = 0;
+    const timout = setInterval(() => {
+      if (Number.isNaN(mouse.current.x)) {
+        return;
+      }
+      // update game
+      const sync = game.current.update(mouse.current);
+      if (Object.entries(sync).length > 0) {
+        // send data to opponent
+        // sendData(JSON.stringify(sync));
+      }
+      tick += 1;
+      if (tick == subtick) {
+        setState(game.current.state());
+        tick = 0;
+      }
+    }, 1000 / fps / subtick);
 
-  //     setOnMessage((message) => {
-  //       const data = JSON.parse(message);
-  //       game.current.receiveSyncState(data);
-  //     });
+    window.addEventListener("pointermove", pointerMove);
+    window.addEventListener("pointerdown", pointerDown);
+    window.addEventListener("pointerup", pointerUp);
 
-  //     setOnConnection(() => {
-  //       game.current.reset();
-  //     });
+    // onSnapshot(
+    //   query(lobby().collection, where("answer", "==", "")),
+    //   (lobbyList) => {
+    //     const lobbies: { [key: string]: LobbyData } = {};
+    //     lobbyList.forEach((lob) => {
+    //       if (lob.exists() && lob.id != user.user.uid) {
+    //         lobbies[lob.id] = lob.data() as LobbyData;
+    //       }
+    //     });
+    //     setLobbies(lobbies);
+    //   }
+    // );
 
-  //     return () => {
-  //       window.removeEventListener("pointermove", pointerMove);
-  //       clearInterval(timout);
-  //     };
-  //   }, []);
+    // setOnMessage((message) => {
+    //   const data = JSON.parse(message);
+    //   game.current.receiveSyncState(data);
+    // });
+
+    // setOnConnection(() => {
+    //   game.current.reset();
+    // });
+
+    return () => {
+      window.removeEventListener("pointermove", pointerMove);
+      window.removeEventListener("pointerdown", pointerDown);
+      window.removeEventListener("pointerup", pointerUp);
+      clearInterval(timout);
+    };
+  }, []);
 
   //   const startLob = () => {
   //     startLobby(lobbyName);
@@ -128,7 +147,7 @@ export default function Pool() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-        <Camera fov={70} position={[0, 0, 100]} />
+        <Camera fov={70} position={[0, 0, CAMERA_HEIGHT]} />
 
         <Table />
         <directionalLight
