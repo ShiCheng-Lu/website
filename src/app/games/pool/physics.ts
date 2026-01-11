@@ -13,6 +13,7 @@ type BallRenderState = RenderState & {
   color: string;
 };
 
+// these velocities are all multiplied by tick rate
 type PhysicsState = {
   position: Vector3;
   velocity: Vector3;
@@ -87,7 +88,7 @@ export default class PoolGame {
       ...POOL_STATE.map((ball) => ({
         position: new Vector3(
           ball.x * OFFSET_X,
-          ball.y * OFFSET_Y + TABLE_WIDTH / 2,
+          ball.y * OFFSET_Y + TABLE_WIDTH / 2 - OFFSET_Y * 2,
           0
         ),
         velocity: new Vector3(),
@@ -99,21 +100,99 @@ export default class PoolGame {
     this.player = 0;
     this.turn = 0;
     this.cue = {
-      position: new Vector3(0, 0, 0),
+      position: new Vector3(0, -25, 0),
       velocity: new Vector3(),
       angular_velocity: new Vector3(),
       angular_position: new Quaternion(),
     };
     this.anchor = {
-      position: new Vector3(0, -10, 0),
+      position: new Vector3(0, -30, 0),
       rotation: new Euler(),
     };
     this.pressed = "";
   }
 
-  update(mouse: Vector2, pressed: boolean): SyncState {
+  input(mouse: Vector2, pressed: boolean, subticks: number = 1): SyncState {
     const sync = {};
 
+    // process input
+    if (pressed && !this.pressed) {
+      // mouse down
+
+      const handleLocation = new Vector3(0, -CUE_LENGTH, 0);
+      handleLocation.applyQuaternion(this.cue.angular_position);
+      handleLocation.add(this.cue.position);
+
+      if (mouse.distanceTo(handleLocation) < BALL_DIAMETER * 2) {
+        // trying to move the cue
+        this.pressed = "cue";
+        // immediately set the cue position so that the initial click don't trigger
+        // a forward motion, (which will attempt to hit the cue ball)
+        this.cue.position.copy({ ...mouse, z: 0 });
+      } else if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER) {
+        this.pressed = "anchor";
+      } else if (mouse.distanceTo(this.balls[0].position) < BALL_DIAMETER / 2) {
+        // trying to pick up the cue ball
+        this.pressed = "ball";
+      }
+
+      console.log(this.pressed);
+    }
+
+    if (pressed && this.pressed) {
+      if (this.pressed === "cue") {
+        // calculate  the tip position, and cue angle at the sime time
+        const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
+        // if the current mouse position is too close to the anchor, release the cue
+        // so we don't spin the cue when the mouse passes through the anchor point
+        if (tip.length() < BALL_DIAMETER) {
+          this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
+        }
+
+        const angle = new Quaternion();
+        angle.setFromAxisAngle(new Vector3(0, 0, 1), Math.atan2(tip.x, -tip.y));
+        const dist = Math.min(tip.length() - CUE_LENGTH, -BALL_DIAMETER);
+        tip.normalize().multiplyScalar(dist).add(this.anchor.position);
+
+        this.cue.angular_position.copy(angle);
+
+        // if the next position is close to the anchor than previous, then we've pushing the
+        // cue forward, so set a cue velocity, which will be able to collide with the ball
+        if (
+          this.cue.position.distanceTo(this.anchor.position) <
+          tip.distanceTo(this.anchor.position)
+        ) {
+          this.cue.velocity = tip
+            .clone()
+            .sub(this.cue.position)
+            .multiplyScalar(1 / subticks);
+        } else {
+          this.cue.velocity = new Vector3();
+        }
+
+        this.cue.position.copy(tip);
+      }
+      if (this.pressed === "ball") {
+        // TODO: not allow ball to be placed inside other balls
+        this.balls[0].position.copy({ ...mouse, z: 0 });
+      }
+      if (this.pressed === "anchor") {
+        // move the cue along with the anchor
+        this.cue.position.sub(this.anchor.position);
+        this.anchor.position.copy({ ...mouse, z: 0 });
+        this.cue.position.add(this.anchor.position);
+      }
+    }
+
+    if (!pressed && this.pressed) {
+      this.pressed = "";
+    }
+
+    return sync;
+  }
+
+  update(): SyncState {
+    const sync = {};
     // calculate new position
     const positions = this.balls.map((ball) => {
       return ball.position.clone().add(ball.velocity);
@@ -163,6 +242,30 @@ export default class PoolGame {
       }
     }
 
+    // collision with the walls
+    // TODO: more complex wall collision
+    for (let i = 0; i < this.balls.length; ++i) {
+      if (positions[i].x < -TABLE_WIDTH / 2 + BALL_DIAMETER / 2) {
+        if (velocities[i].x < 0) {
+          velocities[i].x *= -1;
+        }
+      } else if (positions[i].x > TABLE_WIDTH / 2 - BALL_DIAMETER / 2) {
+        if (velocities[i].x > 0) {
+          velocities[i].x *= -1;
+        }
+      }
+
+      if (positions[i].y < -TABLE_WIDTH + BALL_DIAMETER / 2) {
+        if (velocities[i].y < 0) {
+          velocities[i].y *= -1;
+        }
+      } else if (positions[i].y > TABLE_WIDTH - BALL_DIAMETER / 2) {
+        if (velocities[i].y > 0) {
+          velocities[i].y *= -1;
+        }
+      }
+    }
+
     // cue collision
     if (
       this.cue.velocity.lengthSq() != 0 &&
@@ -187,84 +290,7 @@ export default class PoolGame {
       this.balls[i].velocity.copy(velocities[i]);
     }
 
-    // TODO: we should only process input on real ticks, for smooth cue velocity
-    // maybe split update and input
-
-    // process input
-    if (pressed && !this.pressed) {
-      // mouse down
-
-      const handleLocation = new Vector3(0, -CUE_LENGTH, 0);
-      handleLocation.applyQuaternion(this.cue.angular_position);
-      handleLocation.add(this.cue.position);
-
-      if (mouse.distanceTo(handleLocation) < BALL_DIAMETER * 2) {
-        // trying to move the cue
-        this.pressed = "cue";
-        // immediately set the cue position so that the initial click don't trigger
-        // a forward motion, (which will attempt to hit the cue ball)
-        this.cue.position.copy({ ...mouse, z: 0 });
-      } else if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER) {
-        this.pressed = "anchor";
-      } else if (mouse.distanceTo(this.balls[0].position) < BALL_DIAMETER / 2) {
-        // trying to pick up the cue ball
-        this.pressed = "ball";
-      }
-
-      console.log(this.pressed);
-    }
-
-    if (pressed && this.pressed) {
-      if (this.pressed === "cue") {
-        // if the next position is close to the anchor than previous, then we've pushing the
-        // cue forward, so set a cue velocity, which will be able to collide with the ball
-
-        // calculate  the tip position, and cue angle at the sime time
-        const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
-        const angle = Math.atan2(tip.x, -tip.y);
-        const dist = Math.min(tip.length() - CUE_LENGTH, -BALL_DIAMETER);
-        tip.normalize().multiplyScalar(dist).add(this.anchor.position);
-
-        // update the cue to point towards the anchor
-        this.cue.angular_position = new Quaternion().setFromAxisAngle(
-          new Vector3(0, 0, 1),
-          angle
-        );
-
-        if (
-          this.cue.position.distanceTo(this.anchor.position) <
-          tip.distanceTo(this.anchor.position)
-        ) {
-          this.cue.velocity = tip.clone().sub(this.cue.position);
-        } else {
-          this.cue.velocity = new Vector3();
-        }
-
-        this.cue.position.copy(tip);
-      }
-      if (this.pressed === "ball") {
-        // TODO: not allow ball to be placed inside other balls
-        this.balls[0].position.copy({ ...mouse, z: 0 });
-      }
-      if (this.pressed === "anchor") {
-        // move the cue along with the anchor
-        this.cue.position.sub(this.anchor.position);
-        this.anchor.position.copy({ ...mouse, z: 0 });
-        this.cue.position.add(this.anchor.position);
-      }
-    }
-
-    if (!pressed && this.pressed) {
-      this.pressed = "";
-    }
-
     return sync;
-  }
-
-  test() {
-    console.log("Test here");
-    // do something,
-    this.balls[0].velocity = new Vector3(0, 0.1, 0);
   }
 
   state(): GameState {

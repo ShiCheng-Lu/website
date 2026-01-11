@@ -49,22 +49,31 @@ export default function Pool() {
     };
 
     const fps = 60;
-    const subtick = 1; // simulate at smaller step then rendering for better accuracy
+    const subtick = 5; // simulate at smaller step then rendering for better accuracy
     let tick = 0;
     const timout = setInterval(() => {
       if (Number.isNaN(mouse.current.x)) {
         return;
       }
       // update game
-      const sync = game.current.update(mouse.current, mouseDown.current);
-      if (Object.entries(sync).length > 0) {
-        // send data to opponent
-        // sendData(JSON.stringify(sync));
-      }
       tick += 1;
+      const sync = {
+        // input is updated every |subtick| ticks
+        ...(tick == subtick
+          ? game.current.input(mouse.current, mouseDown.current, subtick)
+          : {}),
+        // game physics is updated every ticks
+        ...game.current.update(),
+      };
+
       if (tick == subtick) {
         setState(game.current.state());
         tick = 0;
+      }
+
+      if (Object.entries(sync).length > 0) {
+        // send data to opponent
+        // sendData(JSON.stringify(sync));
       }
     }, 1000 / fps / subtick);
 
