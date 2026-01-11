@@ -99,21 +99,33 @@ export default class PoolGame {
     ];
     this.player = 0;
     this.turn = 0;
+    this.anchor = {
+      position: new Vector3(0, -35, 0),
+      rotation: new Euler(),
+    };
     this.cue = {
-      position: new Vector3(0, -25, 0),
+      position: this.anchor.position.clone().add(new Vector3(0, 10, 0)),
       velocity: new Vector3(),
       angular_velocity: new Vector3(),
       angular_position: new Quaternion(),
-    };
-    this.anchor = {
-      position: new Vector3(0, -30, 0),
-      rotation: new Euler(),
     };
     this.pressed = "";
   }
 
   input(mouse: Vector2, pressed: boolean, subticks: number = 1): SyncState {
     const sync = {};
+
+    const cuePosition = () => {
+      const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
+      const angle = new Quaternion();
+      angle.setFromAxisAngle(new Vector3(0, 0, 1), Math.atan2(tip.x, -tip.y));
+      const dist = Math.min(tip.length() - CUE_LENGTH, -BALL_DIAMETER);
+      tip.normalize().multiplyScalar(dist).add(this.anchor.position);
+      return {
+        position: tip,
+        rotation: angle,
+      };
+    };
 
     // process input
     if (pressed && !this.pressed) {
@@ -128,49 +140,43 @@ export default class PoolGame {
         this.pressed = "cue";
         // immediately set the cue position so that the initial click don't trigger
         // a forward motion, (which will attempt to hit the cue ball)
-        this.cue.position.copy({ ...mouse, z: 0 });
+        this.cue.position.copy(cuePosition().position);
       } else if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER) {
         this.pressed = "anchor";
       } else if (mouse.distanceTo(this.balls[0].position) < BALL_DIAMETER / 2) {
         // trying to pick up the cue ball
         this.pressed = "ball";
       }
-
-      console.log(this.pressed);
     }
 
     if (pressed && this.pressed) {
       if (this.pressed === "cue") {
         // calculate  the tip position, and cue angle at the sime time
-        const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
-        // if the current mouse position is too close to the anchor, release the cue
-        // so we don't spin the cue when the mouse passes through the anchor point
-        if (tip.length() < BALL_DIAMETER) {
-          this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
-        }
-
-        const angle = new Quaternion();
-        angle.setFromAxisAngle(new Vector3(0, 0, 1), Math.atan2(tip.x, -tip.y));
-        const dist = Math.min(tip.length() - CUE_LENGTH, -BALL_DIAMETER);
-        tip.normalize().multiplyScalar(dist).add(this.anchor.position);
-
-        this.cue.angular_position.copy(angle);
+        const newCue = cuePosition();
+        this.cue.angular_position.copy(newCue.rotation);
 
         // if the next position is close to the anchor than previous, then we've pushing the
         // cue forward, so set a cue velocity, which will be able to collide with the ball
         if (
           this.cue.position.distanceTo(this.anchor.position) <
-          tip.distanceTo(this.anchor.position)
+          newCue.position.distanceTo(this.anchor.position)
         ) {
-          this.cue.velocity = tip
+          this.cue.velocity = newCue.position
             .clone()
             .sub(this.cue.position)
             .multiplyScalar(1 / subticks);
+
+          // if the current mouse position is too close to the anchor, release the cue
+          // so we don't spin the cue when the mouse passes through the anchor point
+          if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER * 3) {
+            console.log("ksjfle");
+            this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
+          }
         } else {
           this.cue.velocity = new Vector3();
         }
 
-        this.cue.position.copy(tip);
+        this.cue.position.copy(newCue.position);
       }
       if (this.pressed === "ball") {
         // TODO: not allow ball to be placed inside other balls
@@ -228,6 +234,8 @@ export default class PoolGame {
       }
       for (let j = 0; j < this.balls.length; ++j) {
         if (overlaps[i][j]) {
+          // TODO: collision energy loss (as sound in real life)
+
           const direction = positions[j].clone().sub(positions[i]).normalize();
           const velocity = this.balls[i].velocity.clone();
           // cosine determines how much energy is transfered
@@ -270,7 +278,7 @@ export default class PoolGame {
     if (
       this.cue.velocity.lengthSq() != 0 &&
       velocities[0].lengthSq() == 0 &&
-      this.cue.position.distanceTo(positions[0]) < BALL_DIAMETER / 2
+      this.cue.position.distanceTo(positions[0]) < BALL_DIAMETER / 2 + 0.25 // 0.25 is the cue tip width
     ) {
       // TODO: collide with cue position to add spin
       velocities[0].add(this.cue.velocity.clone());
@@ -284,7 +292,7 @@ export default class PoolGame {
     // update velocity
     for (let i = 0; i < this.balls.length; ++i) {
       // if the velocity is already super low, just stop the ball
-      const friction = velocities[i].lengthSq() < 1e-9 ? 0 : 0.997;
+      const friction = velocities[i].lengthSq() < 1e-6 ? 0 : 0.997;
       velocities[i].multiplyScalar(friction);
 
       this.balls[i].velocity.copy(velocities[i]);

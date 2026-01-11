@@ -10,7 +10,7 @@ import PoolGame from "./physics";
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
 
-const CAMERA_HEIGHT = 100;
+const CAMERA_HEIGHT = 120;
 const CAMERA_FOV = 70;
 
 export default function Pool() {
