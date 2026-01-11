@@ -6,6 +6,16 @@ export const TABLE_WIDTH = 50;
 // TODO: allow choosing cue length, longer cue should have better precision
 export const CUE_LENGTH = 36;
 
+// TODO: these pockets are not in the right positions
+export const POCKETS = [
+  { x: -TABLE_WIDTH / 2, y: -TABLE_WIDTH },
+  { x: TABLE_WIDTH / 2, y: -TABLE_WIDTH },
+  { x: -TABLE_WIDTH / 2, y: 0 },
+  { x: TABLE_WIDTH / 2, y: 0 },
+  { x: -TABLE_WIDTH / 2, y: TABLE_WIDTH },
+  { x: TABLE_WIDTH / 2, y: TABLE_WIDTH },
+].map(({ x, y }) => new Vector3(x, y, 0));
+
 type RenderState = {
   position: Vector3;
   rotation: Euler;
@@ -102,7 +112,7 @@ export default class PoolGame {
     this.player = 0;
     this.turn = 0;
     this.anchor = {
-      position: new Vector3(0, 0, 0),
+      position: new Vector3(0, -35, 0),
       rotation: new Euler(),
     };
     this.cue = {
@@ -205,6 +215,37 @@ export default class PoolGame {
     const positions = this.balls.map((ball) => {
       return ball.position.clone().add(ball.velocity);
     });
+
+    // sinks
+    for (let i = 0; i < this.balls.length; ++i) {
+      if (
+        POCKETS.every(
+          (pocket) => positions[i].distanceTo(pocket) > BALL_DIAMETER * 1.5
+        )
+      ) {
+        continue;
+      }
+      // ball sunk
+      this.balls[i].velocity = new Vector3();
+      if (this.balls[i].color === "white") {
+        positions[i] = new Vector3(0, -TABLE_WIDTH - BALL_DIAMETER * 3, 0);
+      } else if (this.balls[i].color === "black") {
+        // you lose, (or win if its the last ball)
+      } else {
+        const color = this.balls[i].color;
+        // count number of balls sunk
+        const tableSide =
+          (TABLE_WIDTH / 2 + BALL_DIAMETER) * (color === "yellow" ? -1 : 1);
+        const count = this.balls.filter(
+          (ball) => ball.color === color && ball.position.x === tableSide
+        ).length;
+        positions[i] = new Vector3(
+          tableSide,
+          BALL_DIAMETER * 3 - BALL_DIAMETER * count,
+          0
+        );
+      }
+    }
 
     // calculate collision, limit position to right before the collision
     // calculate new velocity
