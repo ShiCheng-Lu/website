@@ -235,13 +235,13 @@ export default class PoolGame {
         const color = this.balls[i].color;
         // count number of balls sunk
         const tableSide =
-          (TABLE_WIDTH / 2 + BALL_DIAMETER) * (color === "yellow" ? -1 : 1);
+          (TABLE_WIDTH / 2 + BALL_DIAMETER * 3) * (color === "yellow" ? -1 : 1);
         const count = this.balls.filter(
           (ball) => ball.color === color && ball.position.x === tableSide
         ).length;
         positions[i] = new Vector3(
           tableSide,
-          BALL_DIAMETER * 3 - BALL_DIAMETER * count,
+          (BALL_DIAMETER * 3 - BALL_DIAMETER * count) * 1.2,
           0
         );
       }
