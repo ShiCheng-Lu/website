@@ -28,6 +28,7 @@ import PingPongGame from "./physics";
  */
 
 const CAMERA_HEIGHT = 60;
+const CAMERA_FOV = 15;
 
 export default function PingPong() {
   const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
@@ -43,9 +44,9 @@ export default function PingPong() {
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
-        (Math.tan((15 * Math.PI) / 180) * CAMERA_HEIGHT) / window.innerHeight;
-      const y = (window.innerHeight / 2 - e.clientY) * scale;
-      const x = (e.clientX - window.innerWidth / 2) * scale;
+        (Math.tan(CAMERA_FOV * Math.PI / 360) * CAMERA_HEIGHT) / window.innerHeight;
+      const y = (window.innerHeight - e.clientY * 2) * scale;
+      const x = (e.clientX * 2 - window.innerWidth) * scale;
 
       mouse.current.set(x, y);
     };
@@ -154,7 +155,7 @@ export default function PingPong() {
       >
         <Camera
           position={[0, 0, CAMERA_HEIGHT]}
-          fov={15}
+          fov={CAMERA_FOV}
           rotation={[0, 0, game.current.player ? Math.PI : 0]}
         />
         {/* <ambientLight intensity={1} /> */}

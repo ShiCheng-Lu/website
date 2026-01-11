@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Ball, Table } from "./models";
+import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
 import { DirectionalLight, Vector2 } from "three";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import PoolGame from "./physics";
 // import { Vector2 } from "three";
 
 const CAMERA_HEIGHT = 100;
+const CAMERA_FOV = 70;
 
 export default function Pool() {
   //   // const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
@@ -19,6 +20,7 @@ export default function Pool() {
   //   );
   //   const [currLobby, setCurrLobby] = useState<string>();
   const mouse = useRef(new Vector2(NaN));
+  const mouseDown = useRef(false);
 
   const game = useRef(new PoolGame());
   const [state, setState] = useState(game.current.state());
@@ -26,31 +28,35 @@ export default function Pool() {
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
-        (Math.tan((15 * Math.PI) / 180) * CAMERA_HEIGHT) / window.innerHeight;
-      const y = (window.innerHeight / 2 - e.clientY) * scale;
-      const x = (e.clientX - window.innerWidth / 2) * scale;
+        (Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
+        window.innerHeight;
+      const y = (window.innerHeight - e.clientY * 2) * scale;
+      const x = (e.clientX * 2 - window.innerWidth) * scale;
 
       mouse.current.set(x, y);
     };
 
     const pointerDown = (e: PointerEvent) => {
       console.log(`pointer down ${e}`);
-      game.current.test();
+      mouseDown.current = true;
+      pointerMove(e); // set the mouse position
     };
 
     const pointerUp = (e: PointerEvent) => {
       console.log(`pointer up ${e}`);
+      mouseDown.current = false;
+      pointerMove(e); // set the mouse position
     };
 
     const fps = 60;
-    const subtick = 5; // simulate at smaller step then rendering for better accuracy
+    const subtick = 1; // simulate at smaller step then rendering for better accuracy
     let tick = 0;
     const timout = setInterval(() => {
       if (Number.isNaN(mouse.current.x)) {
         return;
       }
       // update game
-      const sync = game.current.update(mouse.current);
+      const sync = game.current.update(mouse.current, mouseDown.current);
       if (Object.entries(sync).length > 0) {
         // send data to opponent
         // sendData(JSON.stringify(sync));
@@ -147,7 +153,7 @@ export default function Pool() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-        <Camera fov={70} position={[0, 0, CAMERA_HEIGHT]} />
+        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
 
         <Table />
         <directionalLight
@@ -157,11 +163,17 @@ export default function Pool() {
           castShadow={true}
         />
 
+        <Anchor
+          position={state.anchor.position}
+          rotation={state.anchor.rotation}
+        />
+        <Cue position={state.cue.position} rotation={state.cue.rotation} />
+
         {state.balls.map((ball, index) => (
           <Ball
             key={index}
             position={ball.position}
-            rotation={ball.angular_position}
+            rotation={ball.rotation}
             color={ball.color}
           />
         ))}
