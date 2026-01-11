@@ -2,6 +2,8 @@ import { Euler, Quaternion, Vector2, Vector3 } from "three";
 
 export const BALL_DIAMETER = 2.25;
 export const TABLE_WIDTH = 50;
+
+// TODO: allow choosing cue length, longer cue should have better precision
 export const CUE_LENGTH = 36;
 
 type RenderState = {
@@ -100,7 +102,7 @@ export default class PoolGame {
     this.player = 0;
     this.turn = 0;
     this.anchor = {
-      position: new Vector3(0, -35, 0),
+      position: new Vector3(0, 0, 0),
       rotation: new Euler(),
     };
     this.cue = {
@@ -154,6 +156,7 @@ export default class PoolGame {
         // calculate  the tip position, and cue angle at the sime time
         const newCue = cuePosition();
         this.cue.angular_position.copy(newCue.rotation);
+        this.anchor.rotation.setFromQuaternion(newCue.rotation);
 
         // if the next position is close to the anchor than previous, then we've pushing the
         // cue forward, so set a cue velocity, which will be able to collide with the ball
@@ -169,7 +172,6 @@ export default class PoolGame {
           // if the current mouse position is too close to the anchor, release the cue
           // so we don't spin the cue when the mouse passes through the anchor point
           if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER * 3) {
-            console.log("ksjfle");
             this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
           }
         } else {
