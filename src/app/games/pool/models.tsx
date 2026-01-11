@@ -1,7 +1,5 @@
 import { Euler, Vector3 } from "three";
-
-const BALL_DIAMETER = 2.25;
-const TABLE_WIDTH = 50;
+import { BALL_DIAMETER, TABLE_WIDTH } from "./physics";
 
 type Props = {
   position?: Vector3 | [number, number, number];
