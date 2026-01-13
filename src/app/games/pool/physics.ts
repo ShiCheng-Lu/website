@@ -212,6 +212,7 @@ export default class PoolGame {
         // trying to pick up the cue ball
         this.pressed = "ball";
       }
+      console.log(this.pressed);
     }
 
     if (pressed && this.pressed) {
@@ -236,6 +237,7 @@ export default class PoolGame {
           // so we don't spin the cue when the mouse passes through the anchor point
           if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER * 3) {
             this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
+            this.cue.velocity = new Vector3(0);
           }
         } else {
           this.cue.velocity = new Vector3();
@@ -262,10 +264,14 @@ export default class PoolGame {
         this.anchor.position.copy({ ...mouse, z: 0 });
         this.cue.position.add(this.anchor.position);
       }
+
+      console.log(this.pressed);
     }
 
     if (!pressed && this.pressed) {
       this.pressed = "";
+      // set cue velocity to 0 on release
+      this.cue.velocity = new Vector3(0);
     }
 
     return sync;
