@@ -1,5 +1,13 @@
 import { Euler, Vector3 } from "three";
-import { BALL_DIAMETER, CUE_LENGTH, POCKETS, TABLE_WIDTH } from "./physics";
+import {
+  BALL_DIAMETER,
+  CUE_LENGTH,
+  CUSHION_WIDTH,
+  EDGE_WIDTH,
+  POCKETS,
+  POCKET_DIMENSIONS,
+  TABLE_WIDTH,
+} from "./physics";
 
 type Props = {
   position?: Vector3 | [number, number, number];
@@ -24,13 +32,29 @@ export function Ball({
 export function Table() {
   return (
     <mesh>
+      {/* TEMP, outer edge of table */}
       <mesh position={[0, 0, -BALL_DIAMETER / 2]}>
-        <planeGeometry args={[TABLE_WIDTH, TABLE_WIDTH * 2]} />
+        <planeGeometry
+          args={[
+            TABLE_WIDTH + (CUSHION_WIDTH + EDGE_WIDTH) * 2,
+            TABLE_WIDTH * 2 + (CUSHION_WIDTH + EDGE_WIDTH) * 2,
+          ]}
+        />
+        <meshStandardMaterial color="#966F33" roughness={0.5} metalness={0.7} />
+      </mesh>
+
+      <mesh position={[0, 0, -BALL_DIAMETER / 2]}>
+        <planeGeometry
+          args={[
+            TABLE_WIDTH + CUSHION_WIDTH * 2,
+            TABLE_WIDTH * 2 + CUSHION_WIDTH * 2,
+          ]}
+        />
         <meshStandardMaterial color="green" roughness={0.5} metalness={0.7} />
       </mesh>
       {POCKETS.map((pocket, index) => (
         <mesh position={pocket} key={index}>
-          <circleGeometry args={[BALL_DIAMETER]} />
+          <circleGeometry args={[POCKET_DIMENSIONS.hole]} />
           <meshStandardMaterial color="black" />
         </mesh>
       ))}
