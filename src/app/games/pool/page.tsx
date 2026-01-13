@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
-import { DirectionalLight, Vector2 } from "three";
+import { DirectionalLight, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
 import PoolGame from "./physics";
 // import { useEffect, useRef, useState } from "react"
@@ -12,6 +12,13 @@ import PoolGame from "./physics";
 
 const CAMERA_HEIGHT = 120;
 const CAMERA_FOV = 70;
+
+const ANCHOR_MOVEMENTS: { [key: string]: Vector3 } = {
+  KeyW: new Vector3(0, 0.2, 0),
+  KeyA: new Vector3(-0.2, 0, 0),
+  KeyS: new Vector3(0, -0.2, 0),
+  KeyD: new Vector3(0.2, 0, 0),
+};
 
 export default function Pool() {
   //   // const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
@@ -48,6 +55,16 @@ export default function Pool() {
       pointerMove(e); // set the mouse position
     };
 
+    const keyPress = (e: KeyboardEvent) => {
+      for (const key in ANCHOR_MOVEMENTS) {
+        if (e.code === key) {
+          const movement = ANCHOR_MOVEMENTS[key];
+          game.current.anchor.position.add(movement);
+          game.current.cue.position.add(movement);
+        }
+      }
+    };
+
     const fps = 60;
     const subtick = 5; // simulate at smaller step then rendering for better accuracy
     let tick = 0;
@@ -80,6 +97,7 @@ export default function Pool() {
     window.addEventListener("pointermove", pointerMove);
     window.addEventListener("pointerdown", pointerDown);
     window.addEventListener("pointerup", pointerUp);
+    window.addEventListener("keydown", keyPress);
 
     // onSnapshot(
     //   query(lobby().collection, where("answer", "==", "")),
@@ -107,6 +125,7 @@ export default function Pool() {
       window.removeEventListener("pointermove", pointerMove);
       window.removeEventListener("pointerdown", pointerDown);
       window.removeEventListener("pointerup", pointerUp);
+      window.removeEventListener("keydown", keyPress);
       clearInterval(timout);
     };
   }, []);

@@ -184,8 +184,12 @@ export default class PoolGame {
       const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
       const angle = new Quaternion();
       angle.setFromAxisAngle(new Vector3(0, 0, 1), Math.atan2(tip.x, -tip.y));
-      const dist = Math.min(tip.length() - CUE_LENGTH, -BALL_DIAMETER);
-      tip.normalize().multiplyScalar(dist).add(this.anchor.position);
+      const dist = Math.min(
+        Math.max(CUE_LENGTH - tip.length(), BALL_DIAMETER),
+        CUE_LENGTH - BALL_DIAMETER * 3
+      );
+      // tip is reversed (from mouse to anchor, so this dist needs to be negative)
+      tip.normalize().multiplyScalar(-dist).add(this.anchor.position);
       return {
         position: tip,
         rotation: angle,
@@ -212,38 +216,30 @@ export default class PoolGame {
         // trying to pick up the cue ball
         this.pressed = "ball";
       }
-      console.log(this.pressed);
     }
 
     if (pressed && this.pressed) {
       if (this.pressed === "cue") {
         // calculate  the tip position, and cue angle at the sime time
         const newCue = cuePosition();
-        this.cue.angular_position.copy(newCue.rotation);
-        this.anchor.rotation.setFromQuaternion(newCue.rotation);
 
         // if the next position is close to the anchor than previous, then we've pushing the
         // cue forward, so set a cue velocity, which will be able to collide with the ball
-        if (
-          this.cue.position.distanceTo(this.anchor.position) <
-          newCue.position.distanceTo(this.anchor.position)
-        ) {
+        const oldDistance = this.cue.position.distanceTo(this.anchor.position);
+        const newDistance = newCue.position.distanceTo(this.anchor.position);
+
+        if (oldDistance < newDistance) {
           this.cue.velocity = newCue.position
             .clone()
             .sub(this.cue.position)
             .multiplyScalar(1 / subticks);
-
-          // if the current mouse position is too close to the anchor, release the cue
-          // so we don't spin the cue when the mouse passes through the anchor point
-          if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER * 3) {
-            this.pressed = "none"; // set to none so nothing else can be pressed until the mouse button is actually released
-            this.cue.velocity = new Vector3(0);
-          }
         } else {
           this.cue.velocity = new Vector3();
         }
 
         this.cue.position.copy(newCue.position);
+        this.cue.angular_position.copy(newCue.rotation);
+        this.anchor.rotation.setFromQuaternion(newCue.rotation);
       }
       if (this.pressed === "ball") {
         // TODO: not allow ball to be placed inside other balls
@@ -264,8 +260,6 @@ export default class PoolGame {
         this.anchor.position.copy({ ...mouse, z: 0 });
         this.cue.position.add(this.anchor.position);
       }
-
-      console.log(this.pressed);
     }
 
     if (!pressed && this.pressed) {
