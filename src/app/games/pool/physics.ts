@@ -1,6 +1,7 @@
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
 
 export const BALL_DIAMETER = 2.25;
+export const BALL_RADIUS = BALL_DIAMETER / 2;
 export const TABLE_WIDTH = 50;
 export const CORNER_ANGLE = 142; // 142 +- 1
 export const CORNER_MOUTH = 4.5; // 4.5 - 4.625
@@ -9,7 +10,12 @@ export const SIDE_ANGLE = 104; // 104 +- 1
 export const SIDE_MOUTH = CORNER_MOUTH + 0.5;
 export const SIDE_SHELF = 0; // 0 - 0.375
 export const CUSHION_WIDTH = 2;
+export const CUSHION_HEIGHT = BALL_DIAMETER * 0.635;
 export const EDGE_WIDTH = 5; // 5 after cushion
+
+export function radians(degrees: number) {
+  return (degrees * Math.PI) / 180;
+}
 
 function pocketDimensions(
   corner_angle: number,
@@ -19,17 +25,17 @@ function pocketDimensions(
   side_mouth: number,
   side_shelf: number
 ) {
-  const sin_num_1 = Math.sin(((180 - corner_angle) * Math.PI) / 180);
-  const sin_den_1 = Math.sin(((corner_angle - 90) * Math.PI) / 180);
-  const sin_num_2 = Math.sin(((180 - side_angle) * Math.PI) / 180);
-  const sin_den_2 = Math.sin(((side_angle - 90) * Math.PI) / 180);
+  const sin_num_1 = Math.sin(radians(180 - corner_angle));
+  const sin_den_1 = Math.sin(radians(corner_angle - 90));
+  const sin_num_2 = Math.sin(radians(180 - side_angle));
+  const sin_den_2 = Math.sin(radians(side_angle - 90));
   const z_1 = corner_mouth / 2 - (corner_shelf * sin_den_1) / sin_num_1;
   const z_2 = side_mouth / 2 - (side_shelf * sin_den_2) / sin_num_2;
 
   const y = (z_1 * sin_num_1 - z_2 * sin_num_2) / (sin_den_1 - sin_den_2);
   const x = z_1 * sin_num_1 - y * sin_den_1;
 
-  const corner = (y - corner_mouth / 2 - corner_shelf) * Math.SQRT1_2;
+  const corner = (y - corner_mouth / 2 + corner_shelf) * Math.SQRT1_2;
   const side = side_shelf + y;
 
   return { back: x, hole: y, corner, side };
@@ -244,7 +250,7 @@ export default class PoolGame {
       if (this.pressed === "ball") {
         // TODO: not allow ball to be placed inside other balls
         const inPocket = POCKETS.some(
-          (pocket) => mouse.distanceTo(pocket) < BALL_DIAMETER * 1.5
+          (pocket) => mouse.distanceTo(pocket) < POCKET_DIMENSIONS.hole
         );
         const colliding = this.balls
           .slice(1)
@@ -282,7 +288,7 @@ export default class PoolGame {
     for (let i = 0; i < this.balls.length; ++i) {
       if (
         POCKETS.every(
-          (pocket) => positions[i].distanceTo(pocket) > BALL_DIAMETER * 1.5
+          (pocket) => positions[i].distanceTo(pocket) > POCKET_DIMENSIONS.hole
         )
       ) {
         continue;
@@ -358,24 +364,47 @@ export default class PoolGame {
     // collision with the walls
     // TODO: more complex wall collision
     for (let i = 0; i < this.balls.length; ++i) {
-      if (positions[i].x < -TABLE_WIDTH / 2 + BALL_DIAMETER / 2) {
-        if (velocities[i].x < 0) {
-          velocities[i].x *= -1;
-        }
-      } else if (positions[i].x > TABLE_WIDTH / 2 - BALL_DIAMETER / 2) {
-        if (velocities[i].x > 0) {
-          velocities[i].x *= -1;
-        }
+      const p = positions[i];
+      const v = velocities[i];
+      if (
+        p.y > TABLE_WIDTH - BALL_RADIUS &&
+        p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
+        p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
+        v.y > 0
+      ) {
+        velocities[i].y = -v.y;
       }
-
-      if (positions[i].y < -TABLE_WIDTH + BALL_DIAMETER / 2) {
-        if (velocities[i].y < 0) {
-          velocities[i].y *= -1;
-        }
-      } else if (positions[i].y > TABLE_WIDTH - BALL_DIAMETER / 2) {
-        if (velocities[i].y > 0) {
-          velocities[i].y *= -1;
-        }
+      else if (
+        p.y < -TABLE_WIDTH + BALL_RADIUS &&
+        p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
+        p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
+        v.y < 0
+      ) {
+        velocities[i].y = -v.y;
+      }
+      else if (
+        p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
+        p.y > SIDE_MOUTH / 2 &&
+        p.y < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+        v.x < 0
+      ) {
+        velocities[i].x = -v.x;
+      }
+      else if (
+        p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
+        Math.abs(p.y) > SIDE_MOUTH / 2 &&
+        Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+        v.x < 0
+      ) {
+        velocities[i].x = -v.x;
+      }
+      else if (
+        p.x > TABLE_WIDTH / 2 - BALL_RADIUS &&
+        Math.abs(p.y) > SIDE_MOUTH / 2 &&
+        Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+        v.x > 0
+      ) {
+        velocities[i].x = -v.x;
       }
     }
 
