@@ -181,14 +181,16 @@ export default function Pool() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
+        <Camera
+          fov={CAMERA_FOV}
+          position={[0, 0, CAMERA_HEIGHT]}
+        />
 
         <Table />
         <directionalLight
           position={[0, 0, 1]}
           color="white"
           intensity={1.3}
-          castShadow={true}
         />
 
         <Anchor

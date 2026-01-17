@@ -1,4 +1,4 @@
-import { Euler, Vector3 } from "three";
+import { Euler, Vector2, Vector3 } from "three";
 import {
   BALL_DIAMETER,
   CORNER_ANGLE,
@@ -37,6 +37,60 @@ export function Ball({
   );
 }
 
+class Mesh {
+  points: number[] = [];
+  normals: number[] = [];
+  indices: number[] = [];
+
+  face(perimeter: Vector3[], normals: Vector3[] | undefined = undefined) {
+    if (perimeter.length < 3) {
+      return;
+    }
+    if (normals && normals.length !== perimeter.length) {
+      return;
+    }
+    const normal = perimeter[0].clone().cross(perimeter[1]);
+    const perim = [];
+    // indices sorted by x
+    // 
+
+    for (let i = 0; i < perimeter.length; ++i) {
+      const p = perimeter[i];
+      const n = normals ? normals[i] : normal;
+      this.points.push(p.x, p.y, p.z);
+      this.normals.push(n.x, n.y, n.z);
+      
+      perim.push(new Vector2(p.x, p.y)); // TODO: project onto the plane via normal
+
+    }
+    // partition into monotone polygons
+    const polygon = new Array(perimeter.length).fill(0).map((_, i) => i);
+
+
+
+    // triangulate monotone polygons
+  }
+
+  bufferGeometry() {
+    return (
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[new Float32Array(this.points), 3]}
+        />
+        <bufferAttribute
+          attach="attributes-normal"
+          args={[new Float32Array(this.normals), 3]}
+        />
+        <bufferAttribute
+          attach="index"
+          args={[new Uint32Array(this.indices), 1]}
+        />
+      </bufferGeometry>
+    );
+  }
+}
+
 export function Table() {
   const cushions = useMemo(() => {
     // where cushion nose changes direction into the pocket, end
@@ -56,6 +110,44 @@ export function Table() {
 
     const y5 = SIDE_MOUTH / 2;
     const y6 = y5 - Math.tan(radians(SIDE_ANGLE - 90)) * CUSHION_WIDTH;
+
+    const x5 =
+      TABLE_WIDTH +
+      POCKET_DIMENSIONS.corner +
+      POCKET_DIMENSIONS.back * Math.SQRT1_2;
+    const y7 = y2 + EDGE_WIDTH;
+
+    const cushion = new Mesh();
+    {
+      const end: Vector3[] = [
+        new Vector3(-x1, y1, z1),
+        new Vector3(x1, y1, z1),
+        new Vector3(-x2, y2, z1),
+        new Vector3(x2, y2, z1),
+      ];
+      cushion.face(end);
+      cushion.face(end.map((p) => new Vector3(p.x, -p.y, p.z)));
+      const side: Vector3[] = [
+        new Vector3(x3, y3, z1),
+        new Vector3(x4, y4, z1),
+        new Vector3(x3, y5, z1),
+        new Vector3(x4, y6, z1),
+      ];
+      cushion.face(side);
+      cushion.face(side.map((p) => new Vector3(p.x, -p.y, p.z)));
+      cushion.face(side.map((p) => new Vector3(-p.x, p.y, p.z)));
+      cushion.face(side.map((p) => new Vector3(-p.x, -p.y, p.z)));
+    }
+
+    const table = new Mesh();
+    {
+      const end: [number, number, number][] = [
+        [-x2, y2, z1],
+        [x2, y2, z1],
+        [x5, y7, z1],
+        [-x5, y7, z1],
+      ];
+    }
 
     /* prettier-ignore */
     const points = new Float32Array([
@@ -154,7 +246,7 @@ export function Table() {
   return (
     <mesh>
       {/* TEMP, outer edge of table */}
-      <mesh position={[0, 0, -BALL_DIAMETER / 2]}>
+      {/* <mesh position={[0, 0, -BALL_DIAMETER / 2]} receiveShadow={true}>
         <planeGeometry
           args={[
             TABLE_WIDTH + (CUSHION_WIDTH + EDGE_WIDTH) * 2,
@@ -162,8 +254,8 @@ export function Table() {
           ]}
         />
         <meshStandardMaterial color="#966F33" roughness={0.5} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, 0, -BALL_DIAMETER / 2]}>
+      </mesh> */}
+      <mesh position={[0, 0, -BALL_DIAMETER / 2]} receiveShadow={true}>
         <planeGeometry
           args={[
             TABLE_WIDTH + CUSHION_WIDTH * 2,
