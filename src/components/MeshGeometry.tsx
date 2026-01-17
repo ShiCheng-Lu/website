@@ -5,6 +5,64 @@ type MeshGeometryProps = {
   faces: Vector3[][];
 };
 
+function monotoneDecomposition(
+  points: Vector2[],
+  polygon: number[],
+  sortedIndex: number[]
+) {
+  for (let i = 0; i < sortedIndex.length; ++i) {}
+}
+
+// triangulate a monotonic polygon
+function monotoneTriangulation(polygon: number[], sortedIndex: number[]) {
+  const triangles = [];
+  let chain = [sortedIndex[0], sortedIndex[1]];
+  const chainDirectionOf = (a: number, b: number) => {
+    const direction = a - b;
+    if (direction === sortedIndex.length - 1) {
+      return -1;
+    }
+    if (direction === 1 - sortedIndex.length) {
+      return 1;
+    }
+    return direction;
+  };
+  let chainDirection = chainDirectionOf(chain[1], chain[0]);
+  console.log(polygon, sortedIndex, chainDirection);
+
+  for (let i = 2; i < sortedIndex.length; ++i) {
+    const index = sortedIndex[i];
+    // if on the opposite chain as the current working chain
+    if (chainDirectionOf(index, chain[0]) === -chainDirection) {
+      console.log(chain, index);
+      if (chainDirection === 1) {
+        for (let j = 1; j < chain.length; ++j) {
+          triangles.push(
+            polygon[chain[j - 1]],
+            polygon[chain[j]],
+            polygon[index]
+          );
+        }
+      } else {
+        for (let j = 1; j < chain.length; ++j) {
+          triangles.push(
+            polygon[chain[j]],
+            polygon[chain[j - 1]],
+            polygon[index]
+          );
+        }
+      }
+      chain = [chain[chain.length - 1], index];
+      chainDirection = -chainDirection;
+    } else {
+      chain.push(index);
+    }
+  }
+  return triangles;
+}
+
+function triangulation(points: Vector2[], polygon: number[]) {}
+
 export function MeshGeometry({ faces }: MeshGeometryProps) {
   const { points, normals, indices } = useMemo(() => {
     const points: number[] = [];
@@ -12,11 +70,21 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
     const indices: number[] = [];
 
     for (const face of faces) {
-      const normal = face[0].clone().cross(face[1]);
-      const perim = [];
+      if (face.length < 3) {
+        continue;
+      }
+
+      const indexOffset = points.length / 3;
+      const normal = face[1]
+        .clone()
+        .sub(face[0])
+        .cross(face[2].clone().sub(face[0]))
+        .normalize();
+
+      const perim: Vector2[] = [];
       // indices sorted by x
       //
-
+      const index = [];
       for (let i = 0; i < face.length; ++i) {
         const p = face[i];
         // const n = normals ? normals[i] : normal;
@@ -25,12 +93,24 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
         normals.push(n.x, n.y, n.z);
 
         perim.push(new Vector2(p.x, p.y)); // TODO: project onto the plane via normal
+        index.push(i);
       }
+
       // partition into monotone polygons
-      const polygon = new Array(face.length).fill(0).map((_, i) => i);
+      // for now, assume it's monotone in x
+      const sortedIndex = index.toSorted((a, b) =>
+        perim[a].x === perim[b].x
+          ? perim[a].y - perim[b].y
+          : perim[a].x - perim[b].x
+      );
 
-      // triangulate monotone polygons
-
+      console.log("triangles");
+      indices.push(
+        ...monotoneTriangulation(
+          index.map((i) => i + indexOffset),
+          sortedIndex
+        )
+      );
     }
 
     return {
@@ -38,7 +118,7 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       normals: new Float32Array(normals),
       indices: new Uint16Array(indices),
     };
-  }, []);
+  }, [faces]);
 
   return (
     <bufferGeometry>

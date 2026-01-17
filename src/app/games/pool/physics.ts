@@ -38,6 +38,8 @@ function pocketDimensions(
   const corner = (y - corner_mouth / 2 + corner_shelf) * Math.SQRT1_2;
   const side = side_shelf + y;
 
+  // back is the radius of the pocket's rim
+  // hole is the radius of the pocket's bottom
   return { back: x, hole: y, corner, side };
 }
 
