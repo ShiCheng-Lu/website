@@ -250,7 +250,6 @@ export default class PoolGame {
         this.anchor.rotation.setFromQuaternion(newCue.rotation);
       }
       if (this.pressed === "ball") {
-        // TODO: not allow ball to be placed inside other balls
         const inPocket = POCKETS.some(
           (pocket) => mouse.distanceTo(pocket) < POCKET_DIMENSIONS.hole
         );

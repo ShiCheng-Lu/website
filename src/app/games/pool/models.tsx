@@ -104,6 +104,8 @@ export function Table() {
       mesh.push(end);
       mesh.push(end.map((p) => new Vector3(p.x, -p.y, p.z)).toReversed());
 
+      const edge_corner =
+        POCKET_DIMENSIONS.corner + POCKET_DIMENSIONS.back * Math.SQRT1_2;
       const corner: Vector3[] = [
         new Vector3(x2, y2, z1),
         ...circle(
@@ -118,20 +120,49 @@ export function Table() {
             { x: 0, y: 0, z: 1 },
             ((180 - CORNER_ANGLE) * Math.PI) / 180
           )
-        ),
-        new Vector3(x4, y4, z1),
-        // ...circle(
-        //   new Vector3(
-        //     TABLE_WIDTH / 2 + POCKET_DIMENSIONS.corner + POCKET_DIMENSIONS.back * Math.SQRT1_2,
-        //     TABLE_WIDTH + POCKET_DIMENSIONS.corner + POCKET_DIMENSIONS.back * Math.SQRT1_2,
-        //     z1,
-        //   )
-        // )
+        ).slice(0, 7),
+        // new Vector3(x4, y4, z1),
+        ...circle(
+          new Vector3(
+            TABLE_WIDTH / 2 + edge_corner,
+            TABLE_WIDTH + edge_corner,
+            z1
+          ),
+          CUSHION_WIDTH + EDGE_WIDTH - edge_corner,
+          90,
+          new Quaternion()
+        ).toReversed(),
       ];
-      mesh.push(corner.toReversed());
-      mesh.push(corner.map(flipY));
-      mesh.push(corner.map(flipX));
-      mesh.push(corner.map(flipXY).toReversed());
+      mesh.push(corner);
+      mesh.push(corner.map(flipY).toReversed());
+      mesh.push(corner.map(flipX).toReversed());
+      mesh.push(corner.map(flipXY));
+
+      const side: Vector3[] = [
+        new Vector3(x4, y4, z1),
+        new Vector3(x4, y6, z1),
+        ...circle(
+          new Vector3(TABLE_WIDTH / 2 + POCKET_DIMENSIONS.side, 0, z1),
+          POCKET_DIMENSIONS.back,
+          180 - SIDE_ANGLE,
+          new Quaternion().setFromAxisAngle(
+            { x: 0, y: 0, z: 1 },
+            ((90 - SIDE_ANGLE) * Math.PI) / 180
+          )
+        ),
+        new Vector3(TABLE_WIDTH / 2 + CUSHION_WIDTH + EDGE_WIDTH, 0, z1),
+        new Vector3(
+          TABLE_WIDTH / 2 + CUSHION_WIDTH + EDGE_WIDTH,
+          TABLE_WIDTH +
+            POCKET_DIMENSIONS.corner +
+            POCKET_DIMENSIONS.back * Math.SQRT1_2,
+          z1
+        ),
+      ];
+      mesh.push(side);
+      mesh.push(side.map(flipY).toReversed());
+      mesh.push(side.map(flipX).toReversed());
+      mesh.push(side.map(flipXY));
 
       return mesh;
     }, []);

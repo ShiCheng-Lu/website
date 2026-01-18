@@ -14,7 +14,11 @@ function monotoneDecomposition(
 }
 
 // triangulate a monotonic polygon
-function monotoneTriangulation(polygon: number[], sortedIndex: number[]) {
+function monotoneTriangulation(
+  points: Vector2[],
+  polygon: number[],
+  sortedIndex: number[]
+) {
   const triangles = [];
   let chain = [sortedIndex[0], sortedIndex[1]];
   const chainDirectionOf = (a: number, b: number) => {
@@ -34,7 +38,6 @@ function monotoneTriangulation(polygon: number[], sortedIndex: number[]) {
     const index = sortedIndex[i];
     // if on the opposite chain as the current working chain
     if (chainDirectionOf(index, chain[0]) === -chainDirection) {
-      console.log(chain, index);
       if (chainDirection === 1) {
         for (let j = 1; j < chain.length; ++j) {
           triangles.push(
@@ -55,6 +58,11 @@ function monotoneTriangulation(polygon: number[], sortedIndex: number[]) {
       chain = [chain[chain.length - 1], index];
       chainDirection = -chainDirection;
     } else {
+      if (chainDirection === 1) {
+        // let angle =
+      } else {
+      }
+
       chain.push(index);
     }
   }
@@ -75,12 +83,7 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       }
 
       const indexOffset = points.length / 3;
-      const normal = face[1]
-        .clone()
-        .sub(face[0])
-        .cross(face[2].clone().sub(face[0]))
-        .normalize();
-
+      const normal = new Vector3(0, 0, 1);
       const perim: Vector2[] = [];
       // indices sorted by x
       //
@@ -107,9 +110,10 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       console.log("triangles");
       indices.push(
         ...monotoneTriangulation(
-          index.map((i) => i + indexOffset),
+          perim,
+          index.map((i) => i),
           sortedIndex
-        )
+        ).map((x) => x + indexOffset)
       );
     }
 
