@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
-import { DirectionalLight, Vector2, Vector3 } from "three";
+import { DirectionalLight, Euler, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
 import PoolGame from "./physics";
 // import { useEffect, useRef, useState } from "react"
@@ -32,6 +32,36 @@ export default function Pool() {
   const game = useRef(new PoolGame());
   const [state, setState] = useState(game.current.state());
 
+  const [pov, setPOV] = useState(false);
+  const [camera, setCamera] = useState({
+    fov: CAMERA_FOV,
+    position: new Vector3(0, 0, CAMERA_HEIGHT),
+    rotation: new Euler(0, 0, 0),
+  });
+
+  const togglePOV = () => {
+    if (pov) {
+      setCamera({
+        fov: CAMERA_FOV,
+        position: new Vector3(0, 0, CAMERA_HEIGHT),
+        rotation: new Euler(0, 0, 0),
+      });
+    } else {
+      const rotation = state.anchor.rotation.clone();
+      rotation.order = "ZYX";
+      rotation.x = (Math.PI / 180) * 60;
+      const position = state.anchor.position
+        .clone()
+        .add(new Vector3(0, 0, 50).applyEuler(rotation));
+      setCamera({
+        fov: CAMERA_FOV,
+        position,
+        rotation,
+      });
+    }
+    setPOV(!pov);
+  };
+
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
@@ -39,6 +69,8 @@ export default function Pool() {
         window.innerHeight;
       const y = (window.innerHeight - e.clientY * 2) * scale;
       const x = (e.clientX * 2 - window.innerWidth) * scale;
+
+      // TODO: project onto XY plane
 
       mouse.current.set(x, y);
     };
@@ -99,28 +131,6 @@ export default function Pool() {
     window.addEventListener("pointerup", pointerUp);
     window.addEventListener("keydown", keyPress);
 
-    // onSnapshot(
-    //   query(lobby().collection, where("answer", "==", "")),
-    //   (lobbyList) => {
-    //     const lobbies: { [key: string]: LobbyData } = {};
-    //     lobbyList.forEach((lob) => {
-    //       if (lob.exists() && lob.id != user.user.uid) {
-    //         lobbies[lob.id] = lob.data() as LobbyData;
-    //       }
-    //     });
-    //     setLobbies(lobbies);
-    //   }
-    // );
-
-    // setOnMessage((message) => {
-    //   const data = JSON.parse(message);
-    //   game.current.receiveSyncState(data);
-    // });
-
-    // setOnConnection(() => {
-    //   game.current.reset();
-    // });
-
     return () => {
       window.removeEventListener("pointermove", pointerMove);
       window.removeEventListener("pointerdown", pointerDown);
@@ -129,35 +139,6 @@ export default function Pool() {
       clearInterval(timout);
     };
   }, []);
-
-  //   const startLob = () => {
-  //     startLobby(lobbyName);
-  //     setCurrLobby(user.user.uid);
-  //     resetGame();
-  //   };
-
-  //   const endLob = () => {
-  //     leaveLobby();
-  //     setCurrLobby(undefined);
-  //     if (currLobby != user.user.uid) {
-  //       setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
-  //       game.current.player = 0;
-  //     }
-  //     game.current.paddle1 = new Vector3(NaN);
-  //     // go back to AI opponent
-  //   };
-
-  //   const joinLob = (id: string, lob: LobbyData) => {
-  //     joinLobby(id, lob);
-  //     setCurrLobby(id);
-  //     setLobbyName(lob.name);
-  //     resetGame();
-  //     game.current.player = 1;
-  //   };
-
-  //   const resetGame = () => {
-  //     game.current.reset();
-  //   };
 
   return (
     <div
@@ -181,10 +162,18 @@ export default function Pool() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
+        <Camera
+          fov={camera.fov}
+          position={camera.position}
+          rotation={camera.rotation}
+        />
 
         <Table />
-        <directionalLight position={[0, 0, 1]} color="white" intensity={1.3} />
+        <directionalLight
+          position={[0, 0, 1]}
+          color="white"
+          intensity={1.3}
+        />
 
         <Anchor
           position={state.anchor.position}
@@ -201,6 +190,14 @@ export default function Pool() {
           />
         ))}
       </Canvas>
+      <div style={{ position: "fixed", right: 10, bottom: 10 }}>
+        <button
+          onClick={togglePOV}
+          style={{ width: 75, height: 75, borderRadius: 30 }}
+        >
+          POV
+        </button>
+      </div>
     </div>
   );
 }

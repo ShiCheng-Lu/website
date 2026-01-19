@@ -70,7 +70,7 @@ export function Table() {
     const flipY = (p: Vector3) => new Vector3(p.x, -p.y, p.z);
     const flipXY = (p: Vector3) => new Vector3(-p.x, -p.y, p.z);
 
-    const cushion: Vector3[][] = useMemo(() => {
+    const cushion: Vector3[][] = (() => {
       const mesh: Vector3[][] = [];
       const end: Vector3[] = [
         new Vector3(-x1, y1, z1),
@@ -91,9 +91,9 @@ export function Table() {
       mesh.push(side.map(flipX).toReversed());
       mesh.push(side.map(flipXY));
       return mesh;
-    }, []);
+    })();
 
-    const table: Vector3[][] = useMemo(() => {
+    const table: Vector3[][] = (() => {
       const mesh: Vector3[][] = [];
       const end: Vector3[] = [
         new Vector3(-x2, y2, z1),
@@ -133,7 +133,7 @@ export function Table() {
           new Quaternion()
         ).toReversed(),
       ];
-      console.log(corner.map(p => `(${p.x}, ${p.y})`).join(' '))
+      console.log(corner.map((p) => `(${p.x}, ${p.y})`).join(" "));
       mesh.push(corner);
       mesh.push(corner.map(flipY).toReversed());
       mesh.push(corner.map(flipX).toReversed());
@@ -166,7 +166,7 @@ export function Table() {
       mesh.push(side.map(flipXY));
 
       return mesh;
-    }, []);
+    })();
 
     return {
       cushion,
@@ -193,10 +193,13 @@ export function Table() {
             TABLE_WIDTH * 2 + CUSHION_WIDTH * 2,
           ]}
         />
-        <meshStandardMaterial color="green" roughness={0.5} metalness={0.7} />
+        <meshStandardMaterial color="green" roughness={1} metalness={0} />
       </mesh>
       {POCKETS.map((pocket, index) => (
-        <mesh position={pocket} key={index}>
+        <mesh
+          position={pocket.clone().sub({ x: 0, y: 0, z: BALL_RADIUS - 0.001 })}
+          key={index}
+        >
           <circleGeometry args={[POCKET_DIMENSIONS.hole]} />
           <meshStandardMaterial color="black" />
         </mesh>
@@ -222,15 +225,11 @@ export function Table() {
       </mesh> */}
       <mesh>
         <MeshGeometry faces={meshes.cushion} />
-        <meshStandardMaterial
-          color="darkgreen"
-          roughness={0.5}
-          metalness={0.7}
-        />
+        <meshStandardMaterial color="darkgreen" roughness={1} metalness={0} />
       </mesh>
       <mesh>
         <MeshGeometry faces={meshes.table} />
-        <meshStandardMaterial color="#966F33" roughness={0.5} metalness={0.7} />
+        <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
       </mesh>
     </mesh>
   );

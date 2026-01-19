@@ -26,7 +26,28 @@ export function GameSession({ game, ref }: GameSessionProp) {
   const join = (id: string, data: LobbyData) => {};
 
   useEffect(() => {
-    
+    // onSnapshot(
+    //   query(lobby().collection, where("answer", "==", "")),
+    //   (lobbyList) => {
+    //     const lobbies: { [key: string]: LobbyData } = {};
+    //     lobbyList.forEach((lob) => {
+    //       if (lob.exists() && lob.id != user.user.uid) {
+    //         lobbies[lob.id] = lob.data() as LobbyData;
+    //       }
+    //     });
+    //     setLobbies(lobbies);
+    //   }
+    // );
+  }, []);
+
+  useEffect(() => {
+    // setOnMessage((message) => {
+    //   const data = JSON.parse(message);
+    //   game.current.receiveSyncState(data);
+    // });
+    // setOnConnection(() => {
+    //   game.current.reset();
+    // });
   }, [ref]);
 
   return (
