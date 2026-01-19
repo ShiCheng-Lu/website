@@ -168,52 +168,58 @@ function triangulation(
 }
 
 export function MeshGeometry({ faces }: MeshGeometryProps) {
-  const points: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
+  const { points, normals, indices } = useMemo(() => {
+    const points: number[] = [];
+    const normals: number[] = [];
+    const indices: number[] = [];
 
-  for (const face of faces) {
-    if (face.length < 3) {
-      continue;
+    for (const face of faces) {
+      if (face.length < 3) {
+        continue;
+      }
+
+      const indexOffset = points.length / 3;
+      const normal = new Vector3(0, 0, 1);
+      const perim: Vector2[] = [];
+      // indices sorted by x
+      //
+      const polygon = [];
+      for (let i = 0; i < face.length; ++i) {
+        const p = face[i];
+        // const n = normals ? normals[i] : normal;
+        const n = normal;
+        points.push(p.x, p.y, p.z);
+        normals.push(n.x, n.y, n.z);
+
+        perim.push(new Vector2(p.x, p.y)); // TODO: project onto the plane via normal
+        polygon.push(i);
+      }
+
+      const sortedIndex = polygon.toSorted((a, b) =>
+        perim[a].x === perim[b].x
+          ? perim[a].y - perim[b].y
+          : perim[a].x - perim[b].x
+      );
+
+      indices.push(
+        ...triangulation(perim, polygon, sortedIndex).map(
+          (x) => x + indexOffset
+        )
+      );
     }
 
-    const indexOffset = points.length / 3;
-    const normal = new Vector3(0, 0, 1);
-    const perim: Vector2[] = [];
-    // indices sorted by x
-    //
-    const polygon = [];
-    for (let i = 0; i < face.length; ++i) {
-      const p = face[i];
-      // const n = normals ? normals[i] : normal;
-      const n = normal;
-      points.push(p.x, p.y, p.z);
-      normals.push(n.x, n.y, n.z);
-
-      perim.push(new Vector2(p.x, p.y)); // TODO: project onto the plane via normal
-      polygon.push(i);
-    }
-
-    const sortedIndex = polygon.toSorted((a, b) =>
-      perim[a].x === perim[b].x
-        ? perim[a].y - perim[b].y
-        : perim[a].x - perim[b].x
-    );
-
-    indices.push(
-      ...triangulation(perim, polygon, sortedIndex).map((x) => x + indexOffset)
-    );
-  }
-
-  const pointsArray = new Float32Array(points);
-  const normalsArray = new Float32Array(normals);
-  const indicesArray = new Uint16Array(indices);
+    return {
+      points: new Float32Array(points),
+      normals: new Float32Array(normals),
+      indices: new Uint16Array(indices),
+    };
+  }, [faces]);
 
   return (
     <bufferGeometry>
-      <bufferAttribute attach="attributes-position" args={[pointsArray, 3]} />
-      <bufferAttribute attach="attributes-normal" args={[normalsArray, 3]} />
-      <bufferAttribute attach="index" args={[indicesArray, 1]} />
+      <bufferAttribute attach="attributes-position" args={[points, 3]} />
+      <bufferAttribute attach="attributes-normal" args={[normals, 3]} />
+      <bufferAttribute attach="index" args={[indices, 1]} />
     </bufferGeometry>
   );
 }

@@ -188,6 +188,7 @@ export default class PoolGame {
 
   input(mouse: Vector2, pressed: boolean, subticks: number = 1): SyncState {
     const sync: SyncState = {};
+    // console.log(mouse);
 
     const cuePosition = () => {
       const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);

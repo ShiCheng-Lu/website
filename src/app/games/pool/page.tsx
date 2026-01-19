@@ -33,7 +33,7 @@ export default function Pool() {
   const [state, setState] = useState(game.current.state());
 
   const [pov, setPOV] = useState(false);
-  const [camera, setCamera] = useState({
+  const camera = useRef({
     fov: CAMERA_FOV,
     position: new Vector3(0, 0, CAMERA_HEIGHT),
     rotation: new Euler(0, 0, 0),
@@ -41,36 +41,37 @@ export default function Pool() {
 
   const togglePOV = () => {
     if (pov) {
-      setCamera({
-        fov: CAMERA_FOV,
-        position: new Vector3(0, 0, CAMERA_HEIGHT),
-        rotation: new Euler(0, 0, 0),
-      });
+      camera.current.position = new Vector3(0, 0, CAMERA_HEIGHT);
+      camera.current.rotation = new Euler(0, 0, 0);
     } else {
-      const rotation = state.anchor.rotation.clone();
-      rotation.order = "ZYX";
-      rotation.x = (Math.PI / 180) * 60;
-      const position = state.anchor.position
+      camera.current.rotation = new Euler(
+        (Math.PI / 180) * 60,
+        0,
+        Math.atan2(
+          state.anchor.position.x - state.balls[0].position.x,
+          state.balls[0].position.y - state.anchor.position.y
+        ),
+        "ZYX"
+      );
+      camera.current.position = state.anchor.position
         .clone()
-        .add(new Vector3(0, 0, 50).applyEuler(rotation));
-      setCamera({
-        fov: CAMERA_FOV,
-        position,
-        rotation,
-      });
+        .add(new Vector3(0, 0, 50).applyEuler(camera.current.rotation));
     }
     setPOV(!pov);
   };
 
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
-      const scale =
-        (Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
-        window.innerHeight;
-      const y = (window.innerHeight - e.clientY * 2) * scale;
-      const x = (e.clientX * 2 - window.innerWidth) * scale;
+      const scale = Math.tan((CAMERA_FOV * Math.PI) / 360) / window.innerHeight;
+      const direction = new Vector3(
+        (e.clientX * 2 - window.innerWidth) * scale,
+        (window.innerHeight - e.clientY * 2) * scale,
+        -1
+      ).applyEuler(camera.current.rotation);
 
-      // TODO: project onto XY plane
+      const t = -camera.current.position.z / direction.z;
+      const x = camera.current.position.x + direction.x * t;
+      const y = camera.current.position.y + direction.y * t;
 
       mouse.current.set(x, y);
     };
@@ -163,17 +164,13 @@ export default function Pool() {
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
         <Camera
-          fov={camera.fov}
-          position={camera.position}
-          rotation={camera.rotation}
+          fov={camera.current.fov}
+          position={camera.current.position}
+          rotation={camera.current.rotation}
         />
 
         <Table />
-        <directionalLight
-          position={[0, 0, 1]}
-          color="white"
-          intensity={1.3}
-        />
+        <directionalLight position={[0, 0, 1]} color="white" intensity={1.3} />
 
         <Anchor
           position={state.anchor.position}
