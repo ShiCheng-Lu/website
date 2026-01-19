@@ -99,8 +99,9 @@ type BallPhysicsState = PhysicsState & {
 };
 
 export type SyncState = {
-  ball?: Vector3;
-  direction?: Vector3; // also power
+  cue?: RenderState;
+  anchor?: RenderState;
+  balls?: BallPhysicsState[];
 };
 
 export type GameState = {
@@ -186,7 +187,7 @@ export default class PoolGame {
   }
 
   input(mouse: Vector2, pressed: boolean, subticks: number = 1): SyncState {
-    const sync = {};
+    const sync: SyncState = {};
 
     const cuePosition = () => {
       const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
@@ -248,6 +249,23 @@ export default class PoolGame {
         this.cue.position.copy(newCue.position);
         this.cue.angular_position.copy(newCue.rotation);
         this.anchor.rotation.setFromQuaternion(newCue.rotation);
+
+        // cue collision
+        // TODO: this collision should be sweeping because input is not subticked
+        if (
+          this.cue.velocity.lengthSq() != 0 &&
+          this.balls[0].velocity.lengthSq() == 0 &&
+          this.cue.position.distanceTo(this.balls[0].position) <
+            BALL_DIAMETER / 2 + 0.25 // 0.25 is the cue tip width
+        ) {
+          // TODO: collide with cue position to add spin
+          this.balls[0].velocity.add(this.cue.velocity.clone());
+          sync.balls = [this.balls[0]]; // only send the state of the cue ball
+        }
+        sync.cue = {
+          position: this.cue.position.clone(),
+          rotation: new Euler().setFromQuaternion(this.cue.angular_position),
+        };
       }
       if (this.pressed === "ball") {
         const inPocket = POCKETS.some(
@@ -374,32 +392,28 @@ export default class PoolGame {
         v.y > 0
       ) {
         velocities[i].y = -v.y;
-      }
-      else if (
+      } else if (
         p.y < -TABLE_WIDTH + BALL_RADIUS &&
         p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
         p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
         v.y < 0
       ) {
         velocities[i].y = -v.y;
-      }
-      else if (
+      } else if (
         p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
         p.y > SIDE_MOUTH / 2 &&
         p.y < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
         v.x < 0
       ) {
         velocities[i].x = -v.x;
-      }
-      else if (
+      } else if (
         p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
         Math.abs(p.y) > SIDE_MOUTH / 2 &&
         Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
         v.x < 0
       ) {
         velocities[i].x = -v.x;
-      }
-      else if (
+      } else if (
         p.x > TABLE_WIDTH / 2 - BALL_RADIUS &&
         Math.abs(p.y) > SIDE_MOUTH / 2 &&
         Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
@@ -407,17 +421,6 @@ export default class PoolGame {
       ) {
         velocities[i].x = -v.x;
       }
-    }
-
-    // cue collision
-    // TODO: this collision should be sweeping because input is not subticked
-    if (
-      this.cue.velocity.lengthSq() != 0 &&
-      velocities[0].lengthSq() == 0 &&
-      this.cue.position.distanceTo(positions[0]) < BALL_DIAMETER / 2 + 0.25 // 0.25 is the cue tip width
-    ) {
-      // TODO: collide with cue position to add spin
-      velocities[0].add(this.cue.velocity.clone());
     }
 
     // update position
@@ -428,7 +431,7 @@ export default class PoolGame {
     // update velocity
     for (let i = 0; i < this.balls.length; ++i) {
       // if the velocity is already super low, just stop the ball
-      const friction = velocities[i].lengthSq() < 1e-6 ? 0 : 0.997;
+      const friction = velocities[i].lengthSq() < 1e-6 ? 0 : 0.995;
       velocities[i].multiplyScalar(friction);
 
       this.balls[i].velocity.copy(velocities[i]);

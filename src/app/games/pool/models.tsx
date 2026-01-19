@@ -120,8 +120,8 @@ export function Table() {
             { x: 0, y: 0, z: 1 },
             ((180 - CORNER_ANGLE) * Math.PI) / 180
           )
-        ).slice(0, 7),
-        // new Vector3(x4, y4, z1),
+        ).slice(0, 8),
+        new Vector3(x4, y4, z1),
         ...circle(
           new Vector3(
             TABLE_WIDTH / 2 + edge_corner,
@@ -133,6 +133,7 @@ export function Table() {
           new Quaternion()
         ).toReversed(),
       ];
+      console.log(corner.map(p => `(${p.x}, ${p.y})`).join(' '))
       mesh.push(corner);
       mesh.push(corner.map(flipY).toReversed());
       mesh.push(corner.map(flipX).toReversed());
@@ -238,7 +239,7 @@ export function Table() {
 export function Cue({ position, rotation }: Props) {
   return (
     <mesh position={position} rotation={rotation}>
-      <mesh position={[0, -CUE_LENGTH / 2, 0]}>
+      <mesh position={[0, -CUE_LENGTH / 2, 1]}>
         <cylinderGeometry args={[0.25, 0.5, CUE_LENGTH]} />
         <meshStandardMaterial color="#966F33" />
       </mesh>

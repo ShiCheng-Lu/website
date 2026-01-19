@@ -44,13 +44,13 @@ export default function Pool() {
     };
 
     const pointerDown = (e: PointerEvent) => {
-      console.log(`pointer down ${e}`);
+      // console.log(`pointer down ${e}`);
       mouseDown.current = true;
       pointerMove(e); // set the mouse position
     };
 
     const pointerUp = (e: PointerEvent) => {
-      console.log(`pointer up ${e}`);
+      // console.log(`pointer up ${e}`);
       mouseDown.current = false;
       pointerMove(e); // set the mouse position
     };
@@ -65,32 +65,32 @@ export default function Pool() {
       }
     };
 
-    const fps = 60;
-    const subtick = 5; // simulate at smaller step then rendering for better accuracy
+    const fps = 120;
+    const subtick = 3; // simulate at smaller step then rendering for better accuracy
     let tick = 0;
     const timout = setInterval(() => {
       if (Number.isNaN(mouse.current.x)) {
         return;
       }
-      // update game
-      tick += 1;
-      const sync = {
-        // input is updated every |subtick| ticks
-        ...(tick == subtick
-          ? game.current.input(mouse.current, mouseDown.current, subtick)
-          : {}),
-        // game physics is updated every ticks
-        ...game.current.update(),
-      };
 
+      // game physics is updated every ticks
+      game.current.update();
+
+      tick += 1;
       if (tick == subtick) {
         setState(game.current.state());
         tick = 0;
-      }
 
-      if (Object.entries(sync).length > 0) {
-        // send data to opponent
-        // sendData(JSON.stringify(sync));
+        // handle input
+        const sync = game.current.input(
+          mouse.current,
+          mouseDown.current,
+          subtick
+        );
+        if (Object.entries(sync).length > 0) {
+          // send data to opponent
+          // sendData(JSON.stringify(sync));
+        }
       }
     }, 1000 / fps / subtick);
 
@@ -181,17 +181,10 @@ export default function Pool() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-        <Camera
-          fov={CAMERA_FOV}
-          position={[0, 0, CAMERA_HEIGHT]}
-        />
+        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
 
         <Table />
-        <directionalLight
-          position={[0, 0, 1]}
-          color="white"
-          intensity={1.3}
-        />
+        <directionalLight position={[0, 0, 1]} color="white" intensity={1.3} />
 
         <Anchor
           position={state.anchor.position}
