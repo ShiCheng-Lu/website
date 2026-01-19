@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./GameSession.module.css";
 import { LobbyData } from "@/util/database";
 
-export class GameSessionRef {}
+type GameSessionRef = {
+  onStart: () => void;
+};
 
 type GameSessionProp = {
   ref: GameSessionRef;
@@ -22,6 +24,10 @@ export function GameSession({ game, ref }: GameSessionProp) {
   const end = () => {};
   const reset = () => {};
   const join = (id: string, data: LobbyData) => {};
+
+  useEffect(() => {
+    
+  }, [ref]);
 
   return (
     <div style={{ position: "fixed", top: 0, left: 0 }}>

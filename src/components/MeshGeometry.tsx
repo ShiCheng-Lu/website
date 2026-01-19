@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { Vector2, Vector3 } from "three";
 
