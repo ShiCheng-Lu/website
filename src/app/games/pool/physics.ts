@@ -263,10 +263,11 @@ export default class PoolGame {
           this.balls[0].velocity.add(this.cue.velocity.clone());
           sync.balls = [this.balls[0]]; // only send the state of the cue ball
         }
-        sync.cue = {
-          position: this.cue.position.clone(),
-          rotation: new Euler().setFromQuaternion(this.cue.angular_position),
-        };
+        // TODO: cue render
+        // sync.cue = {
+        //   position: this.cue.position.clone(),
+        //   rotation: new Euler().setFromQuaternion(this.cue.angular_position),
+        // };
       }
       if (this.pressed === "ball") {
         const inPocket = POCKETS.some(

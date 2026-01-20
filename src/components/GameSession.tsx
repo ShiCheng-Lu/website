@@ -1,53 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import styles from "./GameSession.module.css";
-import { LobbyData } from "@/util/database";
+import { LobbyData, lobby } from "@/util/database";
+import { and, onSnapshot, query, where } from "firebase/firestore";
+import { user } from "@/util/firebase";
+import {
+  joinLobby,
+  leaveLobby,
+  sendData,
+  setOnConnection,
+  setOnDisconnect,
+  setOnMessage,
+  startLobby,
+} from "@/util/peer2peer";
 
-type GameSessionRef = {
-  onStart: () => void;
-};
+export class GameSessionRef {
+  send: (message: any) => void = () => {};
+  receive: (message: any) => void = () => {};
+  connect: (host: boolean) => void = () => {};
+  disconnect: () => void = () => {};
+  connected: boolean = false;
+}
 
 type GameSessionProp = {
-  ref: GameSessionRef;
+  ref: RefObject<GameSessionRef>;
   game: string;
 };
 
 export function GameSession({ game, ref }: GameSessionProp) {
-  const [session, setSession] = useState();
+  const [session, setSession] = useState("");
   const [name, setName] = useState(
     `Game-${Math.floor(Math.random() * 999) + 1}`
   );
   const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
 
-  const start = () => {};
-  const end = () => {};
+  const start = () => {
+    startLobby(name, game);
+    setSession(user.user.uid);
+  };
+  const end = () => {
+    leaveLobby();
+    setSession("");
+  };
   const reset = () => {};
-  const join = (id: string, data: LobbyData) => {};
+  const join = (id: string, data: LobbyData) => {
+    joinLobby(id, data);
+  };
 
   useEffect(() => {
-    // onSnapshot(
-    //   query(lobby().collection, where("answer", "==", "")),
-    //   (lobbyList) => {
-    //     const lobbies: { [key: string]: LobbyData } = {};
-    //     lobbyList.forEach((lob) => {
-    //       if (lob.exists() && lob.id != user.user.uid) {
-    //         lobbies[lob.id] = lob.data() as LobbyData;
-    //       }
-    //     });
-    //     setLobbies(lobbies);
-    //   }
-    // );
+    onSnapshot(
+      query(
+        lobby().collection,
+        and(where("answer", "==", ""), where("game", "==", game))
+      ),
+      (lobbyList) => {
+        const lobbies: { [key: string]: LobbyData } = {};
+        lobbyList.forEach((lob) => {
+          if (lob.exists() && lob.id != user.user.uid) {
+            lobbies[lob.id] = lob.data() as LobbyData;
+          }
+        });
+        setLobbies(lobbies);
+      }
+    );
   }, []);
 
   useEffect(() => {
-    // setOnMessage((message) => {
-    //   const data = JSON.parse(message);
-    //   game.current.receiveSyncState(data);
-    // });
-    // setOnConnection(() => {
-    //   game.current.reset();
-    // });
+    setOnMessage((message) => {
+      const data = JSON.parse(message);
+      ref.current.receive(data);
+    });
+    setOnConnection((host) => {
+      ref.current.connected = true;
+      ref.current.connect(host);
+    });
+    setOnDisconnect(() => {
+      ref.current.connected = false;
+      ref.current.disconnect();
+    });
+    ref.current.send = (message: any) => {
+      const data = JSON.stringify(message);
+      sendData(data);
+    };
   }, [ref]);
 
   return (

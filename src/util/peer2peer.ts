@@ -9,7 +9,8 @@ import { LobbyData, lobby } from "./database";
 let pc: RTCPeerConnection | undefined;
 let channel: RTCDataChannel | undefined;
 let onMessage = (message: string) => {};
-let onConnection = () => {};
+let onConnection = (host: boolean) => {};
+let onDisconnect = () => {};
 
 const USERNAME = "20466bc28b62b2c87a299b2e";
 const PASSWORD = "pgWt7dj0H4i/WkRh";
@@ -51,7 +52,7 @@ const ICE_SERVERS = [
   ...(process.env.NODE_ENV === "production" ? OPEN_RELAY_ICE_SERVERS : []),
 ];
 
-export async function startLobby(lobbyName?: string) {
+export async function startLobby(lobbyName?: string, game?: string) {
   if (pc) {
     console.error("existing connection");
     return;
@@ -78,9 +79,11 @@ export async function startLobby(lobbyName?: string) {
   channel = pc.createDataChannel("channel");
   channel.onopen = (e) => {
     console.log(`opened ${JSON.stringify(e)}`);
+    onConnection(true);
   };
   channel.onclose = (e) => {
     console.log(`closed ${JSON.stringify(e)}`);
+    onDisconnect();
   };
   channel.onmessage = (e) => {
     // console.log(`message ${JSON.stringify(e)}`);
@@ -98,6 +101,7 @@ export async function startLobby(lobbyName?: string) {
     answer: "",
     ice: [],
     name: lobbyName ?? "",
+    game: game ?? "",
   });
 
   // handle connection and ice update
@@ -115,8 +119,6 @@ export async function startLobby(lobbyName?: string) {
     }
     if (!pc.remoteDescription) {
       await pc.setRemoteDescription({ type: "answer", sdp: lobby.answer });
-
-      onConnection();
     }
 
     for (const candidate of lobby.ice) {
@@ -156,9 +158,11 @@ export async function joinLobby(id: string, l: LobbyData) {
     channel = e.channel;
     channel.onopen = (e) => {
       console.log(`opened ${JSON.stringify(e)}`);
+      onConnection(false);
     };
     channel.onclose = (e) => {
       console.log(`closed ${JSON.stringify(e)}`);
+      onDisconnect();
     };
     channel.onmessage = (e) => {
       // console.log(`message ${JSON.stringify(e)}`);
@@ -200,11 +204,17 @@ export async function sendData(message: string) {
   channel.send(message);
 }
 
-export function setOnMessage(handler: (m: string) => void) {
+export function setOnMessage(handler: (message: string) => void) {
   onMessage = handler;
 }
 
-export function setOnConnection(handler: () => void) {}
+export function setOnConnection(handler: (host: boolean) => void) {
+  onConnection = handler;
+}
+
+export function setOnDisconnect(handler: () => void) {
+  onDisconnect = handler;
+}
 
 export function connected() {
   return Boolean(channel && pc?.remoteDescription);

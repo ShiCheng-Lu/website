@@ -110,6 +110,7 @@ export type LobbyData = {
   answer: string;
   ice: RTCIceCandidateInit[];
   name: string;
+  game: string;
 };
 
 export function lobby() {

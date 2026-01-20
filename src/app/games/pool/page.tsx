@@ -6,6 +6,8 @@ import Camera from "@/util/three-camera";
 import { DirectionalLight, Euler, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
 import PoolGame from "./physics";
+import { GameSession, GameSessionRef } from "@/components/GameSession";
+import { SyncState } from "./game";
 // import { useEffect, useRef, useState } from "react"
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
@@ -38,6 +40,7 @@ export default function Pool() {
     position: new Vector3(0, 0, CAMERA_HEIGHT),
     rotation: new Euler(0, 0, 0),
   });
+  const session = useRef(new GameSessionRef());
 
   const togglePOV = () => {
     if (pov) {
@@ -123,9 +126,24 @@ export default function Pool() {
         if (Object.entries(sync).length > 0) {
           // send data to opponent
           // sendData(JSON.stringify(sync));
+          console.log("sending");
+          session.current.send(sync);
         }
       }
     }, 1000 / fps / subtick);
+
+    session.current.receive = (message: SyncState) => {
+      if (message.balls) {
+        console.log(message.balls);
+        for (let i = 0; i < message.balls.length; ++i) {
+          const ball = message.balls[i];
+          game.current.balls[i].position.copy(ball.position);
+          game.current.balls[i].velocity.copy(ball.velocity);
+          game.current.balls[i].angular_position.copy(ball.angular_position);
+          game.current.balls[i].angular_velocity.copy(ball.angular_velocity);
+        }
+      }
+    };
 
     window.addEventListener("pointermove", pointerMove);
     window.addEventListener("pointerdown", pointerDown);
@@ -170,7 +188,7 @@ export default function Pool() {
         />
 
         <Table />
-        <directionalLight position={[0, 0, 1]} color="white" intensity={1.3} />
+        <directionalLight position={[0, 0, 1]} color="white" intensity={1.7} />
 
         <Anchor
           position={state.anchor.position}
@@ -195,6 +213,7 @@ export default function Pool() {
           POV
         </button>
       </div>
+      <GameSession game="Pool" ref={session} />
     </div>
   );
 }

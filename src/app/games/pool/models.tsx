@@ -197,7 +197,7 @@ export function Table() {
       </mesh>
       {POCKETS.map((pocket, index) => (
         <mesh
-          position={pocket.clone().sub({ x: 0, y: 0, z: BALL_RADIUS - 0.001 })}
+          position={pocket.clone().sub({ x: 0, y: 0, z: BALL_RADIUS - 0.01 })}
           key={index}
         >
           <circleGeometry args={[POCKET_DIMENSIONS.hole]} />
