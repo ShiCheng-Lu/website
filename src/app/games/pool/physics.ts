@@ -445,8 +445,8 @@ export default class PoolGame {
         const ball = sync.balls[i];
         this.balls[i].position.copy(ball.position);
         this.balls[i].velocity.copy(ball.velocity);
-        // this.balls[i].angular_position.copy(ball.angular_position);
-        // this.balls[i].angular_velocity.copy(ball.angular_velocity);
+        this.balls[i].angular_position.copy(ball.angular_position);
+        this.balls[i].angular_velocity.copy(ball.angular_velocity);
       }
     }
     if (sync.turn !== undefined) {
