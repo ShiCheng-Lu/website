@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Vector2, Vector3 } from "three";
+import { Quaternion, Vector2, Vector3 } from "three";
 
 type MeshGeometryProps = {
   faces: Vector3[][];
@@ -179,19 +179,30 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       }
 
       const indexOffset = points.length / 3;
-      const normal = new Vector3(0, 0, 1);
       const perim: Vector2[] = [];
       // indices sorted by x
       //
       const polygon = [];
+      const normal = face[face.length - 1].clone().cross(face[0]);
+      for (let i = 0; i < face.length - 1; ++i) {
+        normal.add(face[i].clone().cross(face[i + 1]));
+      }
+      normal.normalize();
+      const normalizingRotation = new Quaternion().setFromUnitVectors(
+        normal,
+        new Vector3(0, 0, 1)
+      );
+      console.log(normal);
+
       for (let i = 0; i < face.length; ++i) {
         const p = face[i];
-        // const n = normals ? normals[i] : normal;
         const n = normal;
         points.push(p.x, p.y, p.z);
         normals.push(n.x, n.y, n.z);
 
-        perim.push(new Vector2(p.x, p.y)); // TODO: project onto the plane via normal
+        const normalized = face[i].clone().sub(face[0]);
+        normalized.applyQuaternion(normalizingRotation);
+        perim.push(new Vector2(normalized.x, normalized.y));
         polygon.push(i);
       }
 

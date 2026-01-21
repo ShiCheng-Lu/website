@@ -35,17 +35,19 @@ export function Ball({
   return (
     <mesh position={position} castShadow={true}>
       <sphereGeometry args={[BALL_DIAMETER / 2]} />
-      <meshStandardMaterial color={color} roughness={0.3} metalness={0.3}/>
+      <meshStandardMaterial color={color} roughness={0.3} metalness={0.3} />
     </mesh>
   );
 }
 
 export function Table() {
   const meshes = useMemo(() => {
+    const SQRT3 = Math.sqrt(3);
     // where cushion nose changes direction into the pocket, end
     const x1 = TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2;
     const y1 = TABLE_WIDTH;
     const z1 = CUSHION_HEIGHT - BALL_RADIUS; // because ball is at 0, table is at -BALL_RADIUS
+    const z2 = -BALL_RADIUS;
     // end of the 2 inch cushion
     const corner_offset = Math.tan(radians(CORNER_ANGLE - 90)) * CUSHION_WIDTH;
     const x2 = x1 + corner_offset;
@@ -66,6 +68,11 @@ export function Table() {
       POCKET_DIMENSIONS.back * Math.SQRT1_2;
     const y7 = y2 + EDGE_WIDTH;
 
+    // cushion bottom offset
+    const cbo = CUSHION_HEIGHT / SQRT3;
+    const cboc = Math.tan(((CORNER_ANGLE - 90) * Math.PI) / 180) * cbo;
+    const cbos = Math.tan(((SIDE_ANGLE - 90) * Math.PI) / 180) * cbo;
+
     const flipX = (p: Vector3) => new Vector3(-p.x, p.y, p.z);
     const flipY = (p: Vector3) => new Vector3(p.x, -p.y, p.z);
     const flipXY = (p: Vector3) => new Vector3(-p.x, -p.y, p.z);
@@ -80,16 +87,54 @@ export function Table() {
       ];
       mesh.push(end);
       mesh.push(end.map(flipY).toReversed());
+
+      const endbot: Vector3[] = [
+        new Vector3(x1, y1, z1),
+        new Vector3(-x1, y1, z1),
+        new Vector3(-x1 - cboc, y1 + cbo, z2),
+        new Vector3(x1 + cboc, y1 + cbo, z2),
+      ];
+      mesh.push(endbot);
+      mesh.push(endbot.map(flipY).toReversed());
+
+      // all these have 4 fold symmetry
+      const corner1: Vector3[] = [
+        new Vector3(x1, y1, z1),
+        new Vector3(x1 + cboc, y1 + cbo, z2),
+        new Vector3(x2, y2, z2),
+        new Vector3(x2, y2, z1),
+      ];
+      const corner2: Vector3[] = [
+        new Vector3(x3, y3, z1),
+        new Vector3(x4, y4, z1),
+        new Vector3(x4, y4, z2),
+        new Vector3(x3 + cbo, y3 + cboc, z2),
+      ];
       const side: Vector3[] = [
         new Vector3(x3, y3, z1),
         new Vector3(x3, y5, z1),
         new Vector3(x4, y6, z1),
         new Vector3(x4, y4, z1),
       ];
-      mesh.push(side);
-      mesh.push(side.map(flipY).toReversed());
-      mesh.push(side.map(flipX).toReversed());
-      mesh.push(side.map(flipXY));
+      const sidebot: Vector3[] = [
+        new Vector3(x3, y3, z1),
+        new Vector3(x3 + cbo, y3 + cboc, z2),
+        new Vector3(x3 + cbo, y5 - cbos, z2),
+        new Vector3(x3, y5, z1),
+      ];
+      const side1: Vector3[] = [
+        new Vector3(x3, y5, z1),
+        new Vector3(x3 + cbo, y5 - cbos, z2),
+        new Vector3(x4, y6, z2),
+        new Vector3(x4, y6, z1),
+      ];
+      for (const m of [corner1, corner2, side, sidebot, side1]) {
+        mesh.push(m);
+        mesh.push(m.map(flipY).toReversed());
+        mesh.push(m.map(flipX).toReversed());
+        mesh.push(m.map(flipXY));
+      }
+
       return mesh;
     })();
 
@@ -303,7 +348,7 @@ export function Table() {
             TABLE_WIDTH * 2 + CUSHION_WIDTH * 2,
           ]}
         />
-        <meshStandardMaterial color="green" roughness={1} metalness={0.2} />
+        <meshStandardMaterial color="green" roughness={0.7} metalness={0.2} />
       </mesh>
       {POCKETS.map((pocket, index) => (
         <mesh
@@ -335,11 +380,15 @@ export function Table() {
       </mesh> */}
       <mesh>
         <MeshGeometry faces={meshes.cushion} />
-        <meshStandardMaterial color="darkgreen" roughness={1} metalness={0} />
+        <meshStandardMaterial
+          color="darkgreen"
+          roughness={0.7}
+          metalness={0.2}
+        />
       </mesh>
       <mesh>
         <MeshGeometry faces={meshes.table} />
-        <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
+        <meshStandardMaterial color="#966F33" roughness={0.7} metalness={0} />
       </mesh>
       <mesh>
         <StripGeometry strip={meshes.table_edge} />
