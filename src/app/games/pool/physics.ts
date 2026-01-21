@@ -1,3 +1,4 @@
+import { intersection } from "@/util/util";
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
 
 export const BALL_DIAMETER = 2.25;
@@ -102,6 +103,9 @@ export type SyncState = {
   cue?: RenderState;
   anchor?: RenderState;
   balls?: BallPhysicsState[];
+  target?: string;
+  turn?: number;
+  freeBall?: boolean;
 };
 
 export type GameState = {
@@ -148,6 +152,12 @@ export default class PoolGame {
 
   player: number;
   turn: number;
+  stationary: boolean;
+  firstHit: Set<string>;
+  target: Set<string>;
+  pocketed: Set<string>;
+  freeBall: boolean;
+
   pressed: string;
 
   constructor() {
@@ -184,11 +194,64 @@ export default class PoolGame {
       angular_position: new Quaternion(),
     };
     this.pressed = "";
+    this.stationary = true;
+    this.firstHit = new Set();
+    // target = ["red", "yellow"] on start of game, before ball claims
+    // target = ["red"] if player has claimed balls
+    // target = ["black"] on last ball
+    this.target = new Set(["red", "yellow"]);
+    this.pocketed = new Set();
+    this.freeBall = false;
+
+    // TODO: add rule so that if the break sinks balls, it's not a claim
+  }
+  // reset, does exactly what constructor do
+  reset() {
+    this.balls = [
+      {
+        position: new Vector3(0, -20, 0),
+        velocity: new Vector3(),
+        angular_velocity: new Vector3(),
+        angular_position: new Quaternion(),
+        color: "white",
+      },
+      ...POOL_STATE.map((ball) => ({
+        position: new Vector3(
+          ball.x * OFFSET_X,
+          ball.y * OFFSET_Y + TABLE_WIDTH / 2 - OFFSET_Y * 2,
+          0
+        ),
+        velocity: new Vector3(),
+        angular_velocity: new Vector3(),
+        angular_position: new Quaternion(),
+        color: ball.color,
+      })),
+    ];
+    this.player = 0;
+    this.turn = 0;
+    this.anchor = {
+      position: new Vector3(0, -35, 0),
+      rotation: new Euler(),
+    };
+    this.cue = {
+      position: this.anchor.position.clone().add(new Vector3(0, 10, 0)),
+      velocity: new Vector3(),
+      angular_velocity: new Vector3(),
+      angular_position: new Quaternion(),
+    };
+    this.pressed = "";
+    this.stationary = true;
+    this.firstHit = new Set();
+    // target = ["red", "yellow"] on start of game, before ball claims
+    // target = ["red"] if player has claimed balls
+    // target = ["black"] on last ball
+    this.target = new Set(["red", "yellow"]);
+    this.pocketed = new Set();
+    this.freeBall = false;
   }
 
   input(mouse: Vector2, pressed: boolean, subticks: number = 1): SyncState {
     const sync: SyncState = {};
-    // console.log(mouse);
 
     const cuePosition = () => {
       const tip = new Vector3(mouse.x, mouse.y, 0).sub(this.anchor.position);
@@ -206,6 +269,72 @@ export default class PoolGame {
       };
     };
 
+    // check for game state
+    const stationary = this.balls.every((ball) => !ball.velocity.lengthSq());
+    if (this.turn === this.player) {
+      if (stationary && !this.stationary) {
+        console.log(this.firstHit);
+
+        // hit is legal if the first hit is the target
+        const legal = intersection(this.firstHit, this.target).size > 0;
+        // keep the turn if it's a legal hit and we sunk a ball
+        const sunk = intersection(this.pocketed, this.target).size > 0;
+
+        // black was sunk, win or lose
+        if (this.pocketed.has("black")) {
+          if (legal && this.target.has("black")) {
+            console.log("you win");
+          } else {
+            console.log("you lost");
+          }
+        } else if (legal && sunk) {
+          // continue turn if the hit is legal and we've sunk a target
+          if (this.target.size > 1) {
+            // claim ball
+            if (this.pocketed.has("yellow")) {
+              this.target.clear();
+              this.target.add("yellow");
+              console.log("claimed yellow");
+              // let opponent know of their target
+              sync.target = "red";
+            } else if (this.pocketed.has("red")) {
+              this.target.clear();
+              this.target.add("red");
+              console.log("claimed red");
+              // let opponent know of their target
+              sync.target = "yellow";
+            }
+          }
+          // check if all of my targets are sunk
+          // sunk balls are placed outside the table area
+          const target = this.target.values().next().value;
+          const allSunk = this.balls.every((ball) => {
+            ball.color !== target ||
+              ball.position.x > TABLE_WIDTH / 2 + BALL_DIAMETER ||
+              ball.position.x < -TABLE_WIDTH / 2 - BALL_DIAMETER;
+          });
+          // move on to the black
+          if (allSunk) {
+            this.target.clear();
+            this.target.add("black");
+          }
+          console.log("continue");
+        } else {
+          // give opponent the turn if we fucked up
+          console.log("give turn");
+          this.turn = 1 - this.turn;
+          sync.turn = this.turn;
+
+          if (!legal) {
+            console.log("free ball");
+            sync.freeBall = true;
+          }
+        }
+
+        this.firstHit.clear();
+      }
+    }
+
     // process input
     if (pressed && !this.pressed) {
       // mouse down
@@ -222,7 +351,10 @@ export default class PoolGame {
         this.cue.position.copy(cuePosition().position);
       } else if (mouse.distanceTo(this.anchor.position) < BALL_DIAMETER) {
         this.pressed = "anchor";
-      } else if (mouse.distanceTo(this.balls[0].position) < BALL_DIAMETER / 2) {
+      } else if (
+        mouse.distanceTo(this.balls[0].position) < BALL_DIAMETER / 2 &&
+        this.freeBall
+      ) {
         // trying to pick up the cue ball
         this.pressed = "ball";
       }
@@ -254,6 +386,7 @@ export default class PoolGame {
         // cue collision
         // TODO: this collision should be sweeping because input is not subticked
         if (
+          this.turn === this.player &&
           this.cue.velocity.lengthSq() != 0 &&
           this.balls[0].velocity.lengthSq() == 0 &&
           this.cue.position.distanceTo(this.balls[0].position) <
@@ -262,6 +395,9 @@ export default class PoolGame {
           // TODO: collide with cue position to add spin
           this.balls[0].velocity.add(this.cue.velocity.clone());
           sync.balls = [this.balls[0]]; // only send the state of the cue ball
+
+          // once we hit, freeBall can no longer move it.
+          this.freeBall = false;
         }
         // TODO: cue render
         // sync.cue = {
@@ -279,6 +415,7 @@ export default class PoolGame {
 
         if (!inPocket && !colliding) {
           this.balls[0].position.copy({ ...mouse, z: 0 });
+          sync.balls = [this.balls[0]]; // send the state of the ball when we move it
         }
       }
       if (this.pressed === "anchor") {
@@ -295,17 +432,42 @@ export default class PoolGame {
       this.cue.velocity = new Vector3(0);
     }
 
+    this.stationary = stationary;
+
     return sync;
   }
 
-  update(): SyncState {
-    const sync = {};
+  // receive sync state
+  sync(sync: SyncState) {
+    console.log(sync);
+    if (sync.balls !== undefined) {
+      for (let i = 0; i < sync.balls.length; ++i) {
+        const ball = sync.balls[i];
+        this.balls[i].position.copy(ball.position);
+        this.balls[i].velocity.copy(ball.velocity);
+        // this.balls[i].angular_position.copy(ball.angular_position);
+        // this.balls[i].angular_velocity.copy(ball.angular_velocity);
+      }
+    }
+    if (sync.turn !== undefined) {
+      this.turn = sync.turn;
+    }
+    if (sync.freeBall !== undefined) {
+      this.freeBall = true;
+    }
+    if (sync.target !== undefined) {
+      this.target.clear();
+      this.target.add(sync.target);
+    }
+  }
+
+  update() {
     // calculate new position
     const positions = this.balls.map((ball) => {
       return ball.position.clone().add(ball.velocity);
     });
 
-    // sinks
+    // pockets
     for (let i = 0; i < this.balls.length; ++i) {
       if (
         POCKETS.every(
@@ -334,6 +496,7 @@ export default class PoolGame {
           0
         );
       }
+      this.pocketed.add(this.balls[i].color);
     }
 
     // calculate collision, limit position to right before the collision
@@ -346,12 +509,23 @@ export default class PoolGame {
       [this.balls.length, this.balls.length],
       false
     );
-    for (let i = 0; i < this.balls.length; ++i) {
+    const firstHit = this.firstHit.size === 0;
+    for (let i = 1; i < this.balls.length; ++i) {
       for (let j = i + 1; j < this.balls.length; ++j) {
         // collision between balls[i] and balls[j]
         if (positions[i].distanceTo(positions[j]) < BALL_DIAMETER) {
           overlaps[i][j] = true;
           overlaps[j][i] = true;
+        }
+      }
+
+      // cue overlaps, needs to check for first hit, so this is outside
+      if (positions[0].distanceTo(positions[i]) < BALL_DIAMETER) {
+        overlaps[0][i] = true;
+        overlaps[i][0] = true;
+
+        if (firstHit) {
+          this.firstHit.add(this.balls[i].color);
         }
       }
     }
@@ -383,7 +557,7 @@ export default class PoolGame {
     }
 
     // collision with the walls
-    // TODO: more complex wall collision
+    // TODO: more complex wall collision (colliding against pocket side)
     for (let i = 0; i < this.balls.length; ++i) {
       const p = positions[i];
       const v = velocities[i];
@@ -438,8 +612,6 @@ export default class PoolGame {
 
       this.balls[i].velocity.copy(velocities[i]);
     }
-
-    return sync;
   }
 
   state(): GameState {
@@ -459,6 +631,4 @@ export default class PoolGame {
       },
     };
   }
-
-  reset() {}
 }

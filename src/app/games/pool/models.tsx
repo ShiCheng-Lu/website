@@ -376,9 +376,10 @@ export function Table() {
         [-1, 1],
         [1, -1],
         [1, 1],
-      ].map(([x, y]) => (
+      ].map(([x, y], i) => (
         <mesh
-          position={[(TABLE_WIDTH / 2 - 4) * x, (TABLE_WIDTH - 4) * y, -15-3]}
+          key={i}
+          position={[(TABLE_WIDTH / 2 - 4) * x, (TABLE_WIDTH - 4) * y, -15 - 3]}
           rotation={[Math.PI / 2, 0, 0]}
         >
           <cylinderGeometry args={[4, 4, 30]} />

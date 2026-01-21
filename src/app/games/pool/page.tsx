@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
-import { DirectionalLight, Euler, Vector2, Vector3 } from "three";
+import { Euler, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
 import PoolGame, { TABLE_WIDTH } from "./physics";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
@@ -23,11 +23,6 @@ const ANCHOR_MOVEMENTS: { [key: string]: Vector3 } = {
 };
 
 export default function Pool() {
-  //   // const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
-  //   const [lobbyName, setLobbyName] = useState(
-  //     `Lobby${Math.floor(Math.random() * 999) + 1}`
-  //   );
-  //   const [currLobby, setCurrLobby] = useState<string>();
   const mouse = useRef(new Vector2(NaN));
   const mouseDown = useRef(false);
 
@@ -123,6 +118,10 @@ export default function Pool() {
           mouseDown.current,
           subtick
         );
+        // if we're the only player, always set as our turn
+        if (!session.current.connected) {
+          game.current.turn = 0;
+        }
         if (Object.entries(sync).length > 0) {
           // send data to opponent
           // sendData(JSON.stringify(sync));
@@ -132,17 +131,12 @@ export default function Pool() {
       }
     }, 1000 / fps / subtick);
 
-    session.current.receive = (message: SyncState) => {
-      if (message.balls) {
-        console.log(message.balls);
-        for (let i = 0; i < message.balls.length; ++i) {
-          const ball = message.balls[i];
-          game.current.balls[i].position.copy(ball.position);
-          game.current.balls[i].velocity.copy(ball.velocity);
-          game.current.balls[i].angular_position.copy(ball.angular_position);
-          game.current.balls[i].angular_velocity.copy(ball.angular_velocity);
-        }
-      }
+    session.current.receive = (sync: SyncState) => {
+      game.current.sync(sync);
+    };
+    session.current.connect = (host: boolean) => {
+      game.current.reset();
+      game.current.player = host ? 0 : 1;
     };
 
     window.addEventListener("pointermove", pointerMove);
@@ -188,10 +182,11 @@ export default function Pool() {
         />
 
         <Table />
-        <directionalLight position={[0, 0.2, 1]} color="white" intensity={0.4} />
-        {/* <directionalLight position={[0, -1, 1]} color="white" intensity={0.25} />
-        <directionalLight position={[1, 0, 1]} color="white" intensity={0.25} />
-        <directionalLight position={[-1, 0, 1]} color="white" intensity={0.25} /> */}
+        <directionalLight
+          position={[0, 0.2, 1]}
+          color="white"
+          intensity={0.4}
+        />
         <ambientLight intensity={0.5} />
         <rectAreaLight
           position={[0, 0, 30]}
