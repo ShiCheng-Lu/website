@@ -1,4 +1,4 @@
-import { Euler, Quaternion, Vector2, Vector3 } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
 import {
   BALL_DIAMETER,
   BALL_RADIUS,
@@ -233,7 +233,7 @@ export function Table() {
         ...circle_normal.map(flipX).toReversed(),
         circle_normal[0].clone(),
       ];
-      const b = a.map((p) => new Vector3(p.x, p.y, p.z - 12));
+      const b = a.map((p) => new Vector3(p.x, p.y, p.z - 8));
       return {
         a,
         an: n,
@@ -331,16 +331,6 @@ export function Table() {
 
   return (
     <mesh>
-      {/* TEMP, outer edge of table */}
-      {/* <mesh position={[0, 0, -BALL_DIAMETER / 2]} receiveShadow={true}>
-        <planeGeometry
-          args={[
-            TABLE_WIDTH + (CUSHION_WIDTH + EDGE_WIDTH) * 2,
-            TABLE_WIDTH * 2 + (CUSHION_WIDTH + EDGE_WIDTH) * 2,
-          ]}
-        />
-        <meshStandardMaterial color="#966F33" roughness={0.5} metalness={0.7} />
-      </mesh> */}
       <mesh position={[0, 0, -BALL_DIAMETER / 2]} receiveShadow={true}>
         <planeGeometry
           args={[
@@ -359,25 +349,6 @@ export function Table() {
           <meshStandardMaterial color="black" />
         </mesh>
       ))}
-      {/* cushions */}
-      {/* <mesh>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[cushions.points, 3]}
-          />
-          <bufferAttribute
-            attach="attributes-normal"
-            args={[cushions.normals, 3]}
-          />
-          <bufferAttribute attach="index" args={[cushions.indices, 1]} />
-        </bufferGeometry>
-        <meshStandardMaterial
-          color="darkgreen"
-          roughness={0.5}
-          metalness={0.7}
-        />
-      </mesh> */}
       <mesh>
         <MeshGeometry faces={meshes.cushion} />
         <meshStandardMaterial
@@ -397,6 +368,20 @@ export function Table() {
       {meshes.cusion_back.map((strip, i) => (
         <mesh key={i}>
           <StripGeometry strip={strip} />
+          <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
+        </mesh>
+      ))}
+      {[
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1],
+      ].map(([x, y]) => (
+        <mesh
+          position={[(TABLE_WIDTH / 2 - 4) * x, (TABLE_WIDTH - 4) * y, -15-3]}
+          rotation={[Math.PI / 2, 0, 0]}
+        >
+          <cylinderGeometry args={[4, 4, 30]} />
           <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
         </mesh>
       ))}

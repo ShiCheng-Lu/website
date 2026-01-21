@@ -5,7 +5,7 @@ import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
 import { DirectionalLight, Euler, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
-import PoolGame from "./physics";
+import PoolGame, { TABLE_WIDTH } from "./physics";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
 import { SyncState } from "./game";
 // import { useEffect, useRef, useState } from "react"
@@ -188,8 +188,17 @@ export default function Pool() {
         />
 
         <Table />
-        <directionalLight position={[0, 0, 1]} color="white" intensity={1} />
-        <ambientLight intensity={0.5}/>
+        <directionalLight position={[0, 0.2, 1]} color="white" intensity={0.4} />
+        {/* <directionalLight position={[0, -1, 1]} color="white" intensity={0.25} />
+        <directionalLight position={[1, 0, 1]} color="white" intensity={0.25} />
+        <directionalLight position={[-1, 0, 1]} color="white" intensity={0.25} /> */}
+        <ambientLight intensity={0.5} />
+        <rectAreaLight
+          position={[0, 0, 30]}
+          width={TABLE_WIDTH * 2}
+          height={TABLE_WIDTH * 4}
+          intensity={0.4}
+        />
 
         <Anchor
           position={state.anchor.position}
