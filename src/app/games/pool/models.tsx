@@ -16,9 +16,9 @@ import {
   radians,
 } from "./physics";
 import { useMemo } from "react";
-import { join } from "path";
 import { MeshGeometry } from "@/components/MeshGeometry";
 import { circle } from "@/util/geometry";
+import { StripGeometry } from "@/components/StripGeometry";
 
 type Props = {
   position?: Vector3 | [number, number, number];
@@ -35,7 +35,7 @@ export function Ball({
   return (
     <mesh position={position} castShadow={true}>
       <sphereGeometry args={[BALL_DIAMETER / 2]} />
-      <meshPhongMaterial color={color} />
+      <meshStandardMaterial color={color} roughness={0.3} metalness={0.3}/>
     </mesh>
   );
 }
@@ -93,6 +93,40 @@ export function Table() {
       return mesh;
     })();
 
+    const edge_corner =
+      POCKET_DIMENSIONS.corner + POCKET_DIMENSIONS.back * Math.SQRT1_2;
+
+    const outside_circle = circle(
+      new Vector3(TABLE_WIDTH / 2 + edge_corner, TABLE_WIDTH + edge_corner, z1),
+      CUSHION_WIDTH + EDGE_WIDTH - edge_corner,
+      90,
+      new Quaternion()
+    );
+
+    const corner_back = circle(
+      new Vector3(
+        TABLE_WIDTH / 2 + POCKET_DIMENSIONS.corner,
+        TABLE_WIDTH + POCKET_DIMENSIONS.corner,
+        z1
+      ),
+      POCKET_DIMENSIONS.back,
+      (225 - CORNER_ANGLE) * 2,
+      new Quaternion().setFromAxisAngle(
+        { x: 0, y: 0, z: 1 },
+        ((180 - CORNER_ANGLE) * Math.PI) / 180
+      )
+    );
+
+    const side_back = circle(
+      new Vector3(TABLE_WIDTH / 2 + POCKET_DIMENSIONS.side, 0, z1),
+      POCKET_DIMENSIONS.back,
+      180 - SIDE_ANGLE,
+      new Quaternion().setFromAxisAngle(
+        { x: 0, y: 0, z: 1 },
+        ((90 - SIDE_ANGLE) * Math.PI) / 180
+      )
+    );
+
     const table: Vector3[][] = (() => {
       const mesh: Vector3[][] = [];
       const end: Vector3[] = [
@@ -104,36 +138,13 @@ export function Table() {
       mesh.push(end);
       mesh.push(end.map((p) => new Vector3(p.x, -p.y, p.z)).toReversed());
 
-      const edge_corner =
-        POCKET_DIMENSIONS.corner + POCKET_DIMENSIONS.back * Math.SQRT1_2;
       const corner: Vector3[] = [
         new Vector3(x2, y2, z1),
-        ...circle(
-          new Vector3(
-            TABLE_WIDTH / 2 + POCKET_DIMENSIONS.corner,
-            TABLE_WIDTH + POCKET_DIMENSIONS.corner,
-            z1
-          ),
-          POCKET_DIMENSIONS.back,
-          (225 - CORNER_ANGLE) * 2,
-          new Quaternion().setFromAxisAngle(
-            { x: 0, y: 0, z: 1 },
-            ((180 - CORNER_ANGLE) * Math.PI) / 180
-          )
-        ).slice(0, 8),
+        ...corner_back,
         new Vector3(x4, y4, z1),
-        ...circle(
-          new Vector3(
-            TABLE_WIDTH / 2 + edge_corner,
-            TABLE_WIDTH + edge_corner,
-            z1
-          ),
-          CUSHION_WIDTH + EDGE_WIDTH - edge_corner,
-          90,
-          new Quaternion()
-        ).toReversed(),
+        ...outside_circle.toReversed(),
       ];
-      console.log(corner.map((p) => `(${p.x}, ${p.y})`).join(" "));
+
       mesh.push(corner);
       mesh.push(corner.map(flipY).toReversed());
       mesh.push(corner.map(flipX).toReversed());
@@ -142,15 +153,7 @@ export function Table() {
       const side: Vector3[] = [
         new Vector3(x4, y4, z1),
         new Vector3(x4, y6, z1),
-        ...circle(
-          new Vector3(TABLE_WIDTH / 2 + POCKET_DIMENSIONS.side, 0, z1),
-          POCKET_DIMENSIONS.back,
-          180 - SIDE_ANGLE,
-          new Quaternion().setFromAxisAngle(
-            { x: 0, y: 0, z: 1 },
-            ((90 - SIDE_ANGLE) * Math.PI) / 180
-          )
-        ),
+        ...side_back,
         new Vector3(TABLE_WIDTH / 2 + CUSHION_WIDTH + EDGE_WIDTH, 0, z1),
         new Vector3(
           TABLE_WIDTH / 2 + CUSHION_WIDTH + EDGE_WIDTH,
@@ -168,9 +171,116 @@ export function Table() {
       return mesh;
     })();
 
+    const table_edge = (() => {
+      const circle_normal = circle(new Vector3(), 1, 90, new Quaternion());
+
+      const a = [
+        ...outside_circle,
+        ...outside_circle.map(flipY).toReversed(),
+        ...outside_circle.map(flipXY),
+        ...outside_circle.map(flipX).toReversed(),
+        outside_circle[0].clone(),
+      ];
+      const n = [
+        ...circle_normal,
+        ...circle_normal.map(flipY).toReversed(),
+        ...circle_normal.map(flipXY),
+        ...circle_normal.map(flipX).toReversed(),
+        circle_normal[0].clone(),
+      ];
+      const b = a.map((p) => new Vector3(p.x, p.y, p.z - 12));
+      return {
+        a,
+        an: n,
+        b,
+        bn: n,
+      };
+    })();
+
+    const cusion_back = (() => {
+      const corner_normal = circle(
+        new Vector3(),
+        1,
+        (225 - CORNER_ANGLE) * 2,
+        new Quaternion().setFromAxisAngle(
+          { x: 0, y: 0, z: 1 },
+          ((180 - CORNER_ANGLE) * Math.PI) / 180
+        )
+      ).map((p) => p.multiplyScalar(-1));
+      const side_normal = circle(
+        new Vector3(),
+        1,
+        180 - SIDE_ANGLE,
+        new Quaternion().setFromAxisAngle(
+          { x: 0, y: 0, z: 1 },
+          ((90 - SIDE_ANGLE) * Math.PI) / 180
+        )
+      ).map((p) => p.multiplyScalar(-1));
+
+      const corner_a = [
+        new Vector3(x2, y2, z1),
+        ...corner_back,
+        new Vector3(x4, y4, z1),
+      ];
+      const corner_n = [
+        corner_normal[0],
+        ...corner_normal,
+        corner_normal[corner_normal.length - 1],
+      ];
+      const corner_b = corner_a.map((p) => new Vector3(p.x, p.y, -BALL_RADIUS));
+
+      const side_a = [
+        new Vector3(x4, y6, z1),
+        ...side_back,
+        ...side_back.slice(0, -1).map(flipY).toReversed(),
+        new Vector3(x4, -y6, z1),
+      ];
+      const side_n = [
+        side_normal[0],
+        ...side_normal,
+        ...side_normal.slice(0, -1).map(flipY).toReversed(),
+        side_normal[0].clone().multiply({ x: 1, y: -1, z: 1 }),
+      ];
+      const side_b = side_a.map((p) => new Vector3(p.x, p.y, -BALL_RADIUS));
+
+      const pockets = [];
+      for (const x of [-1, 1]) {
+        for (const y of [-1, 1]) {
+          const a = corner_a.map((p) => new Vector3(p.x * x, p.y * y, p.z));
+          const an = corner_n.map((p) => new Vector3(p.x * x, p.y * y, p.z));
+          const b = corner_b.map((p) => new Vector3(p.x * x, p.y * y, p.z));
+          const bn = corner_n.map((p) => new Vector3(p.x * x, p.y * y, p.z));
+
+          if (x * y === 1) {
+            a.reverse();
+            an.reverse();
+            b.reverse();
+            bn.reverse();
+          }
+          pockets.push({ a, an, b, bn });
+        }
+      }
+      pockets.push({
+        a: side_a.toReversed(),
+        an: side_n.toReversed(),
+        b: side_b.toReversed(),
+        bn: side_n.toReversed(),
+      });
+      pockets.push({
+        a: side_a.map(flipX),
+        an: side_n.map(flipX),
+        b: side_b.map(flipX),
+        bn: side_n.map(flipX),
+      });
+
+      return pockets;
+    })();
+
     return {
       cushion,
       table,
+      table_edge,
+      cusion_back,
     };
   }, []);
 
@@ -193,7 +303,7 @@ export function Table() {
             TABLE_WIDTH * 2 + CUSHION_WIDTH * 2,
           ]}
         />
-        <meshStandardMaterial color="green" roughness={1} metalness={0} />
+        <meshStandardMaterial color="green" roughness={1} metalness={0.2} />
       </mesh>
       {POCKETS.map((pocket, index) => (
         <mesh
@@ -231,6 +341,16 @@ export function Table() {
         <MeshGeometry faces={meshes.table} />
         <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
       </mesh>
+      <mesh>
+        <StripGeometry strip={meshes.table_edge} />
+        <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
+      </mesh>
+      {meshes.cusion_back.map((strip, i) => (
+        <mesh key={i}>
+          <StripGeometry strip={strip} />
+          <meshStandardMaterial color="#966F33" roughness={1} metalness={0} />
+        </mesh>
+      ))}
     </mesh>
   );
 }

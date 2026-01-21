@@ -188,7 +188,8 @@ export default function Pool() {
         />
 
         <Table />
-        <directionalLight position={[0, 0, 1]} color="white" intensity={1.7} />
+        <directionalLight position={[0, 0, 1]} color="white" intensity={1} />
+        <ambientLight intensity={0.5}/>
 
         <Anchor
           position={state.anchor.position}
