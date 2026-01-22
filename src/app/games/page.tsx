@@ -43,6 +43,9 @@ export default function Games() {
         <Link className={styles.GameNav} href="/games/ping-pong">
           Ping Pong (2 player)
         </Link>
+        <Link className={styles.GameNav} href="/games/pool">
+          Pool (1 - 2 player)
+        </Link>
       </div>
     </div>
   );
