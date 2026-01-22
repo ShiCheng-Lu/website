@@ -1,4 +1,4 @@
-import { intersection } from "@/util/util";
+import { intersection, radians } from "@/util/util";
 import { Euler, Quaternion, Vector2, Vector3 } from "three";
 
 export const BALL_DIAMETER = 2.25;
@@ -13,10 +13,6 @@ export const SIDE_SHELF = 0; // 0 - 0.375
 export const CUSHION_WIDTH = 2;
 export const CUSHION_HEIGHT = BALL_DIAMETER * 0.635;
 export const EDGE_WIDTH = 5; // 5 after cushion
-
-export function radians(degrees: number) {
-  return (degrees * Math.PI) / 180;
-}
 
 function pocketDimensions(
   corner_angle: number,
@@ -488,12 +484,12 @@ export default class PoolGame {
       if (
         POCKETS.every(
           (pocket) => positions[i].distanceTo(pocket) > POCKET_DIMENSIONS.hole
-        ) &&
+        ) // &&
         // temp, since we don't have pocket corner collision, it's possible to hit ball outside, we'll count those as sunks
-        positions[i].x > -TABLE_WIDTH / 2 - BALL_DIAMETER &&
-        positions[i].x < TABLE_WIDTH / 2 + BALL_DIAMETER &&
-        positions[i].y > -TABLE_WIDTH - BALL_DIAMETER &&
-        positions[i].y < TABLE_WIDTH + BALL_DIAMETER
+        // positions[i].x > -TABLE_WIDTH / 2 - BALL_DIAMETER &&
+        // positions[i].x < TABLE_WIDTH / 2 + BALL_DIAMETER &&
+        // positions[i].y > -TABLE_WIDTH - BALL_DIAMETER &&
+        // positions[i].y < TABLE_WIDTH + BALL_DIAMETER
       ) {
         continue;
       }
@@ -583,46 +579,116 @@ export default class PoolGame {
 
     // collision with the walls
     // TODO: more complex wall collision (colliding against pocket side)
-    for (let i = 0; i < this.balls.length; ++i) {
-      const p = positions[i];
-      const v = velocities[i];
-      if (
-        p.y > TABLE_WIDTH - BALL_RADIUS &&
-        p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
-        p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
-        v.y > 0
-      ) {
-        velocities[i].y = -v.y;
-      } else if (
-        p.y < -TABLE_WIDTH + BALL_RADIUS &&
-        p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
-        p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
-        v.y < 0
-      ) {
-        velocities[i].y = -v.y;
-      } else if (
-        p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
-        p.y > SIDE_MOUTH / 2 &&
-        p.y < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-        v.x < 0
-      ) {
-        velocities[i].x = -v.x;
-      } else if (
-        p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
-        Math.abs(p.y) > SIDE_MOUTH / 2 &&
-        Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-        v.x < 0
-      ) {
-        velocities[i].x = -v.x;
-      } else if (
-        p.x > TABLE_WIDTH / 2 - BALL_RADIUS &&
-        Math.abs(p.y) > SIDE_MOUTH / 2 &&
-        Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-        v.x > 0
-      ) {
-        velocities[i].x = -v.x;
+    const x1 = TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2;
+    const y1 = TABLE_WIDTH;
+    const x2 = TABLE_WIDTH / 2;
+    const y2 = TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2;
+    const y3 = SIDE_MOUTH / 2;
+    const cw = CUSHION_WIDTH;
+    // corner pocket sides
+    const cb = Math.tan(radians(CORNER_ANGLE - 90)) * cw;
+    // side pocket sides
+    const sb = Math.tan(radians(SIDE_ANGLE - 90)) * cw;
+
+    const walls = [
+      [new Vector3(-x1, y1), new Vector3(x1, y1)],
+      [new Vector3(x1, -y1), new Vector3(-x1, -y1)],
+      [new Vector3(x2, y2), new Vector3(x2, y3)],
+      [new Vector3(x2, -y3), new Vector3(x2, -y2)],
+      [new Vector3(-x2, y3), new Vector3(-x2, y2)],
+      [new Vector3(-x2, -y2), new Vector3(-x2, -y3)],
+      // corners
+      [new Vector3(-x1 - cb, y1 + cw), new Vector3(-x1, y1)], // tl
+      [new Vector3(-x2, y2), new Vector3(-x2 - cw, y2 + cb)], // tl
+      [new Vector3(x1, y1), new Vector3(x1 + cb, y1 + cw)], // tr
+      [new Vector3(x2 + cw, y2 + cb), new Vector3(x2, y2)], // tr
+      [new Vector3(-x1, -y1), new Vector3(-x1 - cb, -y1 - cw)], // bl
+      [new Vector3(-x2 - cw, -y2 - cb), new Vector3(-x2, -y2)], // bl
+      [new Vector3(x1 + cb, -y1 - cw), new Vector3(x1, -y1)], // br
+      [new Vector3(x2, -y2), new Vector3(x2 + cw, -y2 - cb)], // br
+      // sides
+      [new Vector3(x2, y3), new Vector3(x2 + cw, y3 - sb)], // r
+      [new Vector3(x2 + cw, sb - y3), new Vector3(x2, -y3)], // r
+      [new Vector3(-x2 - cw, y3 - sb), new Vector3(-x2, y3)], // r
+      [new Vector3(-x2, -y3), new Vector3(-x2 - cw, sb - y3)], // r
+    ];
+    for (const wall of walls) {
+      const diff = wall[1].clone().sub(wall[0]);
+      const length = diff.length();
+      const angle = Math.atan2(diff.y, diff.x);
+      const rotator = new Quaternion().setFromAxisAngle(
+        new Vector3(0, 0, 1),
+        -angle
+      );
+      const inverse = new Quaternion().setFromAxisAngle(
+        new Vector3(0, 0, 1),
+        angle
+      );
+      // console.log(angle, length, wall[0]);
+
+      for (let i = 0; i < this.balls.length; ++i) {
+        // don't process if theres no velocity to begin with, also skips sunken balls
+        if (velocities[i].lengthSq() === 0) {
+          continue;
+        }
+        const p = positions[i].clone().sub(wall[0]).applyQuaternion(rotator);
+        const v = velocities[i].clone().applyQuaternion(rotator);
+
+        if (
+          (p.y > -BALL_RADIUS && p.x > 0 && p.x < length) ||
+          p.length() < BALL_RADIUS ||
+          new Vector3(p.x - length, p.y).length() < BALL_RADIUS
+        ) {
+          // collided
+          if (v.y > 0) {
+            // and we've moving towards the wall
+            v.y = -v.y;
+            velocities[i] = v.applyQuaternion(inverse);
+          }
+        }
       }
     }
+
+    // for (let i = 0; i < this.balls.length; ++i) {
+    //   const p = positions[i];
+    //   const v = velocities[i];
+    //   if (
+    //     p.y > TABLE_WIDTH - BALL_RADIUS &&
+    //     p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
+    //     p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
+    //     v.y > 0
+    //   ) {
+    //     velocities[i].y = -v.y;
+    //   } else if (
+    //     p.y < -TABLE_WIDTH + BALL_RADIUS &&
+    //     p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
+    //     p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
+    //     v.y < 0
+    //   ) {
+    //     velocities[i].y = -v.y;
+    //   } else if (
+    //     p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
+    //     p.y > SIDE_MOUTH / 2 &&
+    //     p.y < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+    //     v.x < 0
+    //   ) {
+    //     velocities[i].x = -v.x;
+    //   } else if (
+    //     p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
+    //     Math.abs(p.y) > SIDE_MOUTH / 2 &&
+    //     Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+    //     v.x < 0
+    //   ) {
+    //     velocities[i].x = -v.x;
+    //   } else if (
+    //     p.x > TABLE_WIDTH / 2 - BALL_RADIUS &&
+    //     Math.abs(p.y) > SIDE_MOUTH / 2 &&
+    //     Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
+    //     v.x > 0
+    //   ) {
+    //     velocities[i].x = -v.x;
+    //   }
+    // }
 
     // update position
     for (let i = 0; i < this.balls.length; ++i) {

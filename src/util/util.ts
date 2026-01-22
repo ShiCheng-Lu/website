@@ -13,3 +13,7 @@ export function intersection<T>(
   }
   return newSet;
 }
+
+export function radians(degrees: number) {
+  return (degrees * Math.PI) / 180;
+}

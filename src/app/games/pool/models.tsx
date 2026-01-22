@@ -13,12 +13,12 @@ import {
   SIDE_ANGLE,
   SIDE_MOUTH,
   TABLE_WIDTH,
-  radians,
 } from "./physics";
 import { useMemo } from "react";
 import { MeshGeometry } from "@/components/MeshGeometry";
 import { circle } from "@/util/geometry";
 import { StripGeometry } from "@/components/StripGeometry";
+import { radians } from "@/util/util";
 
 type Props = {
   position?: Vector3 | [number, number, number];
@@ -40,6 +40,7 @@ export function Ball({
   );
 }
 
+// TODO: clean up model
 export function Table() {
   const meshes = useMemo(() => {
     const SQRT3 = Math.sqrt(3);
