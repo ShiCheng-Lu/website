@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styles from "./PaymentPopup.module.css";
 import { CgCloseO } from "react-icons/cg";
+import { urlencode } from "@/util/util";
 
 type PaymentType = "credit" | "paypal";
 
@@ -10,6 +11,7 @@ export type PaymentPopupProps = {
 
 export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
   const [paymentType, setPaymentType] = useState<PaymentType>("credit");
+  const paypalForm = useRef<HTMLFormElement>(null);
   return (
     <div className={styles.PaymentPopup}>
       <div className={styles.PaymentPopupBackground}></div>
@@ -46,9 +48,28 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
           <button
             className={`${styles.PaymentPopupInlineInput} ${styles.PaymentPopupType}`}
             disabled={paymentType === "paypal"}
-            onClick={() => setPaymentType("paypal")}
+            onClick={() => {
+              if (paypalForm.current) {
+                paypalForm.current.submit();
+              }
+            }}
           >
             <img src="payment/paypal.png" height={30} />
+            {/* Hidden form used for paypal redirect, required because form submission ignores CORS */}
+            <form
+              action="https://www.paypal.com/cgi-bin/webscr"
+              method="post"
+              target="_top"
+              ref={paypalForm}
+            >
+              <input type="hidden" name="cmd" value="_s-xclick" />
+              <input
+                type="hidden"
+                name="hosted_button_id"
+                value="QCUK45S3UNA38"
+              />
+              <input type="hidden" name="currency_code" value="USD" />
+            </form>
           </button>
         </div>
         <input placeholder="Card number *" />

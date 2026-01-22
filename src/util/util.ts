@@ -17,3 +17,9 @@ export function intersection<T>(
 export function radians(degrees: number) {
   return (degrees * Math.PI) / 180;
 }
+
+export function urlencode(object: any) {
+  return Object.entries(object)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+}

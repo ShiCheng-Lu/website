@@ -551,6 +551,7 @@ export default class PoolGame {
       }
     }
 
+    // TODO: ball ball collision is not correct, does not conserve energy
     // apply force to other ball
     for (let i = 0; i < this.balls.length; ++i) {
       let total_collision_mass = 0;
@@ -648,47 +649,6 @@ export default class PoolGame {
         }
       }
     }
-
-    // for (let i = 0; i < this.balls.length; ++i) {
-    //   const p = positions[i];
-    //   const v = velocities[i];
-    //   if (
-    //     p.y > TABLE_WIDTH - BALL_RADIUS &&
-    //     p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
-    //     p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
-    //     v.y > 0
-    //   ) {
-    //     velocities[i].y = -v.y;
-    //   } else if (
-    //     p.y < -TABLE_WIDTH + BALL_RADIUS &&
-    //     p.x > -TABLE_WIDTH / 2 + CORNER_MOUTH * Math.SQRT1_2 &&
-    //     p.x < TABLE_WIDTH / 2 - CORNER_MOUTH * Math.SQRT1_2 &&
-    //     v.y < 0
-    //   ) {
-    //     velocities[i].y = -v.y;
-    //   } else if (
-    //     p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
-    //     p.y > SIDE_MOUTH / 2 &&
-    //     p.y < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-    //     v.x < 0
-    //   ) {
-    //     velocities[i].x = -v.x;
-    //   } else if (
-    //     p.x < -TABLE_WIDTH / 2 + BALL_RADIUS &&
-    //     Math.abs(p.y) > SIDE_MOUTH / 2 &&
-    //     Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-    //     v.x < 0
-    //   ) {
-    //     velocities[i].x = -v.x;
-    //   } else if (
-    //     p.x > TABLE_WIDTH / 2 - BALL_RADIUS &&
-    //     Math.abs(p.y) > SIDE_MOUTH / 2 &&
-    //     Math.abs(p.y) < TABLE_WIDTH - CORNER_MOUTH * Math.SQRT1_2 &&
-    //     v.x > 0
-    //   ) {
-    //     velocities[i].x = -v.x;
-    //   }
-    // }
 
     // update position
     for (let i = 0; i < this.balls.length; ++i) {

@@ -134,7 +134,7 @@ export default function Pool() {
           session.current.send(sync);
         }
         // it's a turnover, display something for the user
-        if (sync.turn !== undefined) {
+        if (sync.turn !== undefined && session.current.connected) {
           setHelpText(sync);
         }
       }
