@@ -279,17 +279,26 @@ export default class PoolGame {
 
         // hit is legal if the first hit is the target
         const legal =
-          intersection(this.firstHit, this.target).size > 0 ||
-          this.pocketed.has("white");
+          intersection(this.firstHit, this.target).size > 0 &&
+          !this.pocketed.has("white");
+        console.log(
+          this.firstHit,
+          this.target,
+          intersection(this.firstHit, this.target)
+        );
         // keep the turn if it's a legal hit and we sunk a ball
         const sunk = intersection(this.pocketed, this.target).size > 0;
 
         // black was sunk, win or lose
         if (this.pocketed.has("black")) {
           if (legal && this.target.has("black")) {
-            console.log("you win");
+            this.target.clear();
+            sync.target = "";
+            sync.turn = this.turn;
           } else {
-            console.log("you lost");
+            this.target.clear();
+            sync.target = "";
+            sync.turn = 1 - this.turn;
           }
         } else if (legal && sunk) {
           // continue turn if the hit is legal and we've sunk a target
@@ -509,7 +518,10 @@ export default class PoolGame {
           0
         );
       }
-      this.pocketed.add(this.balls[i].color);
+
+      if (this.turn === this.player) {
+        this.pocketed.add(this.balls[i].color);
+      }
     }
 
     // calculate collision, limit position to right before the collision
@@ -537,7 +549,7 @@ export default class PoolGame {
         overlaps[0][i] = true;
         overlaps[i][0] = true;
 
-        if (firstHit) {
+        if (this.turn === this.player && firstHit) {
           this.firstHit.add(this.balls[i].color);
         }
       }

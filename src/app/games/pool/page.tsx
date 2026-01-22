@@ -120,8 +120,10 @@ export default function Pool() {
           subtick
         );
         // if we're the only player, always set as our turn
+        // and always allow moving the cue ball
         if (!session.current.connected) {
           game.current.turn = 0;
+          game.current.freeBall = true;
         }
         if (Object.entries(sync).length > 0) {
           // send data to opponent
@@ -147,6 +149,16 @@ export default function Pool() {
 
     const setHelpText = (sync: SyncState) => {
       const text = { main: "", sub: "" };
+      if (sync.target === "") {
+        // game over
+        if (sync.turn === game.current.player) {
+          text.main = "You win!";
+        } else {
+          text.main = "You lost :(";
+        }
+        return;
+      }
+
       if (game.current.turn === game.current.player) {
         text.main = "Your turn";
         if (game.current.target.size === 2) {
