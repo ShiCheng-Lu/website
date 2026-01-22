@@ -49,6 +49,7 @@ export default function PaymentPopup({ onSubmit }: PaymentPopupProps) {
             className={`${styles.PaymentPopupInlineInput} ${styles.PaymentPopupType}`}
             disabled={paymentType === "paypal"}
             onClick={() => {
+              setPaymentType("paypal");
               if (paypalForm.current) {
                 paypalForm.current.submit();
               }
