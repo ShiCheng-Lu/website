@@ -157,6 +157,7 @@ export default class PoolGame {
   target: Set<string>;
   pocketed: Set<string>;
   freeBall: boolean;
+  turnTaken: boolean;
 
   pressed: string;
 
@@ -202,6 +203,7 @@ export default class PoolGame {
     this.target = new Set(["red", "yellow"]);
     this.pocketed = new Set();
     this.freeBall = false;
+    this.turnTaken = false;
 
     // TODO: add rule so that if the break sinks balls, it's not a claim
   }
@@ -271,12 +273,14 @@ export default class PoolGame {
 
     // check for game state
     const stationary = this.balls.every((ball) => !ball.velocity.lengthSq());
-    if (this.turn === this.player) {
+    if (this.turn === this.player && this.turnTaken) {
       if (stationary && !this.stationary) {
-        console.log(this.firstHit);
+        this.turnTaken = false;
 
         // hit is legal if the first hit is the target
-        const legal = intersection(this.firstHit, this.target).size > 0;
+        const legal =
+          intersection(this.firstHit, this.target).size > 0 ||
+          this.pocketed.has("white");
         // keep the turn if it's a legal hit and we sunk a ball
         const sunk = intersection(this.pocketed, this.target).size > 0;
 
@@ -332,6 +336,7 @@ export default class PoolGame {
         }
 
         this.firstHit.clear();
+        this.pocketed.clear();
       }
     }
 
@@ -387,6 +392,7 @@ export default class PoolGame {
         // TODO: this collision should be sweeping because input is not subticked
         if (
           this.turn === this.player &&
+          !this.turnTaken &&
           this.cue.velocity.lengthSq() != 0 &&
           this.balls[0].velocity.lengthSq() == 0 &&
           this.cue.position.distanceTo(this.balls[0].position) <
@@ -398,6 +404,7 @@ export default class PoolGame {
 
           // once we hit, freeBall can no longer move it.
           this.freeBall = false;
+          this.turnTaken = true;
         }
         // TODO: cue render
         // sync.cue = {
@@ -453,7 +460,7 @@ export default class PoolGame {
       this.turn = sync.turn;
     }
     if (sync.freeBall !== undefined) {
-      this.freeBall = true;
+      this.freeBall = sync.freeBall;
     }
     if (sync.target !== undefined) {
       this.target.clear();
@@ -472,10 +479,16 @@ export default class PoolGame {
       if (
         POCKETS.every(
           (pocket) => positions[i].distanceTo(pocket) > POCKET_DIMENSIONS.hole
-        )
+        ) &&
+        // temp, since we don't have pocket corner collision, it's possible to hit ball outside, we'll count those as sunks
+        positions[i].x > -TABLE_WIDTH / 2 - BALL_DIAMETER &&
+        positions[i].x < TABLE_WIDTH / 2 + BALL_DIAMETER &&
+        positions[i].y > -TABLE_WIDTH - BALL_DIAMETER &&
+        positions[i].y < TABLE_WIDTH + BALL_DIAMETER
       ) {
         continue;
       }
+
       // ball sunk
       this.balls[i].velocity = new Vector3();
       if (this.balls[i].color === "white") {

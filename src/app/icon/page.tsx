@@ -2,9 +2,7 @@
 
 import { useRef } from "react";
 
-
 export default function Icon() {
-
   const size = 192;
   const bodySize = 24;
   const slotSize = 18;
@@ -27,7 +25,7 @@ export default function Icon() {
   const copySVG = () => {
     const container = svgContainer.current;
     if (!container) {
-        return;
+      return;
     }
     navigator.clipboard.writeText(container.innerHTML);
   };
@@ -36,7 +34,10 @@ export default function Icon() {
       <div>
         <button onClick={copySVG}>Copy</button>
       </div>
-      <div style={{ border: "solid 1px black", width: "fit-content" }} ref={svgContainer}>
+      <div
+        style={{ border: "solid 1px black", width: "fit-content" }}
+        ref={svgContainer}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           version="1.1"

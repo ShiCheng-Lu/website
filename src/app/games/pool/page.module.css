@@ -1,0 +1,25 @@
+.PopupText {
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-delay: 0ms;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+  animation-name: fadeinout;
+}
+
+@keyframes fadeinout {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

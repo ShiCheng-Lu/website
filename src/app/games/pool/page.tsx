@@ -5,12 +5,12 @@ import { Anchor, Ball, Cue, Table } from "./models";
 import Camera from "@/util/three-camera";
 import { Euler, Vector2, Vector3 } from "three";
 import { useEffect, useRef, useState } from "react";
-import PoolGame, { TABLE_WIDTH } from "./physics";
+import PoolGame, { TABLE_WIDTH, SyncState } from "./physics";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
-import { SyncState } from "./game";
 // import { useEffect, useRef, useState } from "react"
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
+import styles from "./page.module.css";
 
 const CAMERA_HEIGHT = 120;
 const CAMERA_FOV = 70;
@@ -28,6 +28,7 @@ export default function Pool() {
 
   const game = useRef(new PoolGame());
   const [state, setState] = useState(game.current.state());
+  const [text, setText] = useState<{ main: string; sub: string }>();
 
   const [pov, setPOV] = useState(false);
   const camera = useRef({
@@ -125,18 +126,56 @@ export default function Pool() {
         if (Object.entries(sync).length > 0) {
           // send data to opponent
           // sendData(JSON.stringify(sync));
-          console.log("sending");
+          if (sync.turn !== undefined) {
+            console.log(`sending ${JSON.stringify(sync)}`);
+          }
           session.current.send(sync);
+        }
+        // it's a turnover, display something for the user
+        if (sync.turn !== undefined) {
+          setHelpText(sync);
         }
       }
     }, 1000 / fps / subtick);
 
     session.current.receive = (sync: SyncState) => {
       game.current.sync(sync);
+      if (sync.turn !== undefined) {
+        setHelpText(sync);
+      }
     };
+
+    const setHelpText = (sync: SyncState) => {
+      const text = { main: "", sub: "" };
+      if (game.current.turn === game.current.player) {
+        text.main = "Your turn";
+        if (game.current.target.size === 2) {
+          text.sub = "Hit red or yellow ball";
+        } else if (game.current.target.has("black")) {
+          text.sub = "Hit black ball";
+        } else if (game.current.target.has("yellow")) {
+          text.sub = "Hit yellow ball";
+        } else if (game.current.target.has("red")) {
+          text.sub = "Hit red ball";
+        }
+        if (sync.freeBall) {
+          text.sub += ", you can move the cue ball";
+        }
+      } else {
+        text.main = "Opponent's turn";
+        if (sync.freeBall) {
+          text.sub = "Foul, opponent gets free ball";
+        }
+      }
+
+      setText(text);
+      setTimeout(() => setText(undefined), 2000);
+    };
+
     session.current.connect = (host: boolean) => {
       game.current.reset();
       game.current.player = host ? 0 : 1;
+      setHelpText({});
     };
 
     window.addEventListener("pointermove", pointerMove);
@@ -219,6 +258,27 @@ export default function Pool() {
         </button>
       </div>
       <GameSession game="Pool" ref={session} />
+      {text && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            userSelect: "none",
+            background: "#000a",
+          }}
+          className={styles.PopupText}
+        >
+          <p style={{ fontSize: 80, color: "white" }}>{text.main}</p>
+          <p style={{ fontSize: 30, color: "white" }}>{text.sub}</p>
+        </div>
+      )}
     </div>
   );
 }
