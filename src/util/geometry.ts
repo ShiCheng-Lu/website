@@ -16,6 +16,5 @@ export function circle(
     p.add(center);
     points.push(p);
   }
-  console.log(points);
   return points;
 }

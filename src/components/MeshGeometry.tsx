@@ -24,12 +24,6 @@ function triangulation(
     const next = points[polygon[(index + 1) % (sortedIndex.length - 1)]];
     const curr = points[polygon[index]];
 
-    // console.log(
-    //   (index - 2 + sortedIndex.length) % (sortedIndex.length - 1),
-    //   (index + 1) % (sortedIndex.length - 1),
-    //   index
-    // );
-
     // if point is a merge, connect it with the next point
     let connect = undefined;
     const convex =
@@ -77,10 +71,8 @@ function triangulation(
     }
   }
 
-  console.log(polygon, sortedIndex);
-
   // Part 2.
-  // montone triangulation, triangulate a monotone polygon
+  // Monotone triangulation, triangulate a monotone polygon
   const triangles = [];
   let chain = [sortedIndex[0], sortedIndex[1]];
   const chainDirectionOf = (a: number, b: number) => {
@@ -120,15 +112,15 @@ function triangulation(
       chainDirection = -chainDirection;
     } else {
       if (chainDirection === 1) {
-        const top = points[index];
-        let a = points[chain[chain.length - 1]];
+        const top = points[polygon[index]];
+        let a = points[polygon[chain[chain.length - 1]]];
 
         for (let j = chain.length - 2; j >= 0; --j) {
-          const b = points[chain[j]];
+          const b = points[polygon[chain[j]]];
           // if a triangle construction is legal along the same chain
           // we are guaranteed to be able to construct this triangle, and it's also necessery
           // to prevent future overlaps
-          if ((top.y - a.y) * (top.x - b.x) <= (top.y - b.y) * (top.x - a.x)) {
+          if ((a.y - top.y) * (b.x - top.x) <= (b.y - top.y) * (a.x - top.x)) {
             break;
           }
           triangles.push(
@@ -140,11 +132,11 @@ function triangulation(
           a = b;
         }
       } else {
-        const top = points[index];
-        let a = points[chain[chain.length - 1]];
+        const top = points[polygon[index]];
+        let a = points[polygon[chain[chain.length - 1]]];
 
         for (let j = chain.length - 2; j >= 0; --j) {
-          const b = points[chain[j]];
+          const b = points[polygon[chain[j]]];
           // if a triangle construction is legal along the same chain
           // we are guaranteed to be able to construct this triangle, and it's also necessery
           // to prevent future overlaps
