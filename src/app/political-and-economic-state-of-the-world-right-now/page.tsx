@@ -7,21 +7,16 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
 
   useEffect(() => {
     (async () => {
-      // const data = await fetch(
-      //   "https://en.wikipedia.org/w/api.php?action=parse&format=json&page=List_of_ongoing_armed_conflicts&formatversion=2&origin=*"
-      // );
-
       const url = // use local file for local dev, so that we don't ddos wikipedia
         process.env.NODE_ENV === "production"
           ? "https://en.wikipedia.org/w/api.php?action=parse&format=json&page=List_of_ongoing_armed_conflicts&formatversion=2&origin=*"
           : "List_of_ongoing_armed_conflicts.json";
       const response = await fetch(url);
       const json = await response.json();
-
       const text = json.parse.text as string;
 
       const countries = new Set<string>();
-      for (const type of ["conflicts100", "conflicts1000", "conflicts10000"]) {
+      for (const type of ["conflicts10000", "conflicts1000"]) {
         const table = text.match(
           new RegExp(`<table[^\n]*?id="${type}">(.*?)<\\/table>`, "gs")
         )?.[0];
@@ -43,8 +38,8 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   return (
     <div>
       Naughty list:
-      {countries.map((country) => {
-        return <div>{country}</div>;
+      {countries.map((country, index) => {
+        return <div key={index}>- {country}</div>;
       })}
     </div>
   );
