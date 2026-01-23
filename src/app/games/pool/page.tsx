@@ -147,6 +147,10 @@ export default function Pool() {
       }
     };
 
+    session.current.reset = () => {
+      game.current.reset();
+    };
+
     const setHelpText = (sync: SyncState) => {
       const text = { main: "", sub: "" };
       if (sync.target === "") {

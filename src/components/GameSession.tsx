@@ -21,6 +21,7 @@ export class GameSessionRef {
   connect: (host: boolean) => void = () => {};
   disconnect: () => void = () => {};
   connected: boolean = false;
+  reset: () => void = () => {};
 }
 
 type GameSessionProp = {
@@ -43,7 +44,9 @@ export function GameSession({ game, ref }: GameSessionProp) {
     leaveLobby();
     setSession("");
   };
-  const reset = () => {};
+  const reset = () => {
+    ref.current.reset();
+  };
   const join = (id: string, data: LobbyData) => {
     joinLobby(id, data);
   };
