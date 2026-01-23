@@ -38,7 +38,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       }
       setCountries([...countries]);
     })();
-  });
+  }, []);
 
   return (
     <div>
