@@ -30,7 +30,7 @@ type GameSessionProp = {
 };
 
 export function GameSession({ game, ref }: GameSessionProp) {
-  const [session, setSession] = useState("");
+  const [session, setSession] = useState<string>();
   const [name, setName] = useState(
     `Game-${Math.floor(Math.random() * 999) + 1}`
   );
@@ -42,12 +42,12 @@ export function GameSession({ game, ref }: GameSessionProp) {
   };
   const end = () => {
     leaveLobby();
-    setSession("");
   };
   const reset = () => {
     ref.current.reset();
   };
   const join = (id: string, data: LobbyData) => {
+    setSession(id);
     joinLobby(id, data);
   };
 
@@ -67,6 +67,14 @@ export function GameSession({ game, ref }: GameSessionProp) {
         setLobbies(lobbies);
       }
     );
+
+    const beforeUnload = () => {
+      leaveLobby();
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+    };
   }, []);
 
   useEffect(() => {
@@ -79,6 +87,7 @@ export function GameSession({ game, ref }: GameSessionProp) {
       ref.current.connect(host);
     });
     setOnDisconnect(() => {
+      setSession(undefined);
       ref.current.connected = false;
       ref.current.disconnect();
     });
@@ -94,7 +103,7 @@ export function GameSession({ game, ref }: GameSessionProp) {
         <input
           onChange={(e) => setName(e.target.value)}
           value={name}
-          disabled={session != undefined}
+          disabled={session !== undefined}
         />
         {!session ? (
           <button onClick={start}>Start lobby</button>

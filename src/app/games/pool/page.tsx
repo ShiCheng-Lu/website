@@ -151,6 +151,12 @@ export default function Pool() {
       game.current.reset();
     };
 
+    session.current.connect = (host: boolean) => {
+      game.current.reset();
+      game.current.player = host ? 0 : 1;
+      setHelpText({});
+    };
+
     const setHelpText = (sync: SyncState) => {
       const text = { main: "", sub: "" };
       if (sync.target === "") {
@@ -186,12 +192,6 @@ export default function Pool() {
 
       setText(text);
       setTimeout(() => setText(undefined), 2000);
-    };
-
-    session.current.connect = (host: boolean) => {
-      game.current.reset();
-      game.current.player = host ? 0 : 1;
-      setHelpText({});
     };
 
     window.addEventListener("pointermove", pointerMove);

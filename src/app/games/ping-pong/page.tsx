@@ -18,7 +18,8 @@ import { LobbyData, lobby } from "@/util/database";
 import styles from "./page.module.css";
 import { onSnapshot, query, where } from "firebase/firestore";
 import { user } from "@/util/firebase";
-import PingPongGame from "./physics";
+import PingPongGame, { SyncState } from "./physics";
+import { GameSession, GameSessionRef } from "@/components/GameSession";
 
 /**
  * Ping pong network messages will look like:
@@ -31,20 +32,17 @@ const CAMERA_HEIGHT = 60;
 const CAMERA_FOV = 15;
 
 export default function PingPong() {
-  const [lobbies, setLobbies] = useState<{ [key: string]: LobbyData }>({});
-  const [lobbyName, setLobbyName] = useState(
-    `Lobby${Math.floor(Math.random() * 999) + 1}`
-  );
-  const [currLobby, setCurrLobby] = useState<string>();
   const mouse = useRef(new Vector2(NaN));
 
   const game = useRef(new PingPongGame());
   const [state, setState] = useState(game.current.state());
+  const session = useRef(new GameSessionRef());
 
   useEffect(() => {
     const pointerMove = (e: PointerEvent) => {
       const scale =
-        (Math.tan(CAMERA_FOV * Math.PI / 360) * CAMERA_HEIGHT) / window.innerHeight;
+        (Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
+        window.innerHeight;
       const y = (window.innerHeight - e.clientY * 2) * scale;
       const x = (e.clientX * 2 - window.innerWidth) * scale;
 
@@ -60,76 +58,34 @@ export default function PingPong() {
       const sync = game.current.update(mouse.current);
       if (Object.entries(sync).length > 0) {
         // send data to opponent
-        sendData(JSON.stringify(sync));
+        session.current.send(sync);
       }
       setState(game.current.state());
     }, 1000 / fps);
 
     window.addEventListener("pointermove", pointerMove);
 
-    onSnapshot(
-      query(lobby().collection, where("answer", "==", "")),
-      (lobbyList) => {
-        const lobbies: { [key: string]: LobbyData } = {};
-        lobbyList.forEach((lob) => {
-          if (lob.exists() && lob.id != user.user.uid) {
-            lobbies[lob.id] = lob.data() as LobbyData;
-          }
-        });
-        setLobbies(lobbies);
-      }
-    );
+    session.current.receive = (message: SyncState) => {
+      game.current.receiveSyncState(message);
+    };
 
-    setOnMessage((message) => {
-      const data = JSON.parse(message);
-      game.current.receiveSyncState(data);
-    });
-
-    setOnConnection(() => {
+    session.current.connect = (host: boolean) => {
+      game.current.player = host ? 0 : 1;
       game.current.reset();
-    });
+    };
+    session.current.disconnect = () => {
+      game.current.player = 0;
+      game.current.paddle1 = new Vector3(NaN);
+    };
+    session.current.reset = () => {
+      game.current.reset();
+    };
 
     return () => {
       window.removeEventListener("pointermove", pointerMove);
       clearInterval(timout);
     };
   }, []);
-
-  const startLob = () => {
-    startLobby(lobbyName);
-    setCurrLobby(user.user.uid);
-    resetGame();
-  };
-
-  const endLob = () => {
-    leaveLobby();
-    setCurrLobby(undefined);
-    if (currLobby != user.user.uid) {
-      setLobbyName(`Lobby${Math.floor(Math.random() * 999) + 1}`);
-      game.current.player = 0;
-    }
-    game.current.paddle1 = new Vector3(NaN);
-    // go back to AI opponent
-  };
-
-  const joinLob = (id: string, lob: LobbyData) => {
-    joinLobby(id, lob);
-    setCurrLobby(id);
-    setLobbyName(lob.name);
-    resetGame();
-    game.current.player = 1;
-  };
-
-  const resetGame = () => {
-    game.current.reset();
-  };
-
-  // const light = useMemo(() => {
-  //   const l = new DirectionalLight();
-  //   l.intensity = 0.5;
-  //   l.position.set(100, 100, 100);
-  //   l.
-  // }, []);
 
   return (
     <div
@@ -205,31 +161,7 @@ export default function PingPong() {
           {game.current.player ? game.current.score1 : game.current.score0}
         </div>
       </div>
-
-      <div style={{ position: "fixed", top: 0, left: 0 }}>
-        <div className={styles.LobbyCard}>
-          <input
-            onChange={(e) => setLobbyName(e.target.value)}
-            value={lobbyName}
-            disabled={currLobby != undefined}
-          />
-          {!currLobby ? (
-            <button onClick={startLob}>Start lobby</button>
-          ) : (
-            <button onClick={endLob}>Leave lobby</button>
-          )}
-          <button onClick={resetGame}>Reset</button>
-        </div>
-        {!currLobby &&
-          Object.entries(lobbies).map(([id, lob]) => {
-            return (
-              <div className={styles.LobbyCard} key={id}>
-                <p>{lob.name}</p>
-                <button onClick={() => joinLob(id, lob)}>Join lobby</button>
-              </div>
-            );
-          })}
-      </div>
+      <GameSession game="Ping-Pong" ref={session} />
     </div>
   );
 }
