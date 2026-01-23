@@ -173,6 +173,14 @@ export default function Home() {
           I heard ya like JavaScript
         </Link>
 
+        <Link
+          className={styles.navButton}
+          href="/political-and-economic-state-of-the-world-right-now"
+        >
+          Let's talk about the political and economic state of the world right
+          now 💔
+        </Link>
+
         <QRCode
           value={"https://shicheng.lu"}
           style={{ margin: "3rem" }}

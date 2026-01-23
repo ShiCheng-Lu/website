@@ -51,21 +51,23 @@ function triangulation(
       const b = Math.max(index, connect);
 
       console.log(`connect ${a} ${b}`);
+      // TODO?: start index might not be correct
+
+      const sortedA = sortedIndex.filter((x) => x >= a && x <= b);
+      const sortedB = sortedIndex.filter((x) => x <= a || x >= b);
 
       return [
         ...triangulation(
           points,
           polygon.slice(a, b + 1),
-          sortedIndex.filter((x) => x >= a && x <= b).map((x) => x - a),
-          1 // TODO: continue at i,
+          sortedA.map((x) => x - a),
+          sortedA.filter((x) => polygon[x] < polygon[index]).length
         ),
         ...triangulation(
           points,
           [...polygon.slice(0, a + 1), ...polygon.slice(b)],
-          sortedIndex
-            .filter((x) => x <= a || x >= b)
-            .map((x) => (x >= b ? x - (b - a - 1) : x)),
-          1
+          sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
+          sortedB.filter((x) => polygon[x] < polygon[index]).length
         ),
       ];
     }
