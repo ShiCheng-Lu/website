@@ -23,3 +23,7 @@ export function urlencode(object: any) {
     .map(([key, value]) => `${key}=${value}`)
     .join("&");
 }
+
+export function clamp(num: number, min: number, max: number) {
+  return Math.min(Math.max(num, min), max);
+}

@@ -22,9 +22,6 @@ export function StripGeometry({ strip }: StripGeometryProp) {
       b.length != bn.length ||
       a.length != b.length
     ) {
-      console.log(
-        `Invalid strip ${a.length} ${an.length} ${b.length} ${bn.length}`
-      );
       return {
         points: new Float32Array(points),
         normals: new Float32Array(normals),
