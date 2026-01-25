@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   Euler,
   Shape,
@@ -103,6 +103,16 @@ function useCountryGeometry(filter: string[]) {
   return geometry;
 }
 
+export function Globe() {
+  const texture = useLoader(TextureLoader, "textures/2k_earth_daymap.jpg");
+  return (
+    <mesh>
+      <planeGeometry args={[360, 180]} />
+      <meshStandardMaterial map={texture} />
+    </mesh>
+  );
+}
+
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
@@ -113,7 +123,6 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   ]);
 
   const [path, setPath] = useState<Shape[]>();
-  const texture = useLoader(TextureLoader, "textures/2k_earth_daymap.jpg");
   const [position, setPosition] = useState(new Vector3(0, 0, 100));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
   const camera = useRef({
@@ -207,17 +216,15 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
           <sphereGeometry args={[60, 64, 64]} />
           <meshStandardMaterial map={texture} />
         </mesh> */}
-        <mesh>
-          <planeGeometry args={[360, 180]} />
-          <meshStandardMaterial map={texture} />
-        </mesh>
-
-        {path && (
-          <mesh>
-            <shapeGeometry args={[path]} />
-            <meshStandardMaterial color={"red"} />
-          </mesh>
-        )}
+        <Suspense>
+          <Globe />
+          {path && (
+            <mesh>
+              <shapeGeometry args={[path]} />
+              <meshStandardMaterial color={"red"} />
+            </mesh>
+          )}
+        </Suspense>
       </Canvas>
     </div>
   );

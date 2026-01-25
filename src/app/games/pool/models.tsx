@@ -360,11 +360,7 @@ export function Table() {
       </mesh>
       <mesh>
         <MeshGeometry faces={meshes.table} />
-        <meshStandardMaterial
-          color="#966F33"
-          roughness={0.7}
-          metalness={0}
-        />
+        <meshStandardMaterial color="#966F33" roughness={0.7} metalness={0} />
       </mesh>
       <mesh>
         <StripGeometry strip={meshes.table_edge} />

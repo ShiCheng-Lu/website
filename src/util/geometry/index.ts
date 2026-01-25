@@ -1,4 +1,6 @@
-import { Quaternion, Vector3 } from "three";
+import { Quaternion, Vector2, Vector3 } from "three";
+
+export type Polygon = Vector2[];
 
 export function circle(
   center: Vector3,
@@ -9,7 +11,7 @@ export function circle(
   const sections = 8;
   const points = [];
   for (let i = 0; i < sections + 1; ++i) {
-    const a = ((angle * Math.PI) / 180) * i / sections;
+    const a = (((angle * Math.PI) / 180) * i) / sections;
     const p = new Vector3(Math.sin(a), Math.cos(a), 0);
     p.multiplyScalar(radius);
     p.applyQuaternion(rotation);
