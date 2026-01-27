@@ -11,6 +11,7 @@ import { GameSession, GameSessionRef } from "@/components/GameSession";
 // import PoolGame from "./physics"
 // import { Vector2 } from "three";
 import styles from "./page.module.css";
+import { isMobile } from "react-device-detect";
 
 const CAMERA_HEIGHT = 120;
 const CAMERA_FOV = 70;
@@ -290,8 +291,8 @@ export default function Pool() {
           }}
           className={styles.PopupText}
         >
-          <p style={{ fontSize: 80, color: "white" }}>{text.main}</p>
-          <p style={{ fontSize: 30, color: "white" }}>{text.sub}</p>
+          <p style={{ fontSize: isMobile ? 40 : 80, color: "white" }}>{text.main}</p>
+          <p style={{ fontSize: isMobile ? 10 : 30, color: "white" }}>{text.sub}</p>
         </div>
       )}
       <GameSession game="Pool" ref={session} />
