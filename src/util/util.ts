@@ -27,3 +27,14 @@ export function urlencode(object: any) {
 export function clamp(num: number, min: number, max: number) {
   return Math.min(Math.max(num, min), max);
 }
+
+export function matrix(dim: number[], value: any): any {
+  if (dim.length < 1) {
+    return 0;
+  }
+  const array = new Array(dim[0]).fill(value);
+  if (dim.length == 1) {
+    return array;
+  }
+  return array.map(() => matrix(dim.slice(1), value));
+}

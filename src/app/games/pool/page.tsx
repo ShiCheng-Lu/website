@@ -273,7 +273,6 @@ export default function Pool() {
           POV
         </button>
       </div>
-      <GameSession game="Pool" ref={session} />
       {text && (
         <div
           style={{
@@ -295,6 +294,7 @@ export default function Pool() {
           <p style={{ fontSize: 30, color: "white" }}>{text.sub}</p>
         </div>
       )}
+      <GameSession game="Pool" ref={session} />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Euler,
+  IcosahedronGeometry,
   Shape,
   ShapePath,
   TextureLoader,
@@ -12,8 +13,10 @@ import {
 import useCountriesInConflict from "./countriesInConflict";
 import { Canvas, useLoader } from "@react-three/fiber";
 import Camera from "@/util/three-camera";
-import { MeshGeometry } from "@/components/MeshGeometry";
 import { clamp } from "@/util/util";
+import { MeshGeometry } from "@/components/MeshGeometry";
+import { icosphere } from "@/util/geometry/icosahedron";
+import { MeshGeometry2 } from "@/util/geometry";
 
 type CountryGeometry = {
   names: { [key: string]: string };
@@ -107,7 +110,8 @@ export function Globe() {
   const texture = useLoader(TextureLoader, "textures/2k_earth_daymap.jpg");
   return (
     <mesh>
-      <planeGeometry args={[360, 180]} />
+      <sphereGeometry args={[60, 64, 64]} />
+      {/* <planeGeometry args={[360, 180]} /> */}
       <meshStandardMaterial map={texture} />
     </mesh>
   );
@@ -118,23 +122,32 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     useCountriesInConflict();
   const geometry = useCountryGeometry([
     ...conflicts10000,
-    ...conflicts1000,
-    ...conflicts100,
+    // ...conflicts1000,
+    // ...conflicts100,
   ]);
 
-  const [path, setPath] = useState<Shape[]>();
-  const [position, setPosition] = useState(new Vector3(0, 0, 100));
+  const [paths, setPaths] = useState<Shape[]>([]);
+  const [paths2, setPaths2] = useState<Vector3[][]>([]);
+  const [position, setPosition] = useState(new Vector3(0, 0, 120));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
   const camera = useRef({
-    position: new Vector3(0, 0, 100),
+    position: new Vector3(0, 0, 120),
     rotation: new Euler(0, 0, 0),
   });
+
+  const ico = useMemo(() => {
+    const ico = icosphere(4);
+    console.log(`Iso has ${ico.vertices.length} vertices`);
+    console.log(`Iso has ${ico.indices.length} faces`);
+    return ico;
+  }, []);
 
   useEffect(() => {
     if (!geometry) return;
     console.log(geometry);
 
     const paths = [];
+    const paths2 = [];
     for (const country of geometry) {
       for (const polygon of country.geometry) {
         const path = new Shape();
@@ -144,11 +157,17 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         for (let i = 1; i < polygon.length; ++i) {
           path.lineTo(polygon[i].x, polygon[i].y);
         }
-        path.closePath();
         paths.push(path);
+
+        // if (paths2.length === 0) {
+        // paths2.push(
+        //   polygon.map((v) => new Vector3(v.x, v.y, 10)).slice(0, -1)
+        // );
+        // }
       }
     }
-    setPath(paths);
+    setPaths(paths);
+    // setPaths2(paths2);
     console.log("path set");
   }, [geometry]);
 
@@ -174,7 +193,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         );
         camera.current.rotation = newRotation;
         setRotation(newRotation);
-        setPosition(new Vector3(0, 0, 100).applyEuler(newRotation));
+        setPosition(camera.current.position.clone().applyEuler(newRotation));
       }
     };
 
@@ -209,22 +228,33 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     >
       <Canvas style={{ flex: 1, touchAction: "none", background: "black" }}>
         <Camera fov={90} position={position} rotation={rotation} />
-        <ambientLight intensity={0.4} />
+        <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
-        {/* <mesh>
-          <sphereGeometry args={[60, 64, 64]} />
-          <meshStandardMaterial map={texture} />
-        </mesh> */}
         <Suspense>
           <Globe />
-          {path && (
-            <mesh>
-              <shapeGeometry args={[path]} />
-              <meshStandardMaterial color={"red"} />
-            </mesh>
-          )}
+          {/* <mesh>
+            <shapeGeometry args={[paths]} />
+            <meshStandardMaterial color={"red"} />
+          </mesh>
+          <mesh>
+            <MeshGeometry faces={paths2} />
+            <meshStandardMaterial color={"blue"} />
+          </mesh> */}
         </Suspense>
+
+        <mesh>
+          <MeshGeometry2
+            vertices={ico.vertices.map((v) => v.multiplyScalar(60.1))}
+            normals={ico.normals}
+            indices={ico.indices}
+          />
+          <meshStandardMaterial color={"green"} wireframe/>
+        </mesh>
+        {/* <mesh>
+          <icosahedronGeometry args={[60.2, 15]}/>
+          <meshStandardMaterial color={"red"} wireframe/>
+        </mesh> */}
       </Canvas>
     </div>
   );

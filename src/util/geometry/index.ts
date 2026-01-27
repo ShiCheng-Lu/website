@@ -1,5 +1,8 @@
 import { Quaternion, Vector2, Vector3 } from "three";
 
+/**
+ * expect first point to be the same as last point for ease of iteration
+ */
 export type Polygon = Vector2[];
 
 export function circle(
@@ -20,3 +23,6 @@ export function circle(
   }
   return points;
 }
+
+export { default as MeshGeometry2 } from "./mesh";
+export { default as triangulation } from "./triangulation";
