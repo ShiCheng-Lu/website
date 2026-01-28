@@ -33,7 +33,7 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
         normal,
         new Vector3(0, 0, 1)
       );
-      console.log(normal);
+      // console.log(normal);
 
       for (let i = 0; i < face.length; ++i) {
         const p = face[i];

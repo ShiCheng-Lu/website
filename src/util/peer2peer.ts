@@ -1,3 +1,5 @@
+// TODO: this file is garbage, refactor to make p2p connections make more sense
+
 import {
   arrayUnion,
   doc,

@@ -8,6 +8,10 @@ export default function triangulation(
   sortedIndex: number[],
   start: number = 1
 ): Vector3[] {
+  if (polygon.length <= 3) {
+    return [new Vector3(polygon[0], polygon[1], polygon[2])];
+  }
+
   const indexOf = (i: number) => {
     if (i >= polygon.length) {
       return i - polygon.length;
@@ -18,7 +22,7 @@ export default function triangulation(
     return i;
   };
   // TODO: something doesn't exactly work right with this...
-  // console.log(polygon);
+  console.log(polygon);
   // Part 1.
   // Monotone decomposition, split polygon into polygons that are monotone in x
   for (let i = start; i < sortedIndex.length - 1; ++i) {
@@ -60,20 +64,20 @@ export default function triangulation(
       const sortedB = sortedIndex.filter((x) => x <= a || x >= b);
 
       return [
-        ...triangulation(
-          points,
-          polygon.slice(a, b + 1),
-          sortedA.map((x) => x - a),
-          sortedA.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
-            .length
-        ),
-        ...triangulation(
-          points,
-          [...polygon.slice(0, a + 1), ...polygon.slice(b)],
-          sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
-          sortedB.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
-            .length
-        ),
+        // ...triangulation(
+        //   points,
+        //   polygon.slice(a, b + 1),
+        //   sortedA.map((x) => x - a),
+        //   sortedA.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
+        //     .length
+        // ),
+        // ...triangulation(
+        //   points,
+        //   [...polygon.slice(0, a + 1), ...polygon.slice(b)],
+        //   sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
+        //   sortedB.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
+        //     .length
+        // ),
       ];
     }
   }

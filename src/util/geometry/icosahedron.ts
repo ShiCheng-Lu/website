@@ -75,7 +75,7 @@ function icosahedron(): Geometry {
   return { vertices, normals, indices };
 }
 
-export function icosphere(detail: number = 0) {
+export function icosphere(detail: number = 0): Geometry {
   let geometry = icosahedron();
   for (let i = 0; i < detail; ++i) {
     geometry = subdivide(geometry);

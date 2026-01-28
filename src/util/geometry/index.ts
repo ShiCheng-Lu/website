@@ -24,5 +24,14 @@ export function circle(
   return points;
 }
 
+export function lerp<T extends Vector2 | Vector3>(a: T, b: T, v: number): T {
+  const c0 = a.clone().multiplyScalar(1 - v);
+  const c1 = b.clone().multiplyScalar(v);
+  // c0 and c1 are guranteed to be the same type, but typescript thinks c1 could be
+  // either Vector2 or Vector3 and not be the same as c0, so cast to any is necessary
+  return c0.add(c1 as any) as T;
+}
+
 export { default as MeshGeometry2 } from "./mesh";
 export { default as triangulation } from "./triangulation";
+export { coordinateToVector, vectorToCoordinate } from "./coordinates";

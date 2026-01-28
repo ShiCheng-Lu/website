@@ -1,117 +1,31 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Euler,
-  IcosahedronGeometry,
-  Shape,
-  ShapePath,
-  TextureLoader,
-  Vector2,
-  Vector3,
-} from "three";
+import { Euler, Shape, TextureLoader, Vector2, Vector3 } from "three";
 import useCountriesInConflict from "./countriesInConflict";
 import { Canvas, useLoader } from "@react-three/fiber";
 import Camera from "@/util/three-camera";
 import { clamp } from "@/util/util";
 import { MeshGeometry } from "@/components/MeshGeometry";
 import { icosphere } from "@/util/geometry/icosahedron";
-import { MeshGeometry2 } from "@/util/geometry";
+import {
+  Polygon,
+  coordinateToVector,
+  vectorToCoordinate,
+} from "@/util/geometry";
+import { intersection } from "@/util/geometry/intersection";
+import useCountryGeometry from "./countryGeometry";
 
-type CountryGeometry = {
-  names: { [key: string]: string };
-  geometry: Vector2[][]; // a list of polygons
-};
-
-function useCountryGeometry(filter: string[]) {
-  const [geometry, setGeometry] = useState<CountryGeometry[]>([]);
-  const [countries, setCountries] = useState<any[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      console.log("start reading");
-      const response = await fetch("country-borders.geojson");
-      const json = await response.json();
-      setCountries(json.features);
-      console.log("finish reading");
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (!filter) {
-      console.log("no filter");
-      return;
-    }
-    if (!countries) {
-      console.log("no countries");
-      return;
-    }
-    console.log("ok continue");
-    // parsing geojson objects into a list of polygons
-    const parseGeometryCollection = (json: any): Vector2[][] => {
-      if (json.type !== "GeometryCollection") {
-        console.log("Expected geojson type to be 'GeometryCollection'");
-        return [];
-      }
-      return json.geometries.flatMap((feature: any) => parseGeoJson(feature));
-    };
-    const parsePolygon = (json: any): Vector2[][] => {
-      if (json.type !== "Polygon") {
-        console.log("Expected geojson type to be 'Polygon'");
-        return [];
-      }
-      return json.coordinates.map((polygon: [number, number][]) =>
-        polygon.map(([lat, long]) => new Vector2(lat, long))
-      );
-    };
-    const parseMultiPolygon = (json: any): Vector2[][] => {
-      if (json.type !== "MultiPolygon") {
-        console.log("Expected geojson type to be 'MultiPolygon'");
-        return [];
-      }
-      return json.coordinates.map((polygon: [number, number][][]) =>
-        polygon[0].map(([lat, long]) => new Vector2(lat, long))
-      );
-    };
-    const parseGeoJson = (json: any) => {
-      switch (json.type) {
-        case "Polygon":
-          return parsePolygon(json);
-        case "MultiPolygon":
-          return parseMultiPolygon(json);
-        default:
-          return [];
-      }
-    };
-
-    const geometry = countries
-      .filter((country: any) => {
-        const names = country.properties.names as { [key: string]: string };
-        return Object.values(names).some((name: string) =>
-          filter.includes(name)
-        );
-      })
-      .map((country: any) => {
-        const names = country.properties.names as { [key: string]: string };
-        const shape = parseGeometryCollection(country.geometry);
-
-        return {
-          names,
-          geometry: shape,
-        };
-      });
-    setGeometry(geometry);
-  }, [countries, filter]);
-
-  return geometry;
-}
-
-export function Globe() {
+export function Globe({ flat }: { flat: boolean }) {
   const texture = useLoader(TextureLoader, "textures/2k_earth_daymap.jpg");
-  return (
+  return flat ? (
     <mesh>
+      <planeGeometry args={[360, 180]} />
+      <meshStandardMaterial map={texture} />
+    </mesh>
+  ) : (
+    <mesh rotation={[0, -Math.PI / 2, 0]}>
       <sphereGeometry args={[60, 64, 64]} />
-      {/* <planeGeometry args={[360, 180]} /> */}
       <meshStandardMaterial map={texture} />
     </mesh>
   );
@@ -122,23 +36,25 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     useCountriesInConflict();
   const geometry = useCountryGeometry([
     ...conflicts10000,
-    // ...conflicts1000,
+    ...conflicts1000,
     // ...conflicts100,
   ]);
 
+  const CAMERA_HEIGHT = 100;
+
   const [paths, setPaths] = useState<Shape[]>([]);
   const [paths2, setPaths2] = useState<Vector3[][]>([]);
-  const [position, setPosition] = useState(new Vector3(0, 0, 120));
+  const [position, setPosition] = useState(new Vector3(0, 0, CAMERA_HEIGHT));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
   const camera = useRef({
-    position: new Vector3(0, 0, 120),
+    position: new Vector3(0, 0, CAMERA_HEIGHT),
     rotation: new Euler(0, 0, 0),
   });
+  const globe = useRef(true);
+  const [globeState, setGlobeState] = useState(true);
 
   const ico = useMemo(() => {
     const ico = icosphere(4);
-    console.log(`Iso has ${ico.vertices.length} vertices`);
-    console.log(`Iso has ${ico.indices.length} faces`);
     return ico;
   }, []);
 
@@ -146,28 +62,60 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     if (!geometry) return;
     console.log(geometry);
 
+    const shapeFor = (polygon: Polygon) => {
+      const path = new Shape();
+      if (polygon.length > 0) {
+        path.moveTo(polygon[0].x, polygon[0].y);
+      }
+      for (let i = 1; i < polygon.length; ++i) {
+        path.lineTo(polygon[i].x, polygon[i].y);
+      }
+      return path;
+    };
+
     const paths = [];
     const paths2 = [];
-    for (const country of geometry) {
-      for (const polygon of country.geometry) {
-        const path = new Shape();
-        if (polygon.length > 0) {
-          path.moveTo(polygon[0].x, polygon[0].y);
-        }
-        for (let i = 1; i < polygon.length; ++i) {
-          path.lineTo(polygon[i].x, polygon[i].y);
-        }
-        paths.push(path);
 
-        // if (paths2.length === 0) {
-        // paths2.push(
-        //   polygon.map((v) => new Vector3(v.x, v.y, 10)).slice(0, -1)
-        // );
-        // }
+    const icoTriangles = [];
+    for (const indices of ico.indices) {
+      const a = vectorToCoordinate(ico.vertices[indices.x]);
+      const b = vectorToCoordinate(ico.vertices[indices.y]);
+      const c = vectorToCoordinate(ico.vertices[indices.z]);
+      icoTriangles.push([
+        new Vector2(a.longitude, a.latitude),
+        new Vector2(b.longitude, b.latitude),
+        new Vector2(c.longitude, c.latitude),
+        new Vector2(a.longitude, a.latitude),
+      ]);
+    }
+
+    for (const country of geometry) {
+      console.log(country.names["en"]);
+
+      for (const p of country.geometry) {
+        paths.push(shapeFor(p));
+        // russia causes problems, but ok for shape
+        if (country.names["en"] === "Russia") {
+          continue;
+        }
+
+        for (const t of icoTriangles) {
+          paths2.push(
+            ...intersection(t, p).map((x) => {
+              x.pop();
+              x.reverse();
+              return x.map((c) =>
+                coordinateToVector(c.y, c.x).multiplyScalar(60.1)
+              );
+            })
+          );
+        }
       }
     }
+    // only do triangles for now
+    // console.log(paths);
+    setPaths2(paths2.filter((p) => p.length === 3));
     setPaths(paths);
-    // setPaths2(paths2);
     console.log("path set");
   }, [geometry]);
 
@@ -180,7 +128,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       down = false;
     };
     const mousemove = (event: MouseEvent) => {
-      if (down) {
+      if (down && globe.current) {
         const newRotation = new Euler(
           clamp(
             camera.current.rotation.x - event.movementY * 0.002,
@@ -208,6 +156,17 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     };
   }, []);
 
+  const toggleGlobe = () => {
+    globe.current = !globe.current;
+    camera.current = {
+      position: new Vector3(0, 0, CAMERA_HEIGHT),
+      rotation: new Euler(0, 0, 0),
+    };
+    setRotation(camera.current.rotation.clone());
+    setPosition(camera.current.position.clone());
+    setGlobeState(globe.current);
+  };
+
   return (
     <div
       style={{
@@ -232,30 +191,28 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
         <Suspense>
-          <Globe />
-          {/* <mesh>
-            <shapeGeometry args={[paths]} />
-            <meshStandardMaterial color={"red"} />
-          </mesh>
-          <mesh>
-            <MeshGeometry faces={paths2} />
-            <meshStandardMaterial color={"blue"} />
-          </mesh> */}
+          <Globe flat={!globeState} />
+          {globeState ? (
+            <mesh>
+              <MeshGeometry faces={paths2} />
+              <meshStandardMaterial color={"red"} opacity={0.5} transparent />
+            </mesh>
+          ) : (
+            <mesh position={[0, 0, 0.1]}>
+              <shapeGeometry args={[paths]} />
+              <meshStandardMaterial color={"red"} opacity={0.5} transparent />
+            </mesh>
+          )}
         </Suspense>
-
-        <mesh>
-          <MeshGeometry2
-            vertices={ico.vertices.map((v) => v.multiplyScalar(60.1))}
-            normals={ico.normals}
-            indices={ico.indices}
-          />
-          <meshStandardMaterial color={"green"} wireframe/>
-        </mesh>
-        {/* <mesh>
-          <icosahedronGeometry args={[60.2, 15]}/>
-          <meshStandardMaterial color={"red"} wireframe/>
-        </mesh> */}
       </Canvas>
+      <div style={{ position: "fixed", right: 10, bottom: 10 }}>
+        <button
+          onClick={toggleGlobe}
+          style={{ width: 75, height: 75, borderRadius: 30 }}
+        >
+          {globeState ? "Flat" : "Globe"}
+        </button>
+      </div>
     </div>
   );
 }

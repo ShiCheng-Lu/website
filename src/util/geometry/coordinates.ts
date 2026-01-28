@@ -1,10 +1,13 @@
 import { Euler, Vector3, Vector3Like } from "three";
 
-export function coordinateToVector(latitude: number, longitude: number) {
+export function coordinateToVector(
+  latitude: number,
+  longitude: number
+): Vector3 {
   const ry = (longitude * Math.PI) / 180;
   const rx = (latitude * Math.PI) / 180;
 
-  return new Vector3(0, 0, 1).applyEuler(new Euler(rx, ry, 0, "YXZ"));
+  return new Vector3(0, 0, 1).applyEuler(new Euler(-rx, ry, 0, "YXZ"));
 }
 
 export function vectorToCoordinate(vector: Vector3Like): {
@@ -27,5 +30,3 @@ export function vectorToCoordinate(vector: Vector3Like): {
     longitude,
   };
 }
-
-
