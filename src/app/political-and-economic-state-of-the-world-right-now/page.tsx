@@ -56,6 +56,26 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   }, []);
 
   useEffect(() => {
+    console.log(`filter is changing ${JSON.stringify(filter)}`);
+  }, [filter]);
+
+  useEffect(() => {
+    console.log(`conflicts10000 is changing ${JSON.stringify(conflicts10000)}`);
+  }, [conflicts10000]);
+  
+  useEffect(() => {
+    console.log(`conflicts1000 is changing ${JSON.stringify(conflicts1000)}`);
+  }, [conflicts1000]);
+
+  useEffect(() => {
+    console.log(`conflicts100 is changing ${JSON.stringify(conflicts100)}`);
+  }, [conflicts100]);
+
+  useEffect(() => {
+    console.log(`geometry is changing ${JSON.stringify(geometry)}`);
+  }, [geometry]);
+
+  useEffect(() => {
     if (!geometry) return;
     console.log(geometry);
 
