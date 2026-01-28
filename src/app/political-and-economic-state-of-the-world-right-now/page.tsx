@@ -34,7 +34,8 @@ export function Globe({ flat }: { flat: boolean }) {
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
-  const filter = [...conflicts10000, ...conflicts1000, ...conflicts100];
+  const filter = useMemo(() => [...conflicts10000, ...conflicts1000, ...conflicts100],
+    [conflicts10000, conflicts1000, conflicts100]);
   const geometry = useCountryGeometry(filter);
 
   const CAMERA_HEIGHT = 100;
@@ -62,7 +63,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   useEffect(() => {
     console.log(`conflicts10000 is changing ${JSON.stringify(conflicts10000)}`);
   }, [conflicts10000]);
-  
+
   useEffect(() => {
     console.log(`conflicts1000 is changing ${JSON.stringify(conflicts1000)}`);
   }, [conflicts1000]);
