@@ -34,11 +34,8 @@ export function Globe({ flat }: { flat: boolean }) {
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
-  const geometry = useCountryGeometry([
-    ...conflicts10000,
-    ...conflicts1000,
-    // ...conflicts100,
-  ]);
+  const filter = [...conflicts10000, ...conflicts1000, ...conflicts100];
+  const geometry = useCountryGeometry(filter);
 
   const CAMERA_HEIGHT = 100;
 
