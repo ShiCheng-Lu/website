@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Euler, Shape, TextureLoader, Vector2, Vector3 } from "three";
 import useCountriesInConflict from "./countriesInConflict";
 import { Canvas, useLoader } from "@react-three/fiber";
@@ -34,8 +34,7 @@ export function Globe({ flat }: { flat: boolean }) {
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
-  const filter = useMemo(() => [...conflicts10000, ...conflicts1000, ...conflicts100],
-    [conflicts10000, conflicts1000, conflicts100]);
+  const filter = [...conflicts10000, ...conflicts1000, ...conflicts100];
   const geometry = useCountryGeometry(filter);
 
   const CAMERA_HEIGHT = 100;
@@ -51,10 +50,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const globe = useRef(true);
   const [globeState, setGlobeState] = useState(true);
 
-  const ico = useMemo(() => {
-    const ico = icosphere(4);
-    return ico;
-  }, []);
+  const ico = icosphere(4);
 
   useEffect(() => {
     console.log(`filter is changing ${JSON.stringify(filter)}`);
