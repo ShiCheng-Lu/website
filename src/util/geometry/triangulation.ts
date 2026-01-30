@@ -2,6 +2,17 @@
 
 import { Vector2, Vector3 } from "three";
 
+export function decomposition(polygon: Vector2) {
+  // we can rely on the fact polygon is by reference
+  
+
+
+}
+
+// export function triangulation() {
+
+// }
+
 export default function triangulation(
   points: Vector2[],
   polygon: number[],
@@ -64,20 +75,20 @@ export default function triangulation(
       const sortedB = sortedIndex.filter((x) => x <= a || x >= b);
 
       return [
-        // ...triangulation(
-        //   points,
-        //   polygon.slice(a, b + 1),
-        //   sortedA.map((x) => x - a),
-        //   sortedA.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
-        //     .length
-        // ),
-        // ...triangulation(
-        //   points,
-        //   [...polygon.slice(0, a + 1), ...polygon.slice(b)],
-        //   sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
-        //   sortedB.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
-        //     .length
-        // ),
+        ...triangulation(
+          points,
+          polygon.slice(a, b + 1),
+          sortedA.map((x) => x - a),
+          sortedA.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
+            .length
+        ),
+        ...triangulation(
+          points,
+          [...polygon.slice(0, a + 1), ...polygon.slice(b)],
+          sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
+          sortedB.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
+            .length
+        ),
       ];
     }
   }

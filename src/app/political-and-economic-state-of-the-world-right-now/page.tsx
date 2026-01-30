@@ -89,11 +89,9 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       ]);
     }
 
+    const start = Date.now();
     for (const country of geometry) {
-      console.log(country.names["en"]);
-
       for (const p of country.geometry) {
-        paths.push(shapeFor(p));
         // russia causes problems, but ok for shape
         if (country.names["en"] === "Russia") {
           continue;
@@ -112,12 +110,21 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         }
       }
     }
+    const end = Date.now();
+    console.log(`Time to process ${geometry.length} countries ${end - start}`);
+
+    for (const country of geometry) {
+      for (const p of country.geometry) {
+        paths.push(shapeFor(p));
+      }
+    }
     // only do triangles for now
     // console.log(paths);
-    setPaths2(paths2.filter((p) => p.length === 3));
+    setPaths2(paths2);
     setPaths(paths);
     console.log("path set");
   }, [geometry]);
+
 
   useEffect(() => {
     let down = false;
