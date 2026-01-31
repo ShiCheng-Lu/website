@@ -1,12 +1,206 @@
 // TODO: move polygon triangulation herer
 
 import { Vector2, Vector3 } from "three";
+import { Polygon, lerp } from ".";
 
-export function decomposition(polygon: Vector2) {
+type PartialPolygon = {
+  top: Vector2[];
+  bot: Vector2[];
+};
+
+function y(chain: Vector2[], x: number) {
+  const a = chain[chain.length - 2];
+  const b = chain[chain.length - 1];
+  return lerp(a, b, (x - a.x) / (b.x - a.x)).y;
+}
+
+/**
+ * requires this polygon to be opened
+ */
+export function decomposition(polygon: Polygon) {
   // we can rely on the fact polygon is by reference
-  
+  const indices = new Map<Vector2, number>(polygon.map((v, i) => [v, i]));
 
+  const sorted = polygon
+    .map((vertex, index) => ({ vertex, index }))
+    .sort((a, b) => a.vertex.x - b.vertex.x);
 
+  console.log(sorted);
+
+  const polygonNext = (index: number): Vector2 => {
+    return polygon[(index + 1) % polygon.length];
+  };
+  const polygonPrev = (index: number): Vector2 => {
+    return polygon[(index === 0 ? polygon.length : index) - 1];
+  };
+
+  const completePolygons: Polygon[] = [];
+  const partialPolygons: {
+    top: Vector2[];
+    bot: Vector2[];
+  }[] = []; // TODO: this could just be a Polygon and use unshift + push for either end
+
+  const merges: {
+    top: PartialPolygon;
+    bot: PartialPolygon;
+  }[] = [];
+
+  let z = 0;
+  for (const point of sorted) {
+    // determine which partial polygon this point belongs to and if it should be the start of a new partial polygon
+    // console.log("processing", point.vertex);
+
+    // connect existin merge points to the new point
+    for (let i = 0; i < merges.length; ++i) {
+      const top = merges[i].top;
+      const bot = merges[i].bot;
+      // if the point is the top, then it closes the top polygon, and the bottom connects to this point
+      if (point.vertex === top.top[top.top.length - 1]) {
+        const completeIndex = partialPolygons.findIndex((x) => x === top);
+        // console.log(`connect merge to top ${completeIndex}`);
+        partialPolygons.splice(completeIndex, 1);
+
+        const completed = top.bot.concat(top.top.reverse());
+        completePolygons.push(completed);
+        // console.log(
+        //   "completed",
+        //   JSON.parse(JSON.stringify(top)),
+        //   JSON.parse(JSON.stringify(completed))
+        // );
+
+        bot.top.push(point.vertex);
+        merges.splice(i, 1);
+
+        break;
+      }
+      // if the point is the bottom, then it closes the bottom polygon
+      else if (point.vertex === bot.bot[bot.bot.length - 1]) {
+        // console.log("connect merge to bottom");
+        const completeIndex = partialPolygons.findIndex((x) => x === bot);
+        partialPolygons.splice(completeIndex, 1);
+
+        completePolygons.push(bot.bot.concat(bot.top.reverse()));
+
+        top.bot.push(point.vertex);
+        merges.splice(i, 1);
+        break;
+      }
+      // if the point is within the trapezoid of the merge, it can be connected, this point is also a split
+      // so once processed, we'll have completely processed this point
+      else if (
+        y(top.top, point.vertex.x) > point.vertex.y &&
+        y(bot.bot, point.vertex.x) < point.vertex.y
+      ) {
+        // console.log("split");
+
+        top.bot.push(point.vertex);
+        const topNext = polygonNext(point.index);
+        top.bot.push(topNext);
+
+        bot.top.push(point.vertex);
+        const botNext = polygonPrev(point.index);
+        bot.top.push(botNext);
+
+        merges.splice(i, 1);
+
+        break;
+      }
+    }
+
+    let polygonTop: PartialPolygon | undefined = undefined;
+    let polygonBot: PartialPolygon | undefined = undefined;
+    for (let i = 0; i < partialPolygons.length; ++i) {
+      const partial = partialPolygons[i];
+      const eqTop = point.vertex === partial.top[partial.top.length - 1];
+      const eqBot = point.vertex === partial.bot[partial.bot.length - 1];
+      if (eqTop && eqBot) {
+        // close polygon
+        // console.log(`completed polygon via eq ${i}`);
+        partialPolygons.splice(i, 1);
+        partial.bot.pop();
+        const completed = partial.bot.concat(partial.top.reverse());
+        completePolygons.push(completed);
+
+        polygonTop = undefined;
+        polygonBot = partial;
+        break;
+      } else if (eqTop) {
+        // console.log("eq top");
+        polygonTop = partial;
+        const next = polygonPrev(point.index);
+        partial.top.push(next);
+      } else if (eqBot) {
+        // console.log("eq bot");
+        polygonBot = partial;
+        const next = polygonNext(point.index);
+        partial.bot.push(next);
+      }
+      // this is a split vertex, we need to connect it to a previous point
+      else if (
+        y(partial.top, point.vertex.x) > point.vertex.y &&
+        y(partial.bot, point.vertex.x) < point.vertex.y
+      ) {
+        const topNext = polygonNext(point.index);
+        const botNext = polygonPrev(point.index);
+        // connect to the previous top/bottom with highest x, which is guranteed to
+        // create a split that does not cut any other vertex
+        if (
+          partial.top[partial.top.length - 2].x >
+          partial.bot[partial.bot.length - 2].x
+        ) {
+          const next = partial.top.pop()!;
+          const start = partial.top[partial.top.length - 1];
+
+          partialPolygons.push({
+            top: [start, next],
+            bot: [start, point.vertex, topNext],
+          });
+
+          partial.top.push(point.vertex);
+          partial.top.push(botNext);
+        } else {
+          const next = partial.bot.pop()!;
+          const start = partial.bot[partial.bot.length - 1];
+
+          partialPolygons.push({
+            top: [start, point.vertex, botNext],
+            bot: [start, next],
+          });
+
+          partial.bot.push(point.vertex);
+          partial.bot.push(topNext);
+        }
+
+        polygonTop = undefined;
+        polygonBot = partial;
+        break;
+      }
+    }
+
+    //
+    if (!polygonTop && !polygonBot) {
+      partialPolygons.push({
+        bot: [point.vertex, polygonNext(point.index)],
+        top: [point.vertex, polygonPrev(point.index)],
+      });
+      // console.log("inserted new polygon");
+    }
+
+    // this is a merge vertex, keep track of it to connect to the next available point
+    if (polygonTop && polygonBot) {
+      polygonBot.bot.pop(); // the next vertex is not correct since it's a merge
+      polygonTop.top.pop();
+      merges.push({
+        top: polygonBot, // the polygon that matched with the bottom vertex is the top polygon in the merge
+        bot: polygonTop,
+      });
+      // console.log("merge at", point.vertex);
+    }
+
+    // console.log(JSON.parse(JSON.stringify(partialPolygons)));
+  }
+
+  return completePolygons;
 }
 
 // export function triangulation() {

@@ -13,7 +13,7 @@ export default function useCountryGeometry(filter: string[]) {
   useEffect(() => {
     (async () => {
       console.log("start reading");
-      const response = await fetch("country-borders.geojson");
+      const response = await fetch("/country-borders.geojson");
       const json = await response.json();
       setCountries(json.features);
       console.log("finish reading");
