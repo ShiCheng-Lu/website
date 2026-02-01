@@ -1,6 +1,7 @@
 "use client";
 
 import { triangulation } from "@/util/geometry";
+import { toIndices } from "@/util/geometry/triangulation";
 import { useMemo } from "react";
 import { Quaternion, Vector2, Vector3 } from "three";
 
@@ -18,12 +19,12 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       if (face.length < 3) {
         continue;
       }
+      if (!face[face.length - 1].equals(face[0])) {
+        face.push(face[0]);
+      }
 
       const indexOffset = points.length / 3;
-      const perim: Vector2[] = [];
-      // indices sorted by x
-      //
-      const polygon = [];
+      const polygon: Vector2[] = [];
       const normal = face[face.length - 1].clone().cross(face[0]);
       for (let i = 0; i < face.length - 1; ++i) {
         normal.add(face[i].clone().cross(face[i + 1]));
@@ -33,7 +34,6 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
         normal,
         new Vector3(0, 0, 1)
       );
-      // console.log(normal);
 
       for (let i = 0; i < face.length; ++i) {
         const p = face[i];
@@ -43,22 +43,13 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
 
         const normalized = face[i].clone().sub(face[0]);
         normalized.applyQuaternion(normalizingRotation);
-        perim.push(new Vector2(normalized.x, normalized.y));
-        polygon.push(i);
+        polygon.push(new Vector2(normalized.x, normalized.y));
       }
 
-      const sortedIndex = polygon.toSorted((a, b) =>
-        perim[a].x === perim[b].x
-          ? perim[a].y - perim[b].y
-          : perim[a].x - perim[b].x
-      );
-
+      const triangles = triangulation(polygon);
+      // console.log(triangles);
       indices.push(
-        ...triangulation(perim, polygon, sortedIndex).flatMap((v) => [
-          v.x + indexOffset,
-          v.y + indexOffset,
-          v.z + indexOffset,
-        ])
+        ...toIndices(polygon, triangles.flat()).map((x) => x + indexOffset)
       );
     }
 

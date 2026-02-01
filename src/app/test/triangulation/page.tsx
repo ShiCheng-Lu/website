@@ -2,20 +2,15 @@
 
 import useCountryGeometry from "@/app/political-and-economic-state-of-the-world-right-now/countryGeometry";
 import { MeshGeometry } from "@/components/MeshGeometry";
-import {
-  monotoneDecomposition,
-  monotoneTriangulation,
-  toCompletePolygon,
-  triangulation,
-} from "@/util/geometry/triangulation";
+import triangulation from "@/util/geometry/triangulation";
 import Camera from "@/util/three-camera";
 import { Canvas } from "@react-three/fiber";
 import { FrontSide, GridHelper, Shape, Vector2, Vector3 } from "three";
 
 export default function TriangulationTest() {
-  const country = useCountryGeometry(["Russia"]);
+  const country = useCountryGeometry(["United States"]);
 
-  const CAMERA = new Vector3(30, 59, 100);
+  const CAMERA = new Vector3(0, 0, 150);
 
   const polygon = country.length
     ? country[0].geometry
@@ -33,15 +28,13 @@ export default function TriangulationTest() {
       ];
 
   // const shapes = polygon.map((g) => new Shape(g));
-  const i = 7;
+  const i = 4;
   // console.log(polygon.length);
-  const polygons = polygon
-    .slice(i, i + 1)
-    .flatMap((g) => monotoneDecomposition(g));
-  // const triangles = polygon.flatMap((g) => triangulation(g));
-  // const shapes = triangles.map((g) => new Shape(g));
+  // const polygons = polygon.flatMap((g) => monotoneDecomposition(g));
+  const triangles = polygon.flatMap((g) => triangulation(g));
+  const shapes = triangles.map((g) => new Shape(g));
   // const shapes = polygons.map((g) => new Shape(toCompletePolygon(g)));
-  const shapes = polygon.slice(i, i + 1).map((g) => new Shape(g));
+  // const shapes = polygon.slice(i, i + 1).map((g) => new Shape(g));
 
   const colors = [
     "green",
@@ -85,7 +78,7 @@ export default function TriangulationTest() {
           <meshStandardMaterial color={"black"} opacity={0.5} transparent />
         </mesh>
 
-        {polygons.map((polygon, i) => (
+        {/* {polygons.map((polygon, i) => (
           <mesh key={i}>
             <shapeGeometry args={[new Shape(toCompletePolygon(polygon))]} />
             <meshStandardMaterial
@@ -95,7 +88,7 @@ export default function TriangulationTest() {
               side={FrontSide}
             />
           </mesh>
-        ))}
+        ))} */}
 
         <mesh position={[0, 0, 0]}>
           <shapeGeometry args={[shapes]} />

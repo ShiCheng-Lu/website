@@ -1,7 +1,14 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Euler, Shape, TextureLoader, Vector2, Vector3 } from "three";
+import {
+  Euler,
+  FrontSide,
+  Shape,
+  TextureLoader,
+  Vector2,
+  Vector3,
+} from "three";
 import useCountriesInConflict from "./countriesInConflict";
 import { Canvas, useLoader } from "@react-three/fiber";
 import Camera from "@/util/three-camera";
@@ -11,6 +18,7 @@ import { icosphere } from "@/util/geometry/icosahedron";
 import {
   Polygon,
   coordinateToVector,
+  triangulation,
   vectorToCoordinate,
 } from "@/util/geometry";
 import { intersection } from "@/util/geometry/intersection";
@@ -34,12 +42,13 @@ export function Globe({ flat }: { flat: boolean }) {
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
-  const filter = [...conflicts10000, ...conflicts1000, ...conflicts100];
+  const filter = [...conflicts10000];
   const geometry = useCountryGeometry(filter);
 
   const CAMERA_HEIGHT = 100;
 
   const [paths, setPaths] = useState<Shape[]>([]);
+  const [b, setB] = useState<Shape[]>([]);
   const [paths2, setPaths2] = useState<Vector3[][]>([]);
   const [position, setPosition] = useState(new Vector3(0, 0, CAMERA_HEIGHT));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
@@ -51,44 +60,11 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const [globeState, setGlobeState] = useState(true);
 
   const ico = icosphere(4);
-
-  useEffect(() => {
-    console.log(`filter is changing ${JSON.stringify(filter)}`);
-  }, [filter]);
-
-  useEffect(() => {
-    console.log(`conflicts10000 is changing ${JSON.stringify(conflicts10000)}`);
-  }, [conflicts10000]);
-
-  useEffect(() => {
-    console.log(`conflicts1000 is changing ${JSON.stringify(conflicts1000)}`);
-  }, [conflicts1000]);
-
-  useEffect(() => {
-    console.log(`conflicts100 is changing ${JSON.stringify(conflicts100)}`);
-  }, [conflicts100]);
-
-  useEffect(() => {
-    console.log(`geometry is changing ${JSON.stringify(geometry)}`);
-  }, [geometry]);
-
   useEffect(() => {
     if (!geometry) return;
-    console.log(geometry);
 
-    const shapeFor = (polygon: Polygon) => {
-      const path = new Shape();
-      if (polygon.length > 0) {
-        path.moveTo(polygon[0].x, polygon[0].y);
-      }
-      for (let i = 1; i < polygon.length; ++i) {
-        path.lineTo(polygon[i].x, polygon[i].y);
-      }
-      return path;
-    };
-
-    const paths = [];
-    const paths2 = [];
+    const paths: Shape[] = [];
+    const paths2: Vector3[][] = [];
 
     const icoTriangles = [];
     for (const indices of ico.indices) {
@@ -103,42 +79,89 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       ]);
     }
 
-    const start = Date.now();
-    for (const country of geometry) {
-      for (const p of country.geometry) {
-        // russia causes problems, but ok for shape
-        if (country.names["en"] === "Russia") {
-          continue;
-        }
+    // for (const country of geometry) {
+    //   for (const p of country.geometry) {
+    //     let n = new Vector3(p[p.length - 1].x, p[p.length - 1].y, 0)
+    //       .clone()
+    //       .cross(new Vector3(p[0].x, p[0].y, 0));
+    //     for (let i = 0; i < p.length - 1; ++i) {
+    //       n.add(
+    //         new Vector3(p[i].x, p[i].y, 0)
+    //           .clone()
+    //           .cross(new Vector3(p[i + 1].x, p[i + 1].y, 0))
+    //       );
+    //     }
+    //     if (n.z < 0) {
+    //       console.log(country.names["en"], n.z);
+    //     }
+    //   }
+    // }
 
-        for (const t of icoTriangles) {
-          paths2.push(
-            ...intersection(t, p).map((x) => {
-              x.pop();
-              x.reverse();
-              return x.map((c) =>
-                coordinateToVector(c.y, c.x).multiplyScalar(60.1)
-              );
-            })
-          );
+    let x = 0;
+    const start = Date.now();
+    const icos = [];
+
+    console.log(
+      icoTriangles.length *
+        geometry.reduce((acc, g) => {
+          return g.geometry.length + acc;
+        }, 0)
+    );
+    for (const t of icoTriangles) {
+      // continue;
+      let n = t[t.length - 1].cross(t[0]);
+      for (let i = 0; i < t.length - 1; ++i) {
+        n += t[i].cross(t[i + 1]);
+      }
+      let minx = t.reduce((acc, p) => Math.min(acc, p.x), Infinity);
+      let maxx = t.reduce((acc, p) => Math.max(acc, p.x), -Infinity)
+
+      if (n > 0 || (minx < 0 && maxx > 0 && maxx > 50 && minx < -50) || (minx > 160) || (maxx < -160)) {
+        console.log(`CLOCKWISE ${icos.length}: `, n);
+        // t.reverse();
+        // continue;
+      } else {
+        t.reverse();
+        icos.push(t);
+
+        for (const country of geometry) {
+          // console.log(country.names["en"]);
+          for (const p of country.geometry) {
+            // russia causes problems, but ok for shape
+            // console.log("here");
+            const polygon = intersection(t, p);
+            // const tris = polygon.flatMap(triangulation);
+            paths.push(...polygon.map((s) => new Shape(s)));
+
+            paths2.push(
+              ...polygon.map((p: Polygon) => {
+                // const triangles = triangulation(p);
+                return p.map((c) =>
+                  coordinateToVector(c.y, c.x).multiplyScalar(60.5)
+                );
+              })
+            );
+          }
         }
       }
     }
     const end = Date.now();
     console.log(`Time to process ${geometry.length} countries ${end - start}`);
 
-    for (const country of geometry) {
-      for (const p of country.geometry) {
-        paths.push(shapeFor(p));
-      }
-    }
+    // for (const country of geometry) {
+    //   for (const p of country.geometry) {
+    //     const t = triangulation(p);
+    //     paths.push(...t.map((s) => new Shape(s)));
+    //   }
+    // }
     // only do triangles for now
-    // console.log(paths);
-    setPaths2(paths2);
+    const z = paths2;
+    // console.log(z.reduce((acc, g) => g.length + acc, 0));
+    setPaths2(z);
     setPaths(paths);
+    setB(icos.map((f) => new Shape(f)));
     console.log("path set");
   }, [geometry]);
-
 
   useEffect(() => {
     let down = false;
@@ -207,21 +230,44 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       }}
     >
       <Canvas style={{ flex: 1, touchAction: "none", background: "black" }}>
-        <Camera fov={90} position={position} rotation={rotation} />
+        <Camera
+          fov={90}
+          // position={[0, 0, 30]}
+          position={position} //
+          rotation={rotation}
+        />
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
         <Suspense>
           <Globe flat={!globeState} />
+          {/* <mesh position={[0, 0, 0.1]}>
+            <shapeGeometry args={[b]} />
+            <meshStandardMaterial
+              color={"yellow"}
+              opacity={0.2}
+              transparent
+            />
+          </mesh> */}
           {globeState ? (
             <mesh>
               <MeshGeometry faces={paths2} />
-              <meshStandardMaterial color={"red"} opacity={0.5} transparent />
+              <meshStandardMaterial
+                color={"red"}
+                opacity={0.5}
+                transparent
+                // wireframe
+              />
             </mesh>
           ) : (
             <mesh position={[0, 0, 0.1]}>
               <shapeGeometry args={[paths]} />
-              <meshStandardMaterial color={"red"} opacity={0.5} transparent />
+              <meshStandardMaterial
+                color={"red"}
+                opacity={0.5}
+                transparent
+                wireframe
+              />
             </mesh>
           )}
         </Suspense>

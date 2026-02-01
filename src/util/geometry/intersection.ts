@@ -10,8 +10,8 @@ export function inside(point: Vector2, polygon: Polygon): boolean {
     const p1 = polygon[i + 1];
     if (p0.x < point.x != p1.x < point.x) {
       // this is a segment that crosses, find if we've crossed above or below a[0]
-      const xlen = p1.x - p0.x;
-      const y = (p0.y * (point.x - p0.x) + p1.y * (p1.x - point.x)) / xlen;
+      const y = lerp(p0, p1, (point.x - p0.x) / (p1.x - p0.x)).y;
+
       if (y > point.y) {
         intersections++;
       }
@@ -161,11 +161,13 @@ export function intersection(a: Polygon, b: Polygon): Polygon[] {
       i = oi;
       d = bIntersects[oi][other][1];
       bIntersects[oi].splice(other, 1);
+      // console.log(`A to B ${JSON.stringify(points[0])}`);
     } else {
       current = 0;
       i = entry;
       d = distance;
       aIntersects[i].splice(0, 1);
+      // console.log(`B to A ${JSON.stringify(points[0])}`);
     }
 
     while (true) {
@@ -190,6 +192,9 @@ export function intersection(a: Polygon, b: Polygon): Polygon[] {
         // d resets since we're starting from a new point
         d = 0;
       }
+
+      
+      // console.log(`intersected ${JSON.stringify(points)}`);
 
       // remove this intersection since this'll be the only ever time we need
       // to process this intersection, and by removing it, the next intersection
