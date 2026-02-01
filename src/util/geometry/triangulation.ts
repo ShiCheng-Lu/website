@@ -14,18 +14,27 @@ function y(chain: Vector2[], x: number) {
   return lerp(a, b, (x - a.x) / (b.x - a.x)).y;
 }
 
+export function toCompletePolygon(partial: PartialPolygon): Polygon {
+  return partial.bot.concat(partial.top.reverse());
+}
+
+export function toCompletePolygons(partials: PartialPolygon[]): Polygon[] {
+  return partials.map(toCompletePolygon);
+}
+
 /**
- * requires this polygon to be opened
+ * take an closed polygon and return a list of partial polygons
+ * partial polygons can be passed directly into monotoneTriangulation
+ * or converted to Polygon with toCompletePolygons
  */
-export function decomposition(polygon: Polygon) {
+export function monotoneDecomposition(inPolygon: Polygon): PartialPolygon[] {
   // we can rely on the fact polygon is by reference
-  const indices = new Map<Vector2, number>(polygon.map((v, i) => [v, i]));
+  // const indices = new Map<Vector2, number>(polygon.map((v, i) => [v, i]));
+  const polygon = inPolygon.slice(0, -1);
 
   const sorted = polygon
     .map((vertex, index) => ({ vertex, index }))
     .sort((a, b) => a.vertex.x - b.vertex.x);
-
-  console.log(sorted);
 
   const polygonNext = (index: number): Vector2 => {
     return polygon[(index + 1) % polygon.length];
@@ -34,11 +43,8 @@ export function decomposition(polygon: Polygon) {
     return polygon[(index === 0 ? polygon.length : index) - 1];
   };
 
-  const completePolygons: Polygon[] = [];
-  const partialPolygons: {
-    top: Vector2[];
-    bot: Vector2[];
-  }[] = []; // TODO: this could just be a Polygon and use unshift + push for either end
+  const completePolygons: PartialPolygon[] = [];
+  const partialPolygons: PartialPolygon[] = [];
 
   const merges: {
     top: PartialPolygon;
@@ -47,6 +53,11 @@ export function decomposition(polygon: Polygon) {
 
   let z = 0;
   for (const point of sorted) {
+
+    // if (z++ > 16) {
+    //   completePolygons.push(...partialPolygons);
+    //   return completePolygons;
+    // }
     // determine which partial polygon this point belongs to and if it should be the start of a new partial polygon
     // console.log("processing", point.vertex);
 
@@ -59,9 +70,7 @@ export function decomposition(polygon: Polygon) {
         const completeIndex = partialPolygons.findIndex((x) => x === top);
         // console.log(`connect merge to top ${completeIndex}`);
         partialPolygons.splice(completeIndex, 1);
-
-        const completed = top.bot.concat(top.top.reverse());
-        completePolygons.push(completed);
+        completePolygons.push(top);
         // console.log(
         //   "completed",
         //   JSON.parse(JSON.stringify(top)),
@@ -79,7 +88,7 @@ export function decomposition(polygon: Polygon) {
         const completeIndex = partialPolygons.findIndex((x) => x === bot);
         partialPolygons.splice(completeIndex, 1);
 
-        completePolygons.push(bot.bot.concat(bot.top.reverse()));
+        completePolygons.push(bot);
 
         top.bot.push(point.vertex);
         merges.splice(i, 1);
@@ -91,8 +100,6 @@ export function decomposition(polygon: Polygon) {
         y(top.top, point.vertex.x) > point.vertex.y &&
         y(bot.bot, point.vertex.x) < point.vertex.y
       ) {
-        // console.log("split");
-
         top.bot.push(point.vertex);
         const topNext = polygonNext(point.index);
         top.bot.push(topNext);
@@ -118,8 +125,7 @@ export function decomposition(polygon: Polygon) {
         // console.log(`completed polygon via eq ${i}`);
         partialPolygons.splice(i, 1);
         partial.bot.pop();
-        const completed = partial.bot.concat(partial.top.reverse());
-        completePolygons.push(completed);
+        completePolygons.push(partial);
 
         polygonTop = undefined;
         polygonBot = partial;
@@ -138,8 +144,11 @@ export function decomposition(polygon: Polygon) {
       // this is a split vertex, we need to connect it to a previous point
       else if (
         y(partial.top, point.vertex.x) > point.vertex.y &&
-        y(partial.bot, point.vertex.x) < point.vertex.y
+        y(partial.bot, point.vertex.x) < point.vertex.y &&
+        partial.top[partial.top.length - 1].x > point.vertex.x &&
+        partial.bot[partial.bot.length - 1].x > point.vertex.x
       ) {
+        console.log(`${z}: split`);
         const topNext = polygonNext(point.index);
         const botNext = polygonPrev(point.index);
         // connect to the previous top/bottom with highest x, which is guranteed to
@@ -194,7 +203,7 @@ export function decomposition(polygon: Polygon) {
         top: polygonBot, // the polygon that matched with the bottom vertex is the top polygon in the merge
         bot: polygonTop,
       });
-      // console.log("merge at", point.vertex);
+      console.log(`${z}: merge at`, point.vertex);
     }
 
     // console.log(JSON.parse(JSON.stringify(partialPolygons)));
@@ -203,11 +212,100 @@ export function decomposition(polygon: Polygon) {
   return completePolygons;
 }
 
-// export function triangulation() {
+export function monotoneTriangulation(polygon: PartialPolygon) {
+  const triangles: [Vector2, Vector2, Vector2][] = [];
 
-// }
+  // balance top/bottom
+  let tip = polygon.top[1];
+  let chain = [polygon.bot[0]];
+  let ti = 1;
+  let bi = 0;
 
-export default function triangulation(
+  while (true) {
+    bi += 1;
+    while (bi < polygon.bot.length && (!tip || polygon.bot[bi].x < tip.x)) {
+      const top = polygon.bot[bi];
+      for (let i = chain.length - 2; i >= 0; --i) {
+        const a = chain[i];
+        const b = chain[i + 1];
+        // triangle construction illegal, continue moving to next point
+        if ((a.y - top.y) * (b.x - top.x) >= (b.y - top.y) * (a.x - top.x)) {
+          break;
+        }
+        // if a triangle construction is legal along the same chain
+        // we are guaranteed to be able to construct this triangle,
+        // and it's also necessery to prevent future overlaps
+        triangles.push([a, b, top]);
+
+        chain.pop();
+      }
+      chain.push(top);
+      bi += 1;
+    }
+
+    if (tip) {
+      for (let i = 0; i < chain.length - 1; ++i) {
+        triangles.push([chain[i], chain[i + 1], tip]);
+      }
+    } else {
+      break;
+    }
+
+    chain = [chain[chain.length - 1], tip];
+    tip = polygon.bot[bi];
+
+    ti += 1;
+    while (ti < polygon.top.length && (!tip || polygon.top[ti].x < tip.x)) {
+      const top = polygon.top[ti];
+      for (let i = chain.length - 2; i >= 0; --i) {
+        const a = chain[i];
+        const b = chain[i + 1];
+
+        if ((a.y - top.y) * (b.x - top.x) <= (b.y - top.y) * (a.x - top.x)) {
+          break;
+        }
+
+        triangles.push([b, a, top]);
+        chain.pop();
+      }
+
+      chain.push(top);
+      ti += 1;
+    }
+    if (tip) {
+      for (let i = 0; i < chain.length - 1; ++i) {
+        triangles.push([chain[i + 1], chain[i], tip]);
+      }
+    } else {
+      break;
+    }
+
+    chain = [chain[chain.length - 1], tip];
+    tip = polygon.top[ti];
+  }
+
+  return triangles;
+}
+
+export function triangulation(polygon: Polygon) {
+  const polygons = monotoneDecomposition(polygon);
+  const triangles = polygons.flatMap((polygon) =>
+    monotoneTriangulation(polygon)
+  );
+  return triangles;
+}
+
+export function toIndices(polygon: Polygon, vertices: Vector2[]) {
+  const vertexToIndex = new Map<Vector2, number>(
+    polygon.slice(0, -1).map((point, i) => {
+      return [point, i];
+    })
+  );
+  const indices = vertices.map((v) => vertexToIndex.get(v));
+  return indices;
+}
+
+export default function triangulation_deprecated(
   points: Vector2[],
   polygon: number[],
   sortedIndex: number[],
@@ -269,14 +367,14 @@ export default function triangulation(
       const sortedB = sortedIndex.filter((x) => x <= a || x >= b);
 
       return [
-        ...triangulation(
+        ...triangulation_deprecated(
           points,
           polygon.slice(a, b + 1),
           sortedA.map((x) => x - a),
           sortedA.filter((x) => points[polygon[x]].x < points[polygon[index]].x)
             .length
         ),
-        ...triangulation(
+        ...triangulation_deprecated(
           points,
           [...polygon.slice(0, a + 1), ...polygon.slice(b)],
           sortedB.map((x) => (x >= b ? x - (b - a - 1) : x)),
