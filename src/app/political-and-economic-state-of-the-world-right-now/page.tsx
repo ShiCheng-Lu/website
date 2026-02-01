@@ -137,7 +137,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
               ...polygon.map((p: Polygon) => {
                 // const triangles = triangulation(p);
                 return p.map((c) =>
-                  coordinateToVector(c.y, c.x).multiplyScalar(60.5)
+                  coordinateToVector(c.y, c.x).multiplyScalar(60.1)
                 );
               })
             );
