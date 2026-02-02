@@ -42,12 +42,15 @@ def list_paths(path: Path, root: Path):
         pathString = str(path.relative_to(root)).replace('\\', '/')
         return {
             "name": path.name,
-            "path": pathString,
+            "path": pathString if hasPage else None,
             "children": children
         }
     else:
         return None
 
+
 if __name__ == "__main__":
     pages = list_paths(Path("src/app"), Path("src/app"))
     print(json.dumps(pages))
+else:
+    print(__name__)

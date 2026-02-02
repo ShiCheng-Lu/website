@@ -6,7 +6,8 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prebuild": "python util/prebuild.py"
   },
   "dependencies": {
     "@react-three/fiber": "^9.5.0",

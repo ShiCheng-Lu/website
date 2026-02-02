@@ -44,3 +44,5 @@ certificates
 
 .venv
 duckdb.exe
+
+*/__pycache__
