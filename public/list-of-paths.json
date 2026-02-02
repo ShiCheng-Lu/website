@@ -1,0 +1,56 @@
+{
+  "name": "app",
+  "path": ".",
+  "children": [
+    {
+      "name": "games",
+      "path": "games",
+      "children": [
+        { "name": "archery", "path": "games/archery", "children": [] },
+        {
+          "name": "cookie-clicker",
+          "path": "games/cookie-clicker",
+          "children": []
+        },
+        { "name": "cypto", "path": "games/cypto", "children": [] },
+        { "name": "noise", "path": "games/noise", "children": [] },
+        { "name": "pet", "path": "games/pet", "children": [] },
+        { "name": "ping-pong", "path": "games/ping-pong", "children": [] },
+        { "name": "pool", "path": "games/pool", "children": [] }
+      ]
+    },
+    { "name": "icon", "path": "icon", "children": [] },
+    { "name": "jsfuck", "path": "jsfuck", "children": [] },
+    {
+      "name": "minecraft-computer",
+      "path": "minecraft-computer",
+      "children": []
+    },
+    {
+      "name": "political-and-economic-state-of-the-world-right-now",
+      "path": "political-and-economic-state-of-the-world-right-now",
+      "children": []
+    },
+    { "name": "privacy", "path": "privacy", "children": [] },
+    { "name": "settings", "path": "settings", "children": [] },
+    { "name": "terminal", "path": "terminal", "children": [] },
+    {
+      "name": "test",
+      "path": "test",
+      "children": [
+        {
+          "name": "triangulation",
+          "path": "test/triangulation",
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "tools",
+      "path": "tools",
+      "children": [{ "name": "gsfs", "path": "tools/gsfs", "children": [] }]
+    },
+    { "name": "viola", "path": "viola", "children": [] },
+    { "name": "webrtc", "path": "webrtc", "children": [] }
+  ]
+}
