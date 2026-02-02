@@ -1,8 +1,9 @@
 "use client";
 
 import useJsonResource from "@/util/useResource";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Tooltip } from "react-tooltip";
+import UrlRedirect from "./url/redirect";
 
 type PathObject = {
   name: string;
@@ -45,7 +46,7 @@ function getFormattedPath(
   return formattedPaths;
 }
 
-export default function NotFound() {
+function GlobalNotFound() {
   const paths = useJsonResource<PathObject>("/list-of-paths.json");
 
   if (paths && window) {
@@ -77,7 +78,7 @@ export default function NotFound() {
                     {path.name}
                   </a>
                 ) : (
-                  <p>{path.name}</p>
+                  <a>{path.name}</a>
                 )}
               </pre>
             </div>
@@ -87,4 +88,15 @@ export default function NotFound() {
       </div>
     </div>
   );
+}
+
+export default function NotFound() {
+  const url = usePathname();
+  console.log(url);
+
+  if (url.startsWith("/url/")) {
+    return <UrlRedirect />;
+  } else {
+    return <GlobalNotFound />;
+  }
 }
