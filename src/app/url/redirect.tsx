@@ -9,5 +9,7 @@ export default function UrlRedirect() {
       window?.open("https://google.com", "_self", "noopener noreferrer");
     }
   }
-  return <div></div>;
+  return <div>
+    This short URL is not real
+  </div>;
 }

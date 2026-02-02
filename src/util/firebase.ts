@@ -92,6 +92,7 @@ export async function updateDisplayName(newDisplayName: string) {
 
   await updateDoc(document, {
     display_name: newDisplayName,
+    updatedAt: serverTimestamp(),
   });
 }
 
