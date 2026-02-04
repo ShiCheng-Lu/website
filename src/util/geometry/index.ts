@@ -34,4 +34,8 @@ export function lerp<T extends Vector2 | Vector3>(a: T, b: T, v: number): T {
 
 export { default as MeshGeometry2 } from "./mesh";
 export { default as triangulation } from "./triangulation";
-export { coordinateToVector, vectorToCoordinate } from "./coordinates";
+export {
+  coordinateToVector,
+  vectorToCoordinate,
+  coordinateDistance,
+} from "./coordinates";

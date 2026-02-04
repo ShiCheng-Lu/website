@@ -1,4 +1,4 @@
-import { Euler, Vector3, Vector3Like } from "three";
+import { Euler, Vector2, Vector3, Vector3Like } from "three";
 
 export function coordinateToVector(
   latitude: number,
@@ -29,4 +29,10 @@ export function vectorToCoordinate(vector: Vector3Like): {
     latitude,
     longitude,
   };
+}
+
+export function coordinateDistance(a: Vector2, b: Vector2): number {
+  const aCoord = coordinateToVector(a.y, a.x);
+  const bCoord = coordinateToVector(b.y, b.x);
+  return aCoord.distanceTo(bCoord);
 }

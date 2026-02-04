@@ -10,7 +10,9 @@ import { MeshGeometry } from "@/components/MeshGeometry";
 import { icosphere } from "@/util/geometry/icosahedron";
 import {
   Polygon,
+  coordinateDistance,
   coordinateToVector,
+  lerp,
   vectorToCoordinate,
 } from "@/util/geometry";
 import { intersection } from "@/util/geometry/intersection";
@@ -31,6 +33,21 @@ export function Globe({ flat }: { flat: boolean }) {
   );
 }
 
+function Line({ line, color }: { line: Vector3[]; color: string }) {
+  const ref = useRef<any>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.geometry.setFromPoints(line);
+    }
+  }, [line]);
+  return (
+    <line ref={ref}>
+      <bufferGeometry />
+      <lineBasicMaterial color={color} />
+    </line>
+  );
+}
+
 export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const { conflicts10000, conflicts1000, conflicts100 } =
     useCountriesInConflict();
@@ -40,6 +57,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
   const CAMERA_HEIGHT = 100;
 
   const [paths, setPaths] = useState<Polygon[]>([]);
+  const [borders, setBorders] = useState<Polygon[]>([]);
   const [position, setPosition] = useState(new Vector3(0, 0, CAMERA_HEIGHT));
   const [rotation, setRotation] = useState(new Euler(0, 0, 0, "YXZ"));
   const camera = useRef({
@@ -69,6 +87,28 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
 
     const start = Date.now();
     const icos = [];
+
+    const borders = [];
+    const fineThreshold = 0.05;
+    for (const country of geometry) {
+      for (const geometry of country.geometry) {
+        const border = geometry.slice(0, -1).flatMap((point, j) => {
+          const next = geometry[j + 1];
+          const distance = coordinateDistance(point, next);
+          if (distance > fineThreshold) {
+            const segments = Math.floor(distance / fineThreshold);
+            return Array(segments)
+              .fill(0)
+              .map((_, j) => lerp(point, next, j / segments));
+          } else {
+            return [point];
+          }
+        });
+        // add last point since it's not processed
+        border.push(geometry[geometry.length - 1]);
+        borders.push(border);
+      }
+    }
 
     for (const t of icoTriangles) {
       // continue;
@@ -111,6 +151,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     // }
     // only do triangles for now
     setPaths(paths);
+    setBorders(borders);
   }, [geometry]);
 
   useEffect(() => {
@@ -186,29 +227,47 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
           <Globe flat={!globe} />
           {globe ? (
             <mesh>
-              <MeshGeometry
-                faces={paths.map((p) =>
-                  p.map((c) =>
-                    coordinateToVector(c.y, c.x).multiplyScalar(60.1)
-                  )
-                )}
-              />
-              <meshStandardMaterial
-                color={"red"}
-                opacity={0.5}
-                transparent
-                // wireframe
-              />
+              <mesh>
+                <MeshGeometry
+                  faces={paths.map((p) =>
+                    p.map((c) =>
+                      coordinateToVector(c.y, c.x).multiplyScalar(60.1)
+                    )
+                  )}
+                />
+                <meshStandardMaterial
+                  color={"red"}
+                  opacity={0.3}
+                  transparent
+                  // wireframe
+                />
+              </mesh>
+              {borders.map((border) => (
+                <Line
+                  line={border.map((p) =>
+                    coordinateToVector(p.y, p.x).multiplyScalar(60.1)
+                  )}
+                  color="orange"
+                />
+              ))}
             </mesh>
           ) : (
-            <mesh position={[0, 0, 0.1]}>
-              <shapeGeometry args={[paths.map((p) => new Shape(p))]} />
-              <meshStandardMaterial
-                color={"red"}
-                opacity={0.5}
-                transparent
-                wireframe
-              />
+            <mesh>
+              <mesh position={[0, 0, 0.1]}>
+                <shapeGeometry args={[paths.map((p) => new Shape(p))]} />
+                <meshStandardMaterial
+                  color={"red"}
+                  opacity={0.5}
+                  transparent
+                  wireframe
+                />
+              </mesh>
+              {borders.map((border) => (
+                <Line
+                  line={border.map((p) => new Vector3(p.x, p.y, 0.2))}
+                  color="orange"
+                />
+              ))}
             </mesh>
           )}
         </Suspense>

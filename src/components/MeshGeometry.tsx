@@ -1,9 +1,9 @@
 "use client";
 
-import { triangulation } from "@/util/geometry";
+import { Polygon, triangulation } from "@/util/geometry";
 import { toIndices } from "@/util/geometry/triangulation";
-import { useMemo } from "react";
-import { Quaternion, Vector2, Vector3 } from "three";
+import { useEffect, useMemo, useRef } from "react";
+import { BufferGeometry, Quaternion, Vector2, Vector3 } from "three";
 
 type MeshGeometryProps = {
   faces: Vector3[][];
@@ -67,4 +67,19 @@ export function MeshGeometry({ faces }: MeshGeometryProps) {
       <bufferAttribute attach="index" args={[indices, 1]} />
     </bufferGeometry>
   );
+}
+
+type LineGeometryProps = {
+  polygon: Vector3[];
+};
+export function LineGeometry({ polygon }: LineGeometryProps) {
+  const ref = useRef<BufferGeometry>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.setFromPoints(polygon);
+    }
+  }, [polygon, ref.current]);
+
+  return <bufferGeometry ref={ref} />;
 }
