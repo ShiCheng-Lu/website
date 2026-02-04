@@ -272,13 +272,17 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
           )}
         </Suspense>
       </Canvas>
-      <div style={{ position: "fixed", right: 10, bottom: 10 }}>
-        <button
-          onClick={toggleGlobe}
-          style={{ width: 75, height: 75, borderRadius: 30 }}
-        >
-          {globe ? "Flat" : "Globe"}
-        </button>
+      <div style={{ position: "fixed", width: "100%", bottom: 0 }}>
+        <div style={{ position: "absolute", bottom: 10 }}>
+        </div>
+        <div style={{ position: "absolute", right: 10, bottom: 10 }}>
+          <button
+            onClick={toggleGlobe}
+            style={{ width: 75, height: 75, borderRadius: 30 }}
+          >
+            {globe ? "Flat" : "Globe"}
+          </button>
+        </div>
       </div>
     </div>
   );

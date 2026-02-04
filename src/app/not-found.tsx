@@ -61,8 +61,8 @@ function getSimilarPaths(
     if (path) {
       if (path.path) {
         paths.push({
-          path: "/" + path.path,
-          cost: stringDiffWithin("/" + path.path, url),
+          path: path.path,
+          cost: stringDiffWithin(path.path, url.slice(1)),
         });
       }
       workingPaths.push(...path.children);
@@ -101,7 +101,7 @@ function GlobalNotFound() {
       <p>Here is a list of paths similar to {url}</p>
       <div style={{ margin: 10 }}>
         {similarPaths?.map((path, index) => {
-          const fullpath = window.location.host + path.path;
+          const fullpath = window.location.host + "/" + path.path;
           return (
             (path.cost < 3 || index < 3) && (
               <div key={index}>

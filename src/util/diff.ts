@@ -25,6 +25,7 @@ export function matrixDiff(a: string, b: string): number[][] {
         ) + 1;
     }
   }
+  console.log(a, b, d);
   return d;
 }
 
