@@ -105,13 +105,15 @@ function GlobalNotFound() {
           return (
             (path.cost < 3 || index < 3) && (
               <div key={index}>
-                <a
-                  href={path.path}
-                  data-tooltip-id="path"
-                  data-tooltip-content={fullpath}
-                >
-                  {path.path}
-                </a>
+                <pre>
+                  <a
+                    href={path.path}
+                    data-tooltip-id="path"
+                    data-tooltip-content={fullpath}
+                  >
+                    /{path.path}
+                  </a>
+                </pre>
               </div>
             )
           );
