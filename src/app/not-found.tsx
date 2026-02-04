@@ -97,13 +97,21 @@ function GlobalNotFound() {
         Unfortunately, you're too ahead of your time, and the path you typed in
         does not exist yet.
       </p>
+      <br />
       <p>Here is a list of paths similar to {url}</p>
       <div style={{ margin: 10 }}>
         {similarPaths?.map((path, index) => {
+          const fullpath = window.location.host + path.path;
           return (
             (path.cost < 3 || index < 3) && (
               <div key={index}>
-                <a href={path.path}>{path.path}</a>
+                <a
+                  href={path.path}
+                  data-tooltip-id="path"
+                  data-tooltip-content={fullpath}
+                >
+                  {path.path}
+                </a>
               </div>
             )
           );
