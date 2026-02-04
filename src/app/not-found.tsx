@@ -4,6 +4,7 @@ import useJsonResource from "@/util/useResource";
 import { usePathname } from "next/navigation";
 import { Tooltip } from "react-tooltip";
 import UrlRedirect from "./url/redirect";
+import { stringDiff, stringDiffWithin } from "@/util/diff";
 
 type PathObject = {
   name: string;
@@ -46,13 +47,43 @@ function getFormattedPath(
   return formattedPaths;
 }
 
+function getSimilarPaths(
+  url: string,
+  pathObject: PathObject
+): {
+  path: string;
+  cost: number;
+}[] {
+  const paths: { path: string; cost: number }[] = [];
+  const workingPaths = [pathObject];
+  while (true) {
+    const path = workingPaths.pop();
+    if (path) {
+      if (path.path) {
+        paths.push({
+          path: "/" + path.path,
+          cost: stringDiffWithin("/" + path.path, url),
+        });
+      }
+      workingPaths.push(...path.children);
+    } else {
+      break;
+    }
+  }
+
+  paths.sort((a, b) => a.cost - b.cost);
+  return paths;
+}
+
 function GlobalNotFound() {
   const paths = useJsonResource<PathObject>("/list-of-paths.json");
+  const url = usePathname();
 
   if (paths && window) {
     paths.name = window.location.host;
   }
   const formattedPaths = paths ? getFormattedPath(paths) : undefined;
+  const similarPaths = paths ? getSimilarPaths(url, paths) : undefined;
 
   return (
     <div
@@ -61,7 +92,24 @@ function GlobalNotFound() {
         flexDirection: "column",
       }}
     >
-      The page you are looking for does not exist, heres a list of all the pages
+      <h1>404 Ruh-Roh</h1>
+      <p>
+        Unfortunately, you're too ahead of your time, and the path you typed in
+        does not exist yet.
+      </p>
+      <p>Here is a list of paths similar to {url}</p>
+      <div style={{ margin: 10 }}>
+        {similarPaths?.map((path, index) => {
+          return (
+            (path.cost < 3 || index < 3) && (
+              <div key={index}>
+                <a href={path.path}>{path.path}</a>
+              </div>
+            )
+          );
+        })}
+      </div>
+      Here is a list all the pages
       <div style={{ marginTop: 10 }}>
         {formattedPaths?.map((path, i) => {
           const fullpath = window.location.host + "/" + path.path;
