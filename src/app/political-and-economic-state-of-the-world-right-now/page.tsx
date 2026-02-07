@@ -127,7 +127,13 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       }
     }
 
-    for (const t of icoTriangles) {
+    // for (const t of icoTriangles) {
+    for (let ti = 0; ti < icoTriangles.length; ++ti) {
+      const t = icoTriangles[ti];
+      // if (ti !== 904) {
+        // paths.push(t.reverse());
+        // continue;
+      // }
       // continue;
       let n = t[t.length - 1].cross(t[0]);
       for (let i = 0; i < t.length - 1; ++i) {
@@ -150,13 +156,17 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         // console.log(country.names["en"]);
         for (const p of polygons) {
           // if the polygon is backwards, log and skip
-
           const polygon = intersection(t, p);
+          // if (polygon.length) {
+          //   console.log(t);
+          //   console.log(p);
+          // }
           // const tris = polygon.flatMap(triangulation);
           paths.push(...polygon);
         }
       }
     }
+    // console.log(paths);
     const end = Date.now();
     console.log(`Time to process ${geometry.length} countries ${end - start}`);
 

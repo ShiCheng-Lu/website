@@ -191,7 +191,6 @@ export function monotoneDecomposition(inPolygon: Polygon): PartialPolygon[] {
         bot: [point.vertex, polygonNext(point.index)],
         top: [point.vertex, polygonPrev(point.index)],
       });
-      // console.log("inserted new polygon");
     }
 
     // this is a merge vertex, keep track of it to connect to the next available point
@@ -208,7 +207,7 @@ export function monotoneDecomposition(inPolygon: Polygon): PartialPolygon[] {
     // console.log(JSON.parse(JSON.stringify(partialPolygons)));
   }
 
-  return completePolygons;
+  return [...completePolygons, ...partialPolygons];
 }
 
 export function monotoneTriangulation(polygon: PartialPolygon) {
@@ -288,6 +287,7 @@ export function monotoneTriangulation(polygon: PartialPolygon) {
 
 export default function triangulation(polygon: Polygon) {
   const polygons = monotoneDecomposition(polygon);
+  // console.log(`decomponsed to ${polygons.length}`, polygons);
   const triangles = polygons.flatMap((polygon) =>
     monotoneTriangulation(polygon)
   );
