@@ -131,8 +131,8 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
     for (let ti = 0; ti < icoTriangles.length; ++ti) {
       const t = icoTriangles[ti];
       // if (ti !== 904) {
-        // paths.push(t.reverse());
-        // continue;
+      // paths.push(t.reverse());
+      // continue;
       // }
       // continue;
       let n = t[t.length - 1].cross(t[0]);
@@ -263,8 +263,9 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
                   // wireframe
                 />
               </mesh>
-              {borders.map((border) => (
+              {borders.map((border, index) => (
                 <Line
+                  key={index}
                   line={border.map((p) =>
                     coordinateToVector(p.y, p.x).multiplyScalar(60.1)
                   )}
@@ -283,8 +284,9 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
                   wireframe
                 />
               </mesh>
-              {borders.map((border) => (
+              {borders.map((border, index) => (
                 <Line
+                  key={index}
                   line={border.map((p) => new Vector3(p.x, p.y, 0.2))}
                   color="orange"
                 />
