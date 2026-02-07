@@ -110,6 +110,23 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       }
     }
 
+    const polygons = [];
+    for (const country of geometry) {
+      for (const polygon of country.geometry) {
+        let normal = polygon[polygon.length - 1].cross(polygon[0]);
+        for (let i = 0; i < polygon.length - 1; ++i) {
+          normal += polygon[i].cross(polygon[i + 1]);
+        }
+        if (normal > 0) {
+          polygons.push(polygon);
+        } else {
+          console.log(
+            `${country.names["en"]} has a polygon that's facing the wrong way`
+          );
+        }
+      }
+    }
+
     for (const t of icoTriangles) {
       // continue;
       let n = t[t.length - 1].cross(t[0]);
@@ -130,25 +147,19 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         t.reverse();
         icos.push(t);
 
-        for (const country of geometry) {
-          // console.log(country.names["en"]);
-          for (const p of country.geometry) {
-            const polygon = intersection(t, p);
-            // const tris = polygon.flatMap(triangulation);
-            paths.push(...polygon);
-          }
+        // console.log(country.names["en"]);
+        for (const p of polygons) {
+          // if the polygon is backwards, log and skip
+
+          const polygon = intersection(t, p);
+          // const tris = polygon.flatMap(triangulation);
+          paths.push(...polygon);
         }
       }
     }
     const end = Date.now();
     console.log(`Time to process ${geometry.length} countries ${end - start}`);
 
-    // for (const country of geometry) {
-    //   for (const p of country.geometry) {
-    //     const t = triangulation(p);
-    //     paths.push(...t.map((s) => new Shape(s)));
-    //   }
-    // }
     // only do triangles for now
     setPaths(paths);
     setBorders(borders);
@@ -273,8 +284,7 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
         </Suspense>
       </Canvas>
       <div style={{ position: "fixed", width: "100%", bottom: 0 }}>
-        <div style={{ position: "absolute", bottom: 10 }}>
-        </div>
+        <div style={{ position: "absolute", bottom: 10 }}></div>
         <div style={{ position: "absolute", right: 10, bottom: 10 }}>
           <button
             onClick={toggleGlobe}

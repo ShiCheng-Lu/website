@@ -1,11 +1,10 @@
 "use client";
 
 import useCountryGeometry from "@/app/political-and-economic-state-of-the-world-right-now/countryGeometry";
-import { MeshGeometry } from "@/components/MeshGeometry";
 import triangulation from "@/util/geometry/triangulation";
 import Camera from "@/util/three-camera";
 import { Canvas } from "@react-three/fiber";
-import { FrontSide, GridHelper, Shape, Vector2, Vector3 } from "three";
+import { FrontSide, Shape, Vector2, Vector3 } from "three";
 
 export default function TriangulationTest() {
   const country = useCountryGeometry(["United States"]);
