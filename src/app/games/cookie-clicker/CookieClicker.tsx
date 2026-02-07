@@ -2,10 +2,10 @@ import { useDebounce } from "@/util/debounce";
 import {
   getUser,
   getTopClickers,
-  updateDisplayName,
   createUser,
   CookieClickData,
-  clickCookie,
+  updateCookieClicks,
+  CookieClickUpdate,
 } from "@/util/firebase";
 import { useEffect, useState } from "react";
 import styles from "./CookieClicker.module.css";
@@ -21,10 +21,10 @@ export default function CookieClicker({
 }: CookieClickerProps) {
   const [leaderboard, setLeaderboard] = useState<CookieClickData[]>([]);
   const [user, setUser] = useState({ display_name: "", count: 0, id: "" });
-  const [increment, setIncrement] = useState(0);
-  const [newName, setNewName] = useState<string>();
   const [pointer, setPointer] = useState(false);
   const [clickHandler] = useState<(x: number, y: number) => void>();
+
+  const [update, setUpdate] = useState<CookieClickUpdate>();
 
   useEffect(() => {
     const unsub = getTopClickers(leaderboard_count, setLeaderboard);
@@ -52,34 +52,31 @@ export default function CookieClicker({
   };
 
   useDebounce(
-    (increment) => {
-      if (increment != 0) {
-        setIncrement(0);
-        clickCookie(increment);
+    (update) => {
+      if (update) {
+        updateCookieClicks(update);
+        setUser({
+          display_name: update.displayName,
+          id: user.id,
+          count: user.count + update.increment,
+        });
+        setUpdate(undefined);
       }
     },
-    increment,
-    5000
-  );
-
-  useDebounce(
-    (name) => {
-      if (name) {
-        updateDisplayName(name);
-      }
-    },
-    newName,
-    2000
+    update,
+    3000
   );
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (onPointerMove(e)) {
       // if clicked more than 50 times, force sync so we don't have to wait for debounce to sync, this keeps the leaderboard updated if the user is constantly clicking
-      if (increment >= 49) {
-        clickCookie(increment + 1);
-        setIncrement(0);
+      if (!update) {
+        setUpdate({ increment: 1 });
+      } else if (update.increment >= 49) {
+        updateCookieClicks(update);
+        setUpdate({ increment: 1 });
       } else {
-        setIncrement(increment + 1);
+        setUpdate({ ...update, increment: update.increment + 1 });
       }
       clickHandler?.(e.clientX, e.clientY);
       return true;
@@ -127,7 +124,10 @@ export default function CookieClicker({
                 <p style={{ whiteSpace: "pre" }}>
                   {place(index)} {row.display_name}
                 </p>
-                <p>{row.count + (isUser(row) ? increment : 0)}</p>
+                <p>
+                  {row.count +
+                    (isUser(row) && update?.increment ? update.increment : 0)}
+                </p>
               </div>
             );
           })}
@@ -136,7 +136,7 @@ export default function CookieClicker({
               className={`${styles.CookieClickerLeaderboardRow} ${styles.CookieClickerLeaderboardRowUser}`}
             >
               <p>➡️ {user.display_name}</p>
-              <p>{user.count + increment}</p>
+              <p>{user.count + (update?.increment ?? 0)}</p>
             </div>
           )}
         </div>
@@ -164,8 +164,13 @@ export default function CookieClicker({
       >
         <label>Display Name: </label>
         <input
-          onChange={(e) => setNewName(e.target.value)}
-          value={newName || user.display_name}
+          onChange={(e) =>
+            setUpdate({
+              ...(update ?? { increment: 0 }),
+              displayName: e.target.value,
+            })
+          }
+          value={update?.displayName ?? user.display_name}
         />
       </div>
     </div>

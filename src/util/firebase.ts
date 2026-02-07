@@ -87,20 +87,22 @@ export async function createUser(): Promise<CookieClickData> {
   return { id: user.user.uid, ...data };
 }
 
-export async function updateDisplayName(newDisplayName: string) {
+export type CookieClickUpdate = {
+  displayName?: string;
+  increment: number;
+};
+
+export async function updateCookieClicks(update: CookieClickUpdate) {
   const document = doc(db, "cookie_clicks", user.user.uid);
-
-  await updateDoc(document, {
-    display_name: newDisplayName,
+  const fields: any = {
     updatedAt: serverTimestamp(),
-  });
-}
-
-export async function clickCookie(count: number) {
-  const document = doc(db, "cookie_clicks", user.user.uid);
-
-  await updateDoc(document, {
-    count: increment(count),
-    updatedAt: serverTimestamp(),
-  });
+  };
+  if (update.displayName) {
+    fields.display_name = update.displayName;
+  }
+  if (update.increment) {
+    fields.count = increment(update.increment);
+  }
+  console.log(fields);
+  await updateDoc(document, fields);
 }
