@@ -180,14 +180,14 @@ export default function PoliticalAndEconomicStateOfTheWorldRightNow() {
       }
     };
 
-    window.addEventListener("mousedown", mousedown);
-    window.addEventListener("mouseup", mouseup);
-    window.addEventListener("mousemove", mousemove);
+    window.addEventListener("pointerdown", mousedown);
+    window.addEventListener("pointerup", mouseup);
+    window.addEventListener("pointermove", mousemove);
 
     return () => {
-      window.removeEventListener("dragstart", mousedown);
-      window.removeEventListener("mouseup", mouseup);
-      window.removeEventListener("mousemove", mousemove);
+      window.removeEventListener("pointerdown", mousedown);
+      window.removeEventListener("pointerup", mouseup);
+      window.removeEventListener("pointermove", mousemove);
     };
   }, []);
 
