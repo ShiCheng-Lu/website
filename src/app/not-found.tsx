@@ -99,9 +99,9 @@ function GlobalNotFound() {
       </p>
       <br />
       <p>Here is a list of paths similar to {url}</p>
-      <div style={{ margin: 10 }}>
+      <div style={{ margin: 10, display: "flex", flexDirection: "column", gap: 10 }}>
         {similarPaths?.map((path, index) => {
-          const fullpath = window.location.host + "/" + path.path;
+          const fullpath = window.location.host + path.path;
           return (
             (path.cost < 3 || index < 3) && (
               <div key={index}>
@@ -111,7 +111,7 @@ function GlobalNotFound() {
                     data-tooltip-id="path"
                     data-tooltip-content={fullpath}
                   >
-                    /{path.path}
+                    {path.path}
                   </a>
                 </pre>
               </div>
@@ -120,9 +120,9 @@ function GlobalNotFound() {
         })}
       </div>
       Here is a list all the pages
-      <div style={{ marginTop: 10 }}>
+      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 1.5 }}>
         {formattedPaths?.map((path, i) => {
-          const fullpath = window.location.host + "/" + path.path;
+          const fullpath = window.location.host + path.path;
           return (
             <div key={i}>
               <pre>

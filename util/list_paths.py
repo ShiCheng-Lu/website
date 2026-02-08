@@ -39,7 +39,7 @@ def list_paths(path: Path, root: Path):
         elif entry.name == "page.tsx":
             hasPage = True
     if len(children) > 0 or hasPage:
-        pathString = str(path.relative_to(root)).replace('\\', '/')
+        pathString = '/' + str(path.relative_to(root)).replace('\\', '/')
         return {
             "name": path.name,
             "path": pathString if hasPage else None,
