@@ -5,47 +5,68 @@ import { Canvas, useLoader } from "@react-three/fiber";
 import { Board, Piece } from "./models";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { Vector2, Vector3 } from "three";
+import { Game, PieceState } from "./game";
+import { useMemo, useState } from "react";
 
 export default function Xiangqi() {
   const font = useLoader(FontLoader, "/fonts/HanWangShinSuMedium_Regular.json");
 
-  const pieces0 = [
-    { position: new Vector2(1, 9), text: "車" },
-    { position: new Vector2(2, 9), text: "馬" },
-    { position: new Vector2(3, 9), text: "象" },
-    { position: new Vector2(4, 9), text: "士" },
-    { position: new Vector2(5, 9), text: "將" },
-    { position: new Vector2(6, 9), text: "士" },
-    { position: new Vector2(7, 9), text: "象" },
-    { position: new Vector2(8, 9), text: "馬" },
-    { position: new Vector2(9, 9), text: "車" },
-    { position: new Vector2(2, 7), text: "砲" },
-    { position: new Vector2(8, 7), text: "砲" },
-    { position: new Vector2(1, 6), text: "卒" },
-    { position: new Vector2(3, 6), text: "卒" },
-    { position: new Vector2(5, 6), text: "卒" },
-    { position: new Vector2(7, 6), text: "卒" },
-    { position: new Vector2(9, 6), text: "卒" },
-  ];
-  const pieces1 = [
-    { position: new Vector2(1, 0), text: "車" },
-    { position: new Vector2(2, 0), text: "馬" },
-    { position: new Vector2(3, 0), text: "相" },
-    { position: new Vector2(4, 0), text: "仕" },
-    { position: new Vector2(5, 0), text: "帥" },
-    { position: new Vector2(6, 0), text: "仕" },
-    { position: new Vector2(7, 0), text: "相" },
-    { position: new Vector2(8, 0), text: "馬" },
-    { position: new Vector2(9, 0), text: "車" },
-    { position: new Vector2(2, 2), text: "砲" },
-    { position: new Vector2(8, 2), text: "砲" },
-    { position: new Vector2(1, 3), text: "兵" },
-    { position: new Vector2(3, 3), text: "兵" },
-    { position: new Vector2(5, 3), text: "兵" },
-    { position: new Vector2(7, 3), text: "兵" },
-    { position: new Vector2(9, 3), text: "兵" },
-  ];
-  const river = "楚河 漢界";
+  const CAMERA_FOV = 90;
+  const CAMERA_HEIGHT = 12;
+  const game = useMemo(() => new Game(), []);
+
+  const [hovered, setHovered] = useState<PieceState>();
+  const [selected, setSelected] = useState<PieceState>();
+  const [position, setPosition] = useState<Vector2>();
+  const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    // project onto the plane of the piece text to see where it's hovered
+    const scale =
+      (Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
+      window.innerHeight;
+    const y = (window.innerHeight - e.clientY * 2) * scale;
+    const x = (e.clientX * 2 - window.innerWidth) * scale;
+
+    // get hovered piece
+    const position = new Vector2((x + 10) / 2, (y + 9) / 2);
+    const intPosition = position.clone().round();
+
+    if (
+      intPosition.x >= 1 &&
+      intPosition.x <= 9 &&
+      intPosition.y >= 0 &&
+      intPosition.y <= 9 &&
+      position.sub(intPosition).length() < 0.7 / 2
+    ) {
+      const piece = game.pieces.find((p) => p.position.equals(intPosition));
+      setHovered(piece);
+    } else {
+      setHovered(undefined);
+    }
+    setPosition(intPosition);
+  };
+
+  const allowedMoves = useMemo(() => game.allowedMoves(selected), [selected]);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (selected && position) {
+      if (allowedMoves.some((p) => p.equals(position))) {
+        game.movePiece(selected.position, position);
+        setPieces(game.pieces);
+        setSelected(undefined);
+        setHovered(undefined);
+        return;
+      }
+    }
+
+    if (!hovered) {
+      setSelected(undefined);
+      return;
+    }
+
+    setSelected(hovered);
+  };
 
   return (
     <div
@@ -68,16 +89,18 @@ export default function Xiangqi() {
       <Canvas
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
+        onPointerMove={onPointerMove}
+        onPointerDown={onPointerDown}
       >
-        <Camera fov={90} position={[0, 0, 12]} />
+        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
-        <Board />
+        <Board font={font} />
 
-        {pieces0.map((piece, i) => (
+        {game.pieces.map((piece, i) => (
           <Piece
-            key={`r${i}`}
+            key={`p${i}`}
             font={font}
             position={
               new Vector3(
@@ -87,23 +110,29 @@ export default function Xiangqi() {
               )
             }
             text={piece.text}
-            color="red"
+            color={hovered === piece ? "lightgreen" : "lightgray"}
+            textColor={piece.color}
           />
         ))}
-        {pieces1.map((piece, i) => (
-          <Piece
-            key={`b${i}`}
-            font={font}
+
+        {/* <mesh position={[xy[0], xy[1], 0.3]}>
+          <circleGeometry args={[0.1, 32]} />
+          <meshBasicMaterial color={"pink"} />
+        </mesh> */}
+        {allowedMoves.map((position, i) => (
+          <mesh
+            key={i}
             position={
               new Vector3(
-                piece.position.x * 2 - 10,
-                piece.position.y * 2 - 9,
-                0
+                position.x * 2 - 10,
+                position.y * 2 - 9,
+                game.board[position.x][position.y] ? 0.3 : 0
               )
             }
-            text={piece.text}
-            color="black"
-          />
+          >
+            <circleGeometry args={[0.4, 32]} />
+            <meshStandardMaterial color="green" />
+          </mesh>
         ))}
       </Canvas>
     </div>
