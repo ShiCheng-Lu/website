@@ -7,7 +7,7 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { Vector2, Vector3 } from "three";
 
 export default function Xiangqi() {
-  const font = useLoader(FontLoader, "/fonts/NotoSansSC_Regular.json");
+  const font = useLoader(FontLoader, "/fonts/ZhiMangXing_Regular.json");
 
   const pieces0 = [
     { position: new Vector2(1, 9), text: "車" },
@@ -27,8 +27,26 @@ export default function Xiangqi() {
     { position: new Vector2(7, 6), text: "卒" },
     { position: new Vector2(9, 6), text: "卒" },
   ]
-  const p0 = "將士象馬車砲卒";
-  const p1 = "帥仕相馬車炮兵";
+  const pieces1 = [
+    { position: new Vector2(1, 0), text: "車" },
+    { position: new Vector2(2, 0), text: "馬" },
+    { position: new Vector2(3, 0), text: "相" },
+    { position: new Vector2(4, 0), text: "仕" },
+    { position: new Vector2(5, 0), text: "帥" },
+    { position: new Vector2(5, 0), text: "帅" },
+    { position: new Vector2(6, 0), text: "仕" },
+    { position: new Vector2(7, 0), text: "相" },
+    { position: new Vector2(8, 0), text: "馬" },
+    { position: new Vector2(9, 0), text: "車" },
+    { position: new Vector2(2, 2), text: "炮" },
+    { position: new Vector2(8, 2), text: "炮" },
+    { position: new Vector2(1, 3), text: "兵" },
+    { position: new Vector2(3, 3), text: "兵" },
+    { position: new Vector2(5, 3), text: "兵" },
+    { position: new Vector2(7, 3), text: "兵" },
+    { position: new Vector2(9, 3), text: "兵" },
+  ]
+  const river = "楚河 漢界";
 
   return (
     <div
@@ -61,10 +79,20 @@ export default function Xiangqi() {
         <Board />
 
         {pieces0.map((piece, i) => (
-          <Piece key={i}
+          <Piece key={`r${i}`}
             font={font} 
             position={new Vector3(piece.position.x * 2 - 10, piece.position.y * 2 - 9, 0)}
-            text={piece.text} />
+            text={piece.text}
+            color="red"
+          />
+        ))}
+        {pieces1.map((piece, i) => (
+          <Piece key={`b${i}`}
+            font={font} 
+            position={new Vector3(piece.position.x * 2 - 10, piece.position.y * 2 - 9, 0)}
+            text={piece.text}
+            color="black"
+          />
         ))}
       </Canvas>
     </div>

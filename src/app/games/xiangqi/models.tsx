@@ -60,16 +60,32 @@ export function Text({ font, position, text }: { font: Font, position: Vector3, 
   );
 }
 
-export function Piece({ font, position, text }: { font: Font, position: Vector3, text: string }) {
+
+type PieceProps = {
+  font: Font;
+  position: Vector3;
+  text: string;
+  color: string;
+}
+export function Piece({ font, position, text, color }: PieceProps) {
+  const radius = 0.8;
   return (
     <mesh position={position}>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.25]}>
-        <cylinderGeometry args={[0.8, 0.8, 0.5]} />
-        <meshStandardMaterial color="red" />
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.15]}>
+        <cylinderGeometry args={[radius, radius, 0.3]} />
+        <meshStandardMaterial color="tan" />
       </mesh>
-      <mesh position={[-0.45, -0.4, 0.5]}>
+      <mesh position={[-0.45, -0.4, 0.3]}>
         <textGeometry args={[text, { font, size: 0.7, depth: 0.001 }]} />
-        <meshStandardMaterial color="white" />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh position={[0, 0, 0.3]}>
+        <ringGeometry args={[radius - 0.05, radius, 32]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh position={[0, 0, 0.3]}>
+        <ringGeometry args={[radius - 0.15, radius - 0.1, 32]} />
+        <meshStandardMaterial color={color} />
       </mesh>
     </mesh>
   );
