@@ -52,7 +52,6 @@ const ICE_SERVERS = [
     ],
   },
   ...(process.env.NODE_ENV === "production" ? OPEN_RELAY_ICE_SERVERS : []),
-  ...OPEN_RELAY_ICE_SERVERS,
 ];
 
 export async function startLobby(lobbyName?: string, game?: string) {
