@@ -9,8 +9,6 @@ import { Game, PieceState } from "./game";
 import { useMemo, useState } from "react";
 
 export default function Xiangqi() {
-  const font = useLoader(FontLoader, "/fonts/HanWangShinSuMedium_Regular.json");
-
   const CAMERA_FOV = 90;
   const CAMERA_HEIGHT = 12;
   const game = useMemo(() => new Game(), []);
@@ -94,12 +92,11 @@ export default function Xiangqi() {
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
-        <Board font={font} />
+        <Board />
 
         {game.pieces.map((piece, i) => (
           <Piece
             key={`p${i}`}
-            font={font}
             position={
               new Vector3(
                 piece.position.x * 2 - 10,

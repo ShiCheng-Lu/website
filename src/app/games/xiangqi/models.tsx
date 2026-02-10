@@ -1,8 +1,8 @@
 import { Line } from "@/util/three";
 import { Vector3 } from "three";
-import { Font } from "three/examples/jsm/loaders/FontLoader.js";
+import { Font, FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { ThreeElement, extend } from "@react-three/fiber";
+import { ThreeElement, extend, useLoader } from "@react-three/fiber";
 import { Fragment } from "react";
 
 extend({ TextGeometry });
@@ -12,8 +12,12 @@ declare module "@react-three/fiber" {
   }
 }
 
-export function Board({ font }: { font: Font }) {
-  const river = "楚河 漢界";
+export function Board() {
+  const fontURL =
+    typeof window !== "undefined"
+      ? "/fonts/HanWangShinSuMedium_Regular.json"
+      : "";
+  const font = useLoader(FontLoader, fontURL);
   return (
     <mesh>
       <mesh>
@@ -85,13 +89,17 @@ export function Board({ font }: { font: Font }) {
 }
 
 type PieceProps = {
-  font: Font;
   position: Vector3;
   text: string;
   color: string;
   textColor: string;
 };
-export function Piece({ font, position, text, color, textColor }: PieceProps) {
+export function Piece({ position, text, color, textColor }: PieceProps) {
+  const fontURL =
+    typeof window !== "undefined"
+      ? "/fonts/HanWangShinSuMedium_Regular.json"
+      : "";
+  const font = useLoader(FontLoader, fontURL);
   const radius = 0.8;
   return (
     <mesh position={position}>
