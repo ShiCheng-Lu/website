@@ -163,19 +163,19 @@ export class Game {
 
   rMove({ x, y }: Vector2): Vector2[] {
     const allowedMoves = [];
-    for (let nx = x - 1; nx > 0; --nx) {
+    for (let nx = x - 1; nx >= 0; --nx) {
       allowedMoves.push(new Vector2(nx, y));
       if (this.board[nx][y]) break;
     }
-    for (let nx = x + 1; nx < 10; ++nx) {
+    for (let nx = x + 1; nx <= 9; ++nx) {
       allowedMoves.push(new Vector2(nx, y));
       if (this.board[nx][y]) break;
     }
-    for (let ny = y - 1; ny > 0; --ny) {
+    for (let ny = y - 1; ny >= 0; --ny) {
       allowedMoves.push(new Vector2(x, ny));
       if (this.board[x][ny]) break;
     }
-    for (let ny = y + 1; ny < 10; ++ny) {
+    for (let ny = y + 1; ny <= 9; ++ny) {
       allowedMoves.push(new Vector2(x, ny));
       if (this.board[x][ny]) break;
     }
@@ -185,7 +185,7 @@ export class Game {
   cMove({ x, y }: Vector2): Vector2[] {
     const allowedMoves = [];
     let support = false;
-    for (let nx = x - 1; nx > 0; --nx) {
+    for (let nx = x - 1; nx >= 0; --nx) {
       if (this.board[nx][y]) {
         if (support) {
           allowedMoves.push(new Vector2(nx, y));
@@ -197,7 +197,7 @@ export class Game {
       }
     }
     support = false;
-    for (let nx = x + 1; nx < 10; ++nx) {
+    for (let nx = x + 1; nx <= 9; ++nx) {
       if (this.board[nx][y]) {
         if (support) {
           allowedMoves.push(new Vector2(nx, y));
@@ -209,7 +209,7 @@ export class Game {
       }
     }
     support = false;
-    for (let ny = y - 1; ny > 0; --ny) {
+    for (let ny = y - 1; ny >= 0; --ny) {
       if (this.board[x][ny]) {
         if (support) {
           allowedMoves.push(new Vector2(x, ny));
@@ -221,7 +221,7 @@ export class Game {
       }
     }
     support = false;
-    for (let ny = y + 1; ny < 10; ++ny) {
+    for (let ny = y + 1; ny <= 9; ++ny) {
       if (this.board[x][ny]) {
         if (support) {
           allowedMoves.push(new Vector2(x, ny));
