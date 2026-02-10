@@ -39,17 +39,14 @@ export default function Xiangqi() {
     { position: new Vector2(9, 0), text: "車" },
     { position: new Vector2(2, 2), text: "砲" },
     { position: new Vector2(8, 2), text: "砲" },
-    { position: new Vector2(1, 3), text: "卒" },
-    { position: new Vector2(3, 3), text: "卒" },
-    { position: new Vector2(5, 3), text: "卒" },
-    { position: new Vector2(7, 3), text: "卒" },
-    { position: new Vector2(9, 3), text: "卒" },
+    { position: new Vector2(1, 3), text: "兵" },
+    { position: new Vector2(3, 3), text: "兵" },
+    { position: new Vector2(5, 3), text: "兵" },
+    { position: new Vector2(7, 3), text: "兵" },
+    { position: new Vector2(9, 3), text: "兵" },
+  ];
+  const river = "楚河 漢界";
 
-  ]
-  const p0 = "將士象馬車砲卒";
-  const p1 = "帥仕相馬車炮兵";
-  const river = "楚河汉界";
-  const all = "將士象馬車砲卒帥仕相馬車炮兵楚河汉界"
   return (
     <div
       style={{
@@ -72,25 +69,41 @@ export default function Xiangqi() {
         shadows
         style={{ flex: 1, touchAction: "none", background: "gray" }}
       >
-
         <Camera fov={90} position={[0, 0, 12]} />
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
-
         <Board />
 
         {pieces0.map((piece, i) => (
-          <Piece key={i}
-            font={font} 
-            position={new Vector3(piece.position.x * 2 - 10, piece.position.y * 2 - 9, 0)}
-            text={piece.text} />
+          <Piece
+            key={`r${i}`}
+            font={font}
+            position={
+              new Vector3(
+                piece.position.x * 2 - 10,
+                piece.position.y * 2 - 9,
+                0
+              )
+            }
+            text={piece.text}
+            color="red"
+          />
         ))}
         {pieces1.map((piece, i) => (
-          <Piece key={i}
-            font={font} 
-            position={new Vector3(piece.position.x * 2 - 10, piece.position.y * 2 - 9, 0)}
-            text={piece.text} />
+          <Piece
+            key={`b${i}`}
+            font={font}
+            position={
+              new Vector3(
+                piece.position.x * 2 - 10,
+                piece.position.y * 2 - 9,
+                0
+              )
+            }
+            text={piece.text}
+            color="black"
+          />
         ))}
       </Canvas>
     </div>
