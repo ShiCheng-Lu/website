@@ -18,7 +18,6 @@ export default function Xiangqi() {
   const [hovered, setHovered] = useState<PieceState>();
   const [selected, setSelected] = useState<PieceState>();
   const [position, setPosition] = useState<Vector2>();
-  const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     // project onto the plane of the piece text to see where it's hovered
@@ -53,7 +52,6 @@ export default function Xiangqi() {
     if (selected && position) {
       if (allowedMoves.some((p) => p.equals(position))) {
         game.movePiece(selected.position, position);
-        setPieces(game.pieces);
         setSelected(undefined);
         setHovered(undefined);
         return;

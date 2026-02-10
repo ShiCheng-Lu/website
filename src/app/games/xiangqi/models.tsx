@@ -3,6 +3,7 @@ import { Vector3 } from "three";
 import { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { ThreeElement, extend } from "@react-three/fiber";
+import { Fragment } from "react";
 
 extend({ TextGeometry });
 declare module "@react-three/fiber" {
@@ -21,7 +22,7 @@ export function Board({ font }: { font: Font }) {
       </mesh>
       {/* Vertical */}
       {[-6, -4, -2, 0, 2, 4, 6].map((x, i) => (
-        <>
+        <Fragment key={i}>
           <Line
             key={`v${i}b`}
             line={[new Vector3(x, -9, 0), new Vector3(x, -1, 0)]}
@@ -32,7 +33,7 @@ export function Board({ font }: { font: Font }) {
             line={[new Vector3(x, 1, 0), new Vector3(x, 9, 0)]}
             color="black"
           />
-        </>
+        </Fragment>
       ))}
       {/* Sidelines */}
       <Line
