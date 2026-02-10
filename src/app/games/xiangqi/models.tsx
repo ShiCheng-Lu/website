@@ -15,6 +15,7 @@ declare module "@react-three/fiber" {
 const fonts = new Map<string, Font>();
 function useFont(url: string) {
   const font = fonts.get(url) ?? useLoader(FontLoader, url);
+  fonts.set(url, font);
   return font;
 }
 
