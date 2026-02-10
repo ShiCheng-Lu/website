@@ -12,12 +12,14 @@ declare module "@react-three/fiber" {
   }
 }
 
+const fonts = new Map<string, Font>();
+function useFont(url: string) {
+  const font = fonts.get(url) ?? useLoader(FontLoader, url);
+  return font;
+}
+
 export function Board() {
-  const fontURL =
-    typeof window !== "undefined"
-      ? "/fonts/HanWangShinSuMedium_Regular.json"
-      : "";
-  const font = useLoader(FontLoader, fontURL);
+  const font = useFont("/fonts/HanWangShinSuMedium_Regular.json");
   return (
     <mesh>
       <mesh>
@@ -95,11 +97,7 @@ type PieceProps = {
   textColor: string;
 };
 export function Piece({ position, text, color, textColor }: PieceProps) {
-  const fontURL =
-    typeof window !== "undefined"
-      ? "/fonts/HanWangShinSuMedium_Regular.json"
-      : "";
-  const font = useLoader(FontLoader, fontURL);
+  const font = useFont("/fonts/HanWangShinSuMedium_Regular.json");
   const radius = 0.8;
   return (
     <mesh position={position}>
