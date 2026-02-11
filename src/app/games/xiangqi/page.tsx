@@ -7,6 +7,7 @@ import { Euler, Vector2, Vector3 } from "three";
 import { Game, PieceState } from "./game";
 import { useMemo, useRef, useState } from "react";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
+import { isMobile } from "react-device-detect";
 
 type SyncState =
   | { reset: true }
@@ -59,6 +60,10 @@ export default function Xiangqi() {
   const allowedMoves = useMemo(() => game.allowedMoves(selected), [selected]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobile) {
+      onPointerMove(e);
+    }
+
     if (selected && position) {
       if (session.current.connected && game.turn != game.player) {
         setSelected(undefined);
