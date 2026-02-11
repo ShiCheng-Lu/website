@@ -16,6 +16,8 @@ export default function Xiangqi() {
   const [hovered, setHovered] = useState<PieceState>();
   const [selected, setSelected] = useState<PieceState>();
   const [position, setPosition] = useState<Vector2>();
+  const [checkHighlight, setCheckHighlight] = useState<Vector2>();
+  const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     // project onto the plane of the piece text to see where it's hovered
@@ -50,6 +52,16 @@ export default function Xiangqi() {
     if (selected && position) {
       if (allowedMoves.some((p) => p.equals(position))) {
         game.movePiece(selected.position, position);
+        const color = game.turn ? "black" : "red";
+        if (game.inCheck(color)) {
+          const king = game.pieces.find(
+            (p) => p.type === "K" && p.color === color
+          );
+          setCheckHighlight(king?.position);
+        } else {
+          setCheckHighlight(undefined);
+        }
+        setPieces([...game.pieces]);
         setSelected(undefined);
         setHovered(undefined);
         return;
@@ -94,7 +106,7 @@ export default function Xiangqi() {
 
         <Board />
 
-        {game.pieces.map((piece, i) => (
+        {pieces.map((piece, i) => (
           <Piece
             key={`p${i}`}
             position={
@@ -129,6 +141,21 @@ export default function Xiangqi() {
             <meshStandardMaterial color="green" />
           </mesh>
         ))}
+
+        {checkHighlight && (
+          <mesh
+            position={
+              new Vector3(
+                checkHighlight.x * 2 - 10,
+                checkHighlight.y * 2 - 9,
+                0
+              )
+            }
+          >
+            <circleGeometry args={[1, 32]} />
+            <meshStandardMaterial color={"red"} opacity={0.5} transparent />
+          </mesh>
+        )}
       </Canvas>
     </div>
   );

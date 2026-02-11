@@ -272,7 +272,6 @@ export class Game {
   }
 
   validMovements(piece: PieceState): Vector2[] {
-    console.log("calculate allowed moves");
     let allowedMoves: Vector2[] = [];
     switch (piece.type) {
       case "K":
@@ -319,10 +318,12 @@ export class Game {
       );
       const kingPosition = king?.position ?? new Vector2(x, y);
 
+      this.board = newBoard;
       for (const opponentPiece of this.pieces) {
         if (opponentPiece.color === piece.color) continue;
+        const { x, y } = opponentPiece.position;
+        if (newBoard[x][y] !== opponentPiece) continue;
         // check a opponent piece cannot take our king after this move
-        this.board = newBoard;
         const oppoenentMoves = this.validMovements(opponentPiece);
         if (oppoenentMoves.some((square) => square.equals(kingPosition))) {
           return false;
@@ -332,6 +333,22 @@ export class Game {
     });
     this.board = currentBoard;
     return legalMoves;
+  }
+
+  // return whether or not the king of `color` is in check
+  inCheck(color: string): boolean {
+    const king = this.pieces.find((p) => p.type === "K" && p.color === color);
+    const kingPosition = king?.position ?? new Vector2(NaN);
+
+    for (const opponentPiece of this.pieces) {
+      if (opponentPiece.color === color) continue;
+      // check a opponent piece cannot take our king after this move
+      const oppoenentMoves = this.validMovements(opponentPiece);
+      if (oppoenentMoves.some((square) => square.equals(kingPosition))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   movePiece(from: Vector2, to: Vector2) {
