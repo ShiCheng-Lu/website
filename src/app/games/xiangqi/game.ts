@@ -48,7 +48,7 @@ export class Game {
   // slightly larger, only 1 <= x <= 9, 0 <= y <= 9 are used
   // 10 x 10 so that +- 1 exists, so we don't run out of index
   // x = 0, y = -1 index and > 9 index will always be undefined
-  board: (PieceState | undefined)[][] = matrix([10, 10], undefined);
+  board: (PieceState | undefined)[][] = matrix([11, 11], undefined);
   turn: number = 0;
   player: number = 0;
 
@@ -306,7 +306,7 @@ export class Game {
     const currentBoard = this.board;
     const legalMoves = validMovements.filter(({ x, y }) => {
       // check legality, does not move into check
-      const newBoard = matrix([10, 10], undefined);
+      const newBoard = matrix([11, 11], undefined);
       for (const piece of this.pieces) {
         const { x, y } = piece.position;
         newBoard[x][y] = piece;
