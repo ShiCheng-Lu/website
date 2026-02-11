@@ -56,7 +56,7 @@ export default function Xiangqi() {
       }
     }
 
-    if (!hovered) {
+    if (!hovered || hovered.color !== (game.turn ? "black" : "red")) {
       setSelected(undefined);
       return;
     }
