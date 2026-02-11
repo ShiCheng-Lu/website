@@ -335,20 +335,17 @@ export class Game {
     return legalMoves;
   }
 
-  // return whether or not the king of `color` is in check
-  inCheck(color: string): boolean {
+  // return a list of pieces that puts your king in check
+  inCheck(color: string): PieceState[] {
     const king = this.pieces.find((p) => p.type === "K" && p.color === color);
     const kingPosition = king?.position ?? new Vector2(NaN);
 
-    for (const opponentPiece of this.pieces) {
-      if (opponentPiece.color === color) continue;
-      // check a opponent piece cannot take our king after this move
-      const oppoenentMoves = this.validMovements(opponentPiece);
-      if (oppoenentMoves.some((square) => square.equals(kingPosition))) {
-        return true;
-      }
-    }
-    return false;
+    const checks = this.pieces.filter((piece) => {
+      if (piece.color === color) return false;
+      const moves = this.validMovements(piece);
+      return moves.some((square) => square.equals(kingPosition));
+    })
+    return checks;
   }
 
   movePiece(from: Vector2, to: Vector2) {

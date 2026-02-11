@@ -25,7 +25,7 @@ export default function Xiangqi() {
   const [hovered, setHovered] = useState<PieceState>();
   const [selected, setSelected] = useState<PieceState>();
   const [position, setPosition] = useState<Vector2>();
-  const [checkHighlight, setCheckHighlight] = useState<Vector2>();
+  const [checkHighlight, setCheckHighlight] = useState<PieceState[]>([]);
   const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
   const session = useRef(new GameSessionRef());
 
@@ -79,14 +79,7 @@ export default function Xiangqi() {
         game.movePiece(selected.position, position);
 
         const color = game.turn ? "black" : "red";
-        if (game.inCheck(color)) {
-          const king = game.pieces.find(
-            (p) => p.type === "K" && p.color === color
-          );
-          setCheckHighlight(king?.position);
-        } else {
-          setCheckHighlight(undefined);
-        }
+        setCheckHighlight(game.inCheck(color));
         setPieces([...game.pieces]);
         setSelected(undefined);
 
@@ -126,14 +119,7 @@ export default function Xiangqi() {
       );
 
       const color = game.turn ? "black" : "red";
-      if (game.inCheck(color)) {
-        const king = game.pieces.find(
-          (p) => p.type === "K" && p.color === color
-        );
-        setCheckHighlight(king?.position);
-      } else {
-        setCheckHighlight(undefined);
-      }
+      setCheckHighlight(game.inCheck(color));
       setPieces([...game.pieces]);
     }
   };
@@ -208,7 +194,7 @@ export default function Xiangqi() {
         </mesh> */}
         {allowedMoves.map((position, i) => (
           <mesh
-            key={i}
+            key={`allowed-moves-${i}`}
             position={
               new Vector3(
                 position.x * 2 - 10,
@@ -222,12 +208,13 @@ export default function Xiangqi() {
           </mesh>
         ))}
 
-        {checkHighlight && (
+        {checkHighlight.map((piece, i) => (
           <mesh
+            key={`check-highlights-${i}`}
             position={
               new Vector3(
-                checkHighlight.x * 2 - 10,
-                checkHighlight.y * 2 - 9,
+                piece.position.x * 2 - 10,
+                piece.position.y * 2 - 9,
                 0
               )
             }
@@ -235,7 +222,7 @@ export default function Xiangqi() {
             <circleGeometry args={[1, 32]} />
             <meshStandardMaterial color={"red"} opacity={0.5} transparent />
           </mesh>
-        )}
+        ))}
       </Canvas>
 
       <GameSession game="XiangQi" ref={session} />
