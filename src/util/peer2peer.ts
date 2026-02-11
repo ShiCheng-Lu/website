@@ -86,6 +86,10 @@ export async function startLobby(lobbyName?: string, game?: string) {
   channel.onclose = (e) => {
     console.log(`closed ${JSON.stringify(e)}`);
     onDisconnect();
+    if (pc) {
+      pc.close();
+      pc = undefined;
+    }
   };
   channel.onmessage = (e) => {
     // console.log(`message ${JSON.stringify(e)}`);
@@ -165,6 +169,10 @@ export async function joinLobby(id: string, l: LobbyData) {
     channel.onclose = (e) => {
       console.log(`closed ${JSON.stringify(e)}`);
       onDisconnect();
+      if (pc) {
+        pc.close();
+        pc = undefined;
+      }
     };
     channel.onmessage = (e) => {
       // console.log(`message ${JSON.stringify(e)}`);

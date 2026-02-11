@@ -89,7 +89,7 @@ export default function Xiangqi() {
       }
     }
 
-    if (!hovered || hovered.color !== (game.turn ? "black" : "red")) {
+    if (!hovered) {
       setSelected(undefined);
       return;
     }
@@ -141,6 +141,10 @@ export default function Xiangqi() {
     setGame(newGame);
     setPieces([...newGame.pieces]);
   };
+
+  const canMovePiece =
+    selected?.color === (game.turn ? "black" : "red") &&
+    (session.current.connected ? game.turn === game.player : true);
 
   return (
     <div
@@ -208,7 +212,7 @@ export default function Xiangqi() {
               )
             }
           >
-            <circleGeometry args={[0.4, 32]} />
+            <ringGeometry args={[canMovePiece ? 0 : 0.3, 0.4, 32]} />
             <meshStandardMaterial color="green" />
           </mesh>
         ))}
