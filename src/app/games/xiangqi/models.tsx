@@ -1,5 +1,5 @@
 import { Line } from "@/util/three";
-import { Vector3 } from "three";
+import { Euler, Vector3 } from "three";
 import { Font, FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { ThreeElement, extend, useLoader } from "@react-three/fiber";
@@ -93,15 +93,16 @@ export function Board() {
 
 type PieceProps = {
   position: Vector3;
+  rotation: Euler;
   text: string;
   color: string;
   textColor: string;
 };
-export function Piece({ position, text, color, textColor }: PieceProps) {
+export function Piece({ position, rotation, text, color, textColor }: PieceProps) {
   const font = useFont("/fonts/HanWangShinSuMedium_Regular.json");
   const radius = 0.8;
   return (
-    <mesh position={position}>
+    <mesh position={position} rotation={rotation}>
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.15]}>
         <cylinderGeometry args={[radius, radius, 0.3]} />
         <meshStandardMaterial color={color} />

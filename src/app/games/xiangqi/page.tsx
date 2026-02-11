@@ -3,7 +3,7 @@
 import Camera from "@/util/three-camera";
 import { Canvas } from "@react-three/fiber";
 import { Board, Piece } from "./models";
-import { Vector2, Vector3 } from "three";
+import { Euler, Vector2, Vector3 } from "three";
 import { Game, PieceState } from "./game";
 import { useMemo, useRef, useState } from "react";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
@@ -31,8 +31,9 @@ export default function Xiangqi() {
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     // project onto the plane of the piece text to see where it's hovered
     const scale =
-      (Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
-      window.innerHeight;
+      ((Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
+        window.innerHeight) *
+      (game.player ? -1 : 1);
     const y = (window.innerHeight - e.clientY * 2) * scale;
     const x = (e.clientX * 2 - window.innerWidth) * scale;
 
@@ -106,6 +107,7 @@ export default function Xiangqi() {
         reset: true,
       });
     }
+    setPieces([...newGame.pieces]);
   };
 
   session.current.receive = (sync: SyncState) => {
@@ -138,6 +140,7 @@ export default function Xiangqi() {
     const newGame = new Game();
     newGame.player = host ? 0 : 1;
     setGame(newGame);
+    setPieces([...newGame.pieces]);
   };
 
   return (
@@ -164,7 +167,11 @@ export default function Xiangqi() {
         onPointerMove={onPointerMove}
         onPointerDown={onPointerDown}
       >
-        <Camera fov={CAMERA_FOV} position={[0, 0, CAMERA_HEIGHT]} />
+        <Camera
+          fov={CAMERA_FOV}
+          position={[0, 0, CAMERA_HEIGHT]}
+          rotation={[0, 0, game.player ? Math.PI : 0]}
+        />
         <ambientLight intensity={1} />
         <directionalLight position={[5, 5, 5]} color="white" intensity={1} />
 
@@ -180,6 +187,7 @@ export default function Xiangqi() {
                 0
               )
             }
+            rotation={new Euler(0, 0, game.player ? Math.PI : 0)}
             text={piece.text}
             color={hovered === piece ? "lightgreen" : "lightgray"}
             textColor={piece.color}
