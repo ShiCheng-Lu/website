@@ -1,23 +1,32 @@
 "use client";
 
 import Camera from "@/util/three-camera";
-import { Canvas, useLoader } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { Board, Piece } from "./models";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { Vector2, Vector3 } from "three";
 import { Game, PieceState } from "./game";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { GameSession, GameSessionRef } from "@/components/GameSession";
+
+type SyncState =
+  | { reset: true }
+  | {
+      reset: false;
+      from: Vector2;
+      to: Vector2;
+    };
 
 export default function Xiangqi() {
   const CAMERA_FOV = 90;
   const CAMERA_HEIGHT = 12;
-  const game = useMemo(() => new Game(), []);
+  const [game, setGame] = useState(new Game());
 
   const [hovered, setHovered] = useState<PieceState>();
   const [selected, setSelected] = useState<PieceState>();
   const [position, setPosition] = useState<Vector2>();
   const [checkHighlight, setCheckHighlight] = useState<Vector2>();
   const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
+  const session = useRef(new GameSessionRef());
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     // project onto the plane of the piece text to see where it's hovered
@@ -50,8 +59,20 @@ export default function Xiangqi() {
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (selected && position) {
+      console.log(`${game.turn} ${game.player}`);
+      if (session.current.connected && game.turn != game.player) {
+        setSelected(undefined);
+        return;
+      }
       if (allowedMoves.some((p) => p.equals(position))) {
+        if (session.current.connected) {
+          session.current.send({
+            from: selected.position.clone(),
+            to: position.clone(),
+          });
+        }
         game.movePiece(selected.position, position);
+
         const color = game.turn ? "black" : "red";
         if (game.inCheck(color)) {
           const king = game.pieces.find(
@@ -63,7 +84,7 @@ export default function Xiangqi() {
         }
         setPieces([...game.pieces]);
         setSelected(undefined);
-        setHovered(undefined);
+
         return;
       }
     }
@@ -74,6 +95,49 @@ export default function Xiangqi() {
     }
 
     setSelected(hovered);
+  };
+
+  const reset = (send: boolean) => {
+    const newGame = new Game();
+    newGame.player = 1 - game.player;
+    setGame(newGame);
+    if (send) {
+      session.current.send({
+        reset: true,
+      });
+    }
+  };
+
+  session.current.receive = (sync: SyncState) => {
+    if (sync.reset) {
+      console.log("reset request");
+      reset(false);
+    } else {
+      console.log(`move sync`, sync);
+      game.movePiece(
+        new Vector2(sync.from.x, sync.from.y),
+        new Vector2(sync.to.x, sync.to.y)
+      );
+
+      const color = game.turn ? "black" : "red";
+      if (game.inCheck(color)) {
+        const king = game.pieces.find(
+          (p) => p.type === "K" && p.color === color
+        );
+        setCheckHighlight(king?.position);
+      } else {
+        setCheckHighlight(undefined);
+      }
+      setPieces([...game.pieces]);
+    }
+  };
+
+  session.current.reset = () => reset(true);
+
+  session.current.connect = (host: boolean) => {
+    const newGame = new Game();
+    newGame.player = host ? 0 : 1;
+    setGame(newGame);
   };
 
   return (
@@ -157,6 +221,8 @@ export default function Xiangqi() {
           </mesh>
         )}
       </Canvas>
+
+      <GameSession game="XiangQi" ref={session} />
     </div>
   );
 }

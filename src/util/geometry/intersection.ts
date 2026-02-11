@@ -193,7 +193,6 @@ export function intersection(a: Polygon, b: Polygon): Polygon[] {
         d = 0;
       }
 
-      
       // console.log(`intersected ${JSON.stringify(points)}`);
 
       // remove this intersection since this'll be the only ever time we need

@@ -291,8 +291,12 @@ export default function Pool() {
           }}
           className={styles.PopupText}
         >
-          <p style={{ fontSize: isMobile ? 40 : 80, color: "white" }}>{text.main}</p>
-          <p style={{ fontSize: isMobile ? 10 : 30, color: "white" }}>{text.sub}</p>
+          <p style={{ fontSize: isMobile ? 40 : 80, color: "white" }}>
+            {text.main}
+          </p>
+          <p style={{ fontSize: isMobile ? 10 : 30, color: "white" }}>
+            {text.sub}
+          </p>
         </div>
       )}
       <GameSession game="Pool" ref={session} />
