@@ -60,7 +60,6 @@ export default function Xiangqi() {
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (selected && position) {
-      console.log(`${game.turn} ${game.player}`);
       if (session.current.connected && game.turn != game.player) {
         setSelected(undefined);
         return;

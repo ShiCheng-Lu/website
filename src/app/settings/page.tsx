@@ -46,7 +46,7 @@ export default function Settings() {
 
       <div
         onClick={() =>
-          setCookie("disableBrainRot", !cookie.disableBrainRot, expires(1))
+          setCookie("disableBrainRot", !cookie.disableBrainRot, expires(365))
         }
         style={{ marginRight: "auto" }}
       >
@@ -58,7 +58,7 @@ export default function Settings() {
         <label htmlFor="brainrot">DO NOT SHOW BRAINROT</label>
       </div>
       <div
-        onClick={() => setCookie("disableAd", !cookie.disableAd, expires(1))}
+        onClick={() => setCookie("disableAd", !cookie.disableAd, expires(365))}
         style={{ marginRight: "auto" }}
       >
         <input type="checkbox" checked={cookie.disableAd || false} readOnly />
@@ -66,7 +66,7 @@ export default function Settings() {
       </div>
       <div
         onClick={() =>
-          setCookie("disable8Ball", !cookie.disable8Ball, expires(1))
+          setCookie("disable8Ball", !cookie.disable8Ball, expires(365))
         }
         style={{ marginRight: "auto" }}
       >
@@ -79,7 +79,7 @@ export default function Settings() {
       </div>
       <div
         onClick={() =>
-          setCookie("acceptedPolicy", !cookie.acceptedPolicy, expires(7))
+          setCookie("acceptedPolicy", !cookie.acceptedPolicy, expires(365))
         }
         style={{ marginRight: "auto" }}
       >
@@ -91,7 +91,7 @@ export default function Settings() {
         <label htmlFor="acceptedPolicy">ACCEPTED POLICY</label>
       </div>
       <div
-        onClick={() => setCookie("useTabs", !cookie.useTabs, expires(7))}
+        onClick={() => setCookie("useTabs", !cookie.useTabs, expires(365))}
         style={{ marginRight: "auto" }}
       >
         <input type="checkbox" checked={cookie.useTabs || false} readOnly />

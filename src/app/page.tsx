@@ -220,7 +220,7 @@ export default function Home() {
           ></PaymentPopup>
         )}
 
-        {!isMobile && !cookies.disableBrainRot && (
+        {!isMobile && !cookies.useTabs && !cookies.disableBrainRot && (
           <>
             <DraggableWindow
               title={<p className={styles.videoTitle}>For the zoomers</p>}
@@ -249,7 +249,7 @@ export default function Home() {
           </>
         )}
 
-        {!isMobile && (
+        {!isMobile && !cookies.useTabs && (
           <DraggableWindow
             title={"Cookie Clicker"}
             width={10 * 30}
