@@ -213,7 +213,7 @@ export default function Xiangqi() {
             }
           >
             <ringGeometry args={[canMovePiece ? 0 : 0.3, 0.4, 32]} />
-            <meshStandardMaterial color="green" />
+            <meshStandardMaterial color="green" opacity={0.7} transparent />
           </mesh>
         ))}
 
