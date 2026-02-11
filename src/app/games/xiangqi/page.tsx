@@ -7,6 +7,7 @@ import { Euler, Vector2, Vector3 } from "three";
 import { Game, PieceState } from "./game";
 import { useMemo, useRef, useState } from "react";
 import { GameSession, GameSessionRef } from "@/components/GameSession";
+import { isMobile } from "react-device-detect";
 
 type SyncState =
   | { reset: true }
@@ -18,7 +19,7 @@ type SyncState =
 
 export default function Xiangqi() {
   const CAMERA_FOV = 90;
-  const CAMERA_HEIGHT = 12;
+  const CAMERA_HEIGHT = isMobile ? 18 : 12;
   const [game, setGame] = useState(new Game());
 
   const [hovered, setHovered] = useState<PieceState>();
