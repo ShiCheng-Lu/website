@@ -19,7 +19,7 @@ type SyncState =
 
 export default function Xiangqi() {
   const CAMERA_FOV = 90;
-  const CAMERA_HEIGHT = 12;
+  const CAMERA_HEIGHT = isMobile ? 18 : 12;
   const [game, setGame] = useState(new Game());
 
   const [hovered, setHovered] = useState<PieceState>();

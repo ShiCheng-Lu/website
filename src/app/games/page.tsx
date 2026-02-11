@@ -46,6 +46,9 @@ export default function Games() {
         <Link className={styles.GameNav} href="/games/pool">
           Pool (1 - 2 player)
         </Link>
+        <Link className={styles.GameNav} href="/games/xiangqi">
+          Xiangqi
+        </Link>
       </div>
     </div>
   );
