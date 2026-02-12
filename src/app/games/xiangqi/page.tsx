@@ -29,7 +29,7 @@ export default function Xiangqi() {
   const [pieces, setPieces] = useState<PieceState[]>(game.pieces);
   const session = useRef(new GameSessionRef());
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const getSquare = (e: React.PointerEvent<HTMLDivElement>): Vector2 | null => {
     // project onto the plane of the piece text to see where it's hovered
     const scale =
       ((Math.tan((CAMERA_FOV * Math.PI) / 360) * CAMERA_HEIGHT) /
@@ -49,34 +49,41 @@ export default function Xiangqi() {
       intPosition.y <= 9 &&
       position.sub(intPosition).length() < 0.7 / 2
     ) {
-      const piece = game.pieces.find((p) => p.position.equals(intPosition));
+      return intPosition;
+    } else {
+      return null;
+    }
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    // project onto the plane of the piece text to see where it's hovered
+    const square = getSquare(e);
+    if (square) {
+      const piece = game.pieces.find((p) => p.position.equals(square));
       setHovered(piece);
     } else {
       setHovered(undefined);
     }
-    setPosition(intPosition);
   };
 
   const allowedMoves = useMemo(() => game.allowedMoves(selected), [selected]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isMobile) {
-      onPointerMove(e);
-    }
+    const square = getSquare(e);
 
-    if (selected && position) {
+    if (selected && square) {
       if (session.current.connected && game.turn != game.player) {
         setSelected(undefined);
         return;
       }
-      if (allowedMoves.some((p) => p.equals(position))) {
+      if (allowedMoves.some((p) => p.equals(square))) {
         if (session.current.connected) {
           session.current.send({
             from: selected.position.clone(),
-            to: position.clone(),
+            to: square.clone(),
           });
         }
-        game.movePiece(selected.position, position);
+        game.movePiece(selected.position, square);
 
         const color = game.turn ? "black" : "red";
         setCheckHighlight(game.inCheck(color));
@@ -85,14 +92,13 @@ export default function Xiangqi() {
 
         return;
       }
-    }
-
-    if (!hovered) {
       setSelected(undefined);
-      return;
+    } else if (selected) {
+      setSelected(undefined);
+    } else if (square) {
+      const piece = game.pieces.find((p) => p.position.equals(square));
+      setSelected(piece);
     }
-
-    setSelected(hovered);
   };
 
   const reset = (send: boolean) => {
