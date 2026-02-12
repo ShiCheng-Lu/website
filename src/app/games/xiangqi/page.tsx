@@ -47,7 +47,7 @@ export default function Xiangqi() {
       intPosition.x <= 9 &&
       intPosition.y >= 0 &&
       intPosition.y <= 9 &&
-      position.sub(intPosition).length() < (isMobile ? 1 : 0.7) / 2
+      position.sub(intPosition).length() < (isMobile ? 1 : 0.8) / 2
     ) {
       return intPosition;
     } else {
@@ -189,7 +189,11 @@ export default function Xiangqi() {
             }
             rotation={new Euler(0, 0, game.player ? Math.PI : 0)}
             text={piece.text}
-            color={hovered === piece ? "lightgreen" : "lightgray"}
+            color={
+              (isMobile ? selected : hovered) === piece
+                ? "lightgreen"
+                : "lightgray"
+            }
             textColor={piece.color}
           />
         ))}
