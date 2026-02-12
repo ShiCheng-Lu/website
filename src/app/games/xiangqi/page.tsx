@@ -89,16 +89,17 @@ export default function Xiangqi() {
         setCheckHighlight(game.inCheck(color));
         setPieces([...game.pieces]);
         setSelected(undefined);
-
         return;
       }
-      setSelected(undefined);
-    } else if (selected) {
-      setSelected(undefined);
-    } else if (square) {
-      const piece = game.pieces.find((p) => p.position.equals(square));
-      setSelected(piece);
     }
+    if (square) {
+      const piece = game.pieces.find((p) => p.position.equals(square));
+      if (piece !== selected) {
+        setSelected(piece);
+        return;
+      }
+    }
+    setSelected(undefined);
   };
 
   const reset = (send: boolean) => {
